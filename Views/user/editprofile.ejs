@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Papyrus - Edit Profile</title>
+    <link rel="stylesheet" href="/css/editprofile.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 70 L50 85 Q48 90 45 90 L15 90 Q10 90 10 85 Z" fill="#7A5C3E"/>
+                    <path d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 70 L50 85 Q52 90 55 90 L85 90 Q90 90 90 85 Z" fill="#7A5C3E"/>
+                    <path d="M50 70 L45 50 L50 30 L55 50 Z" fill="#5a4a3a"/>
+                    <circle cx="50" cy="25" r="6" fill="#5a4a3a"/>
+                    <ellipse cx="50" cy="15" rx="4" ry="7" fill="#7A5C3E"/>
+                    <ellipse cx="42" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
+                    <ellipse cx="58" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
+                    <ellipse cx="38" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
+                    <ellipse cx="62" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
+                    <ellipse cx="35" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
+                    <ellipse cx="65" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
+                </svg>
+                <span>Papyrus</span>
+            </div>
+            <nav class="nav">
+                <a href="/home">Browse</a>
+                <a href="/about">About</a>
+                <a href="/stories">Stories</a>
+            </nav>
+            <div class="header-icons">
+                <a href="/cart" class="icon-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 2L7 6H21L19 2H9Z"/>
+                        <path d="M7 6L5 20H19L21 6"/>
+                    </svg>
+                </a>
+                <a href="/wishlist" class="icon-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                </a>
+                <a href="/profile" class="icon-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <div class="container">
+            <a href="/home">SHOP</a> / <a href="/profile">PROFILE</a> / <span>EDIT PROFILE</span>
+        </div>
+    </div>
+
+    <!-- Profile Content -->
+    <section class="profile-section">
+        <div class="container">
+            <h1 class="page-title">Edit Profile</h1>
+            
+            <div class="profile-layout">
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <nav class="sidebar-nav">
+                        <a href="/profile" class="nav-item active">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"/>
+                                <rect x="14" y="3" width="7" height="7"/>
+                                <rect x="14" y="14" width="7" height="7"/>
+                                <rect x="3" y="14" width="7" height="7"/>
+                            </svg>
+                            OVERVIEW
+                        </a>
+                        <a href="#orders" class="nav-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 2L7 6H21L19 2H9Z"/>
+                                <path d="M7 6L5 20H19L21 6"/>
+                            </svg>
+                            ORDERS
+                        </a>
+                        <a href="#wishlist" class="nav-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
+                            WISHLIST
+                        </a>
+                        <a href="#address" class="nav-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                            ADDRESS BOOK
+                        </a>
+                        <a href="#wallet" class="nav-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                                <path d="M2 10h20"/>
+                            </svg>
+                            WALLET
+                        </a>
+                        <a href="#security" class="nav-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            SECURITY
+                        </a>
+                        <a href="/logout" class="nav-item logout">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            SIGN OUT
+                        </a>
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="main-content">
+                    <form action="/profile/update" method="POST" enctype="multipart/form-data">
+                        <div class="profile-card">
+                            <div class="card-header">
+                                <h2>Personal Information</h2>
+                                <div class="action-buttons">
+                                    <a href="/profile" class="btn-cancel">CANCEL</a>
+                                    <button type="submit" class="btn-save">SAVE CHANGES</button>
+                                </div>
+                            </div>
+                            
+                            <div class="profile-info">
+                                <div class="profile-avatar-edit">
+                                    <div class="avatar-circle">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                            <circle cx="12" cy="7" r="4"/>
+                                        </svg>
+                                    </div>
+                                    <div class="avatar-upload">
+                                        <label for="avatar" class="upload-btn">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                <polyline points="17 8 12 3 7 8"/>
+                                                <line x1="12" y1="3" x2="12" y2="15"/>
+                                            </svg>
+                                            Upload Photo
+                                        </label>
+                                        <input type="file" id="avatar" name="avatar" accept="image/*" hidden>
+                                        <p class="upload-hint">JPG, PNG or GIF. Max size 2MB</p>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <h3>Basic Information</h3>
+                                    <div class="form-grid">
+                                        <div class="form-group">
+                                            <label for="firstName">First Name *</label>
+                                            <input type="text" id="firstName" name="firstName" value="Julian" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="lastName">Last Name *</label>
+                                            <input type="text" id="lastName" name="lastName" value="Barnes" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="email">Email Address *</label>
+                                            <input type="email" id="email" name="email" value="j.barnes@bibliophilo.com" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="phone">Phone Number</label>
+                                            <input type="tel" id="phone" name="phone" value="+1 (555) 234-5678">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="dob">Date of Birth</label>
+                                            <input type="date" id="dob" name="dob" value="1982-01-19">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="gender">Gender</label>
+                                            <select id="gender" name="gender">
+                                                <option value="">Select Gender</option>
+                                                <option value="male" selected>Male</option>
+                                                <option value="female">Female</option>
+                                                <option value="other">Other</option>
+                                                <option value="prefer-not">Prefer not to say</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <h3>Preferences</h3>
+                                    <div class="form-grid">
+                                        <div class="form-group full-width">
+                                            <label for="language">Language Preference</label>
+                                            <input type="text" id="language" name="language" value="English (UK), French">
+                                        </div>
+                                        <div class="form-group full-width">
+                                            <label for="userType">User Type</label>
+                                            <input type="text" id="userType" name="userType" value="AVID COLLECTOR">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <h3>Bio / About Me</h3>
+                                    <div class="form-group full-width">
+                                        <textarea id="bio" name="bio" rows="6" placeholder="Tell us about yourself and your love for books...">"A lifelong devotee of the written word, specializing in early 20th-century modernism and forgotten Victorian periodicals. I believe every book is a vessel of history, and I'm currently on a quest to complete my collection of first-edition F. Scott Fitzgerald novels. When I'm not browsing the stacks at Papyrus, you can find me at a quiet corner café with a flat white and a well-worn copy of Ulysses."</textarea>
+                                        <span class="char-count">0 / 500 characters</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="literary-profile">
+                            <h2>Literary Profile</h2>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="favoriteGenre">Favorite Genre</label>
+                                    <select id="favoriteGenre" name="favoriteGenre">
+                                        <option value="">Select Genre</option>
+                                        <option value="literary-fiction" selected>Literary Fiction</option>
+                                        <option value="mystery">Mystery</option>
+                                        <option value="sci-fi">Science Fiction</option>
+                                        <option value="fantasy">Fantasy</option>
+                                        <option value="biography">Biography</option>
+                                        <option value="history">History</option>
+                                        <option value="poetry">Poetry</option>
+                                        <option value="classics">Classics</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="primaryInterest">Primary Interest</label>
+                                    <select id="primaryInterest" name="primaryInterest">
+                                        <option value="">Select Interest</option>
+                                        <option value="rare-editions" selected>Rare First Editions</option>
+                                        <option value="signed-copies">Signed Copies</option>
+                                        <option value="vintage-books">Vintage Books</option>
+                                        <option value="modern-classics">Modern Classics</option>
+                                        <option value="collectibles">Collectibles</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="readingGoal">Reading Goal (Books/Year)</label>
+                                    <input type="number" id="readingGoal" name="readingGoal" value="50" min="1" max="365">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </main>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 70 L50 85 Q48 90 45 90 L15 90 Q10 90 10 85 Z" fill="currentColor"/>
+                            <path d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 70 L50 85 Q52 90 55 90 L85 90 Q90 90 90 85 Z" fill="currentColor"/>
+                            <path d="M50 70 L45 50 L50 30 L55 50 Z" fill="currentColor"/>
+                            <circle cx="50" cy="25" r="6" fill="currentColor"/>
+                            <ellipse cx="50" cy="15" rx="4" ry="7" fill="currentColor"/>
+                            <ellipse cx="42" cy="20" rx="4" ry="6" fill="currentColor"/>
+                            <ellipse cx="58" cy="20" rx="4" ry="6" fill="currentColor"/>
+                        </svg>
+                        <span>PAPYRUS</span>
+                    </div>
+                    <p>Preserving literary heritage through sustainable book trading. Every book has a story, and every story deserves to be shared.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Explore</h4>
+                    <ul>
+                        <li><a href="/browse">Browse Books</a></li>
+                        <li><a href="/rare">Rare Editions</a></li>
+                        <li><a href="/collections">Collections</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="/about">About Us</a></li>
+                        <li><a href="/stories">Reader Stories</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="/shipping">Shipping Info</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                        <li><a href="/terms">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 PAPYRUS. PRESERVING STORIES SINCE 1974.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Character counter for bio
+        const bioTextarea = document.getElementById('bio');
+        const charCount = document.querySelector('.char-count');
+        
+        bioTextarea.addEventListener('input', function() {
+            const count = this.value.length;
+            charCount.textContent = `${count} / 500 characters`;
+            if (count > 500) {
+                charCount.style.color = '#d9534f';
+            } else {
+                charCount.style.color = '#999';
+            }
+        });
+        
+        // Trigger initial count
+        bioTextarea.dispatchEvent(new Event('input'));
+    </script>
+</body>
+</html>

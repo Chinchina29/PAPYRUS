@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Papyrus - My Account</title>
+    <link rel="stylesheet" href="/css/profile.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 70 L50 85 Q48 90 45 90 L15 90 Q10 90 10 85 Z" fill="#7A5C3E"/>
+                    <path d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 70 L50 85 Q52 90 55 90 L85 90 Q90 90 90 85 Z" fill="#7A5C3E"/>
+                    <path d="M50 70 L45 50 L50 30 L55 50 Z" fill="#5a4a3a"/>
+                    <circle cx="50" cy="25" r="6" fill="#5a4a3a"/>
+                    <ellipse cx="50" cy="15" rx="4" ry="7" fill="#7A5C3E"/>
+                    <ellipse cx="42" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
+                    <ellipse cx="58" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
+                    <ellipse cx="38" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
+                    <ellipse cx="62" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
+                    <ellipse cx="35" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
+                    <ellipse cx="65" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
+                </svg>
+                <span>Papyrus</span>
+            </div>
+            <nav class="nav">
+                <a href="/home">Browse</a>
+                <a href="/about">About</a>
+                <a href="/stories">Stories</a>
+            </nav>
+            <div class="header-icons">
+                <a href="/cart" class="icon-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 2L7 6H21L19 2H9Z"/>
+                        <path d="M7 6L5 20H19L21 6"/>
+                    </svg>
+                </a>
+                <a href="/wishlist" class="icon-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                </a>
+                <a href="/profile" class="icon-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <div class="container">
+            <a href="/home">SHOP</a> / <span>PROFILE</span>
+        </div>
+    </div>
+
+    <!-- Profile Content -->
+    <section class="profile-section">
+        <div class="container">
+            <h1 class="page-title">My Account</h1>
+            
+            <div class="profile-layout">
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <nav class="sidebar-nav">
+                        <a href="#overview" class="nav-item active">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"/>
+                                <rect x="14" y="3" width="7" height="7"/>
+                                <rect x="14" y="14" width="7" height="7"/>
+                                <rect x="3" y="14" width="7" height="7"/>
+                            </svg>
+                            OVERVIEW
+                        </a>
+                        <a href="#orders" class="nav-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 2L7 6H21L19 2H9Z"/>
+                                <path d="M7 6L5 20H19L21 6"/>
+                            </svg>
+                            ORDERS
+                        </a>
+                        <a href="#wishlist" class="nav-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
+                            WISHLIST
+                        </a>
+                        <a href="#address" class="nav-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                            ADDRESS BOOK
+                        </a>
+                        <a href="#wallet" class="nav-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                                <path d="M2 10h20"/>
+                            </svg>
+                            WALLET
+                        </a>
+                        <a href="#security" class="nav-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            SECURITY
+                        </a>
+                        <a href="/logout" class="nav-item logout">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            SIGN OUT
+                        </a>
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="main-content">
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <h2>Personal Information</h2>
+                            <a href="/editprofile" class="btn-edit">EDIT PROFILE</a>
+                        </div>
+                        
+                        <div class="profile-info">
+                            <div class="profile-avatar">
+                                <div class="avatar-circle">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                        <circle cx="12" cy="7" r="4"/>
+                                    </svg>
+                                </div>
+                                <div class="profile-name">
+                                    <h3>Julian Barnes</h3>
+                                    <p>AVID COLLECTOR</p>
+                                </div>
+                            </div>
+
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <label>EMAIL ADDRESS</label>
+                                    <p>j.barnes@bibliophilo.com</p>
+                                </div>
+                                <div class="info-item">
+                                    <label>PHONE NUMBER</label>
+                                    <p>+1 (555) 234-5678</p>
+                                </div>
+                                <div class="info-item">
+                                    <label>DATE OF BIRTH</label>
+                                    <p>January 19, 1982</p>
+                                </div>
+                                <div class="info-item">
+                                    <label>GENDER</label>
+                                    <p>Male</p>
+                                </div>
+                                <div class="info-item">
+                                    <label>LANGUAGE PREFERENCE</label>
+                                    <p>English (UK), French</p>
+                                </div>
+                                <div class="info-item">
+                                    <label>JOINED DATE</label>
+                                    <p>November 12, 2023</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bio-section">
+                            <h3>BIO / ABOUT ME</h3>
+                            <p>"A lifelong devotee of the written word, specializing in early 20th-century modernism and forgotten Victorian periodicals. I believe every book is a vessel of history, and I'm currently on a quest to complete my collection of first-edition F. Scott Fitzgerald novels. When I'm not browsing the stacks at Papyrus, you can find me at a quiet corner café with a flat white and a well-worn copy of Ulysses."</p>
+                        </div>
+                    </div>
+
+                    <div class="literary-profile">
+                        <h2>Literary Profile</h2>
+                        <div class="literary-grid">
+                            <div class="literary-card">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 19.5C4 18.837 4.26339 18.2011 4.73223 17.7322C5.20107 17.2634 5.83696 17 6.5 17H20"/>
+                                    <path d="M6.5 2H20V22H6.5C5.83696 22 5.20107 21.7366 4.73223 21.2678C4.26339 20.7989 4 20.163 4 19.5V4.5C4 3.83696 4.26339 3.20107 4.73223 2.73223C5.20107 2.26339 5.83696 2 6.5 2Z"/>
+                                </svg>
+                                <label>FAVORITE GENRE</label>
+                                <p>Literary Fiction</p>
+                            </div>
+                            <div class="literary-card">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                    <path d="M2 17l10 5 10-5"/>
+                                    <path d="M2 12l10 5 10-5"/>
+                                </svg>
+                                <label>PRIMARY INTEREST</label>
+                                <p>Rare First Editions</p>
+                            </div>
+                            <div class="literary-card">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                                </svg>
+                                <label>READING GOAL</label>
+                                <p>50 Books / Year</p>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 70 L50 85 Q48 90 45 90 L15 90 Q10 90 10 85 Z" fill="currentColor"/>
+                            <path d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 70 L50 85 Q52 90 55 90 L85 90 Q90 90 90 85 Z" fill="currentColor"/>
+                            <path d="M50 70 L45 50 L50 30 L55 50 Z" fill="currentColor"/>
+                            <circle cx="50" cy="25" r="6" fill="currentColor"/>
+                            <ellipse cx="50" cy="15" rx="4" ry="7" fill="currentColor"/>
+                            <ellipse cx="42" cy="20" rx="4" ry="6" fill="currentColor"/>
+                            <ellipse cx="58" cy="20" rx="4" ry="6" fill="currentColor"/>
+                        </svg>
+                        <span>PAPYRUS</span>
+                    </div>
+                    <p>Preserving literary heritage through sustainable book trading. Every book has a story, and every story deserves to be shared.</p>
+                    <div class="social-links">
+                        <a href="#"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg></a>
+                        <a href="#"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg></a>
+                        <a href="#"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Explore</h4>
+                    <ul>
+                        <li><a href="/browse">Browse Books</a></li>
+                        <li><a href="/rare">Rare Editions</a></li>
+                        <li><a href="/collections">Collections</a></li>
+                        <li><a href="/gifts">Gift Cards</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="/about">About Us</a></li>
+                        <li><a href="/stories">Reader Stories</a></li>
+                        <li><a href="/events">Events</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="/shipping">Shipping Info</a></li>
+                        <li><a href="/guide">Condition Guide</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                        <li><a href="/terms">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 PAPYRUS. PRESERVING STORIES SINCE 1974.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

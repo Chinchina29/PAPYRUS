@@ -1,0 +1,28 @@
+{
+  "name": "papyrus",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chinchina29/PAPYRUS.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Chinchina29/PAPYRUS/issues"
+  },
+  "homepage": "https://github.com/Chinchina29/PAPYRUS#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "passport": "^0.7.0",
+    "passport-facebook": "^3.0.0",
+    "passport-google-oauth20": "^2.0.0"
+  }
+}

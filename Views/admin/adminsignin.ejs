@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Papyrus - Admin Sign In</title>
+    <link rel="stylesheet" href="/css/adminsignin.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Left Section -->
+        <div class="left-section">
+            <div class="content">
+                <p class="welcome-text">WELCOME BACK</p>
+                <h1>Continue Your Administrative Journey</h1>
+                <p class="description">Access your administrative dashboard to manage the vintage collection, oversee curator activity, and ensure the sanctuary of literature remains secure.</p>
+                
+                <div class="library-image">
+                    <img src="https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=600&h=400&fit=crop" alt="Library Interior">
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Section -->
+        <div class="right-section">
+            <div class="signin-card">
+                <div class="logo">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 70 L50 85 Q48 90 45 90 L15 90 Q10 90 10 85 Z" fill="#7A5C3E"/>
+                        <path d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 70 L50 85 Q52 90 55 90 L85 90 Q90 90 90 85 Z" fill="#7A5C3E"/>
+                        <path d="M50 70 L45 50 L50 30 L55 50 Z" fill="#5a4a3a"/>
+                        <circle cx="50" cy="25" r="6" fill="#5a4a3a"/>
+                        <ellipse cx="50" cy="15" rx="4" ry="7" fill="#7A5C3E"/>
+                        <ellipse cx="42" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
+                        <ellipse cx="58" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
+                        <ellipse cx="38" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
+                        <ellipse cx="62" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
+                        <ellipse cx="35" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
+                        <ellipse cx="65" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
+                    </svg>
+                    <span>Papyrus</span>
+                </div>
+
+                <h2>Admin Sign In</h2>
+                <p class="subtitle">Enter your credentials to access the portal</p>
+
+                <form action="/admin/signin" method="POST">
+                    <div class="form-group">
+                        <label for="email">Admin Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="admin@papyrus.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Secure Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="password" name="password" placeholder="••••••••" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword()">
+                                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <a href="/admin/forgot-password" class="forgot-link">Forgot Password?</a>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="staySignedIn">
+                            <span>Stay signed in for 24 hours</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="signin-btn">
+                        Sign In to Dashboard
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                </form>
+
+                <div class="security-notice">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                    <span>Security Verification</span>
+                </div>
+
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Help Center</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+        }
+    </script>
+</body>
+</html>
