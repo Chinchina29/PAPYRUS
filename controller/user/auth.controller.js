@@ -1,18 +1,22 @@
-import * as authService from '../services/auth.service.js';
-import { successResponse,errorResponse,redirectResponse } from '../helper/response.helper.js';
+import * as authService from '../../services/auth.service.js';
+import { successResponse,errorResponse,redirectResponse } from '../../helper/response.helper.js';
 
-export const signup = async (req,res)=>{
-    try{
-        const result = await authService.signupUser(req.body)
-        if(!result.success){
-            return errorResponse(res,result.message)
+export const signup = async (req, res) => {
+    try {
+        console.log('Signup request received:', req.body);
+        const result = await authService.signupUser(req.body);
+        console.log('Signup service result:', result);
+        
+        if (!result.success) {
+            return errorResponse(res, result.message);
         }
+        
         req.session.tempUserId = result.user._id.toString();
         req.session.tempUserEmail = result.user.email;
-        return redirectResponse(res,result.message,'/signup/verify-otp');
-    }catch (error){
-        console.error('Signup error :',error);
-        return errorResponse(res,'Server error',500)
+        return redirectResponse(res, result.message, '/signup/verify-otp');
+    } catch (error) {
+        console.error('Signup error:', error);
+        return errorResponse(res, 'Server error', 500);
     }
 };
 
@@ -29,7 +33,8 @@ export const verifyOTP = async(req,res) =>{
             id : result.user._id,
             firstName : result.user.firstName,
             lastName: result.user.lastName,
-            email :result.user.email
+            email :result.user.email,
+            role: result.user.role
         }
         delete req.session.tempUserId;
         delete req.session.tempUserEmail;
@@ -70,7 +75,8 @@ export const login = async (req,res) =>{
             id: result.user._id,
             firstName: result.user.firstName,
             lastName: result.user.lastName,
-            email: result.user.email
+            email: result.user.email,
+            role: result.user.role
         };
 
         return redirectResponse(res, result.message, '/home');

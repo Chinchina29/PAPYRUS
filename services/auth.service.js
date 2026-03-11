@@ -2,54 +2,86 @@ import * as userService from './user.service.js';
 import * as  otpService from './otp.service.js';
 import * as emailService from './email.service.js';
 
-export const signupUser=async(userData) =>{
-    const existingUser = await userService.findUserByEmail(userData.email);
-    if(existingUser){
-        return { success : false, message :'Email already registered'}
+export const signupUser = async (userData) => {
+    try {
+        console.log('\n🚀 SIGNUP PROCESS STARTED:');
+        console.log('📝 User data received:', { 
+            firstName: userData.firstName, 
+            lastName: userData.lastName, 
+            email: userData.email 
+        });
+        
+        const existingUser = await userService.findUserByEmail(userData.email);
+        if (existingUser) {
+            console.log('❌ Email already exists:', userData.email);
+            return { success: false, message: 'Email already registered' };
+        }
+        
+        console.log('✅ Email available, creating user...');
+        const user = await userService.createUser({
+            ...userData,
+            isVerified: false
+        });
+        
+        console.log('✅ User created successfully');
+        console.log('🔐 Generating OTP...');
+        
+        const otp = otpService.setOTP(user);
+        await user.save();
+        
+        console.log('📧 Attempting to send OTP email...');
+        const emailResult = await emailService.sendOTPEmail(
+            user.email,
+            otp,
+            user.firstName
+        );
+        
+        if (!emailResult.success) {
+            console.log('❌ Email sending failed, cleaning up user...');
+            await userService.deleteUser(user._id);
+            console.error('Email sending failed:', emailResult.error);
+            return { success: false, message: 'Failed to send verification email. Please try again.' };
+        }
+        
+        console.log('✅ SIGNUP PROCESS COMPLETED SUCCESSFULLY\n');
+        return { success: true, user, message: "OTP sent to your email" };
+    } catch (error) {
+        console.error('❌ SIGNUP SERVICE ERROR:', error);
+        return { success: false, message: 'Registration failed. Please try again.' };
     }
-    const user = await userService.createUser({
-        ...userData,
-        isVerified :false
-    });
-    const otp = otpService.setOTP(user);
-    await user.save();
-    const emailResult = await emailService.sendOTPEmail(
-        user.email,
-        otp,
-        user.firstName
-    );
-    if(!emailResult.success){
-        await userService.deleteUser(user._id);
-        return {success:false,message: 'Failed to send verification eamil'}
-    }
-    return {success:true,user,message:" OTP sent to your email"}
-}
+};
  
-export const loginUser = async (email,password)=>{
-    const user =await userService.findUserByEmail(email);
-    if(!user){
-        return{success:false,message:"Invalid e-Mail or password"}
+export const loginUser = async (email, password) => {
+    const user = await userService.findUserByEmail(email);
+    if (!user) {
+        return { success: false, message: "Invalid email or password" };
     }
 
-    if(!user.isVerified){
-        const otp =otpService.setOTP(user);
-        await user.save()
-        await emailService.sendOTPEmail(user.email,otp,user.firstName)
-        return{
+    if (user.isBlocked) {
+        return { success: false, message: "Your account has been blocked. Please contact support." };
+    }
+
+    if (!user.isVerified) {
+        const otp = otpService.setOTP(user);
+        await user.save();
+        await emailService.sendOTPEmail(user.email, otp, user.firstName);
+        return {
             success: false,
-            message: 'Please verify email first . New OTP sent',
+            message: 'Please verify email first. New OTP sent',
             needsVerification: true,
             userId: user._id
-        }
+        };
     }
-    const isMatch = await userService.comparePassword(password,user.password);
-    if(!isMatch){
-        return{success : false,message:'Invalid email or password'}
+    
+    const isMatch = await userService.comparePassword(password, user.password);
+    if (!isMatch) {
+        return { success: false, message: 'Invalid email or password' };
     }
+    
     user.lastLogin = new Date();
     await user.save();
-    return{success: true,user,message:" Login successfull"}
-}
+    return { success: true, user, message: "Login successful" };
+};
 
 export const verifyUserOTP = async (userId,otpCode)=>{
     const user = await userService.findUserById(userId);

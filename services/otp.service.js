@@ -8,7 +8,8 @@ export const setOTP = (user)=>{
         code: otp,
         expiresAt: new Date(Date.now() + 10 * 60 * 1000)
     };
-    return otp
+    console.log(`otp : ${otp}`); 
+    return otp;
 }
 
 export const verifyOTP = (user,enteredOTP)=>{
@@ -22,6 +23,7 @@ export const verifyOTP = (user,enteredOTP)=>{
         return {success:false,message:"Invalid OTP"}
     }
     return { success : true,message:"OTP verified"}
+    
 }
 
 export const clearOTP=(user)=>{

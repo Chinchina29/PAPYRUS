@@ -128,7 +128,7 @@
                     <div class="profile-card">
                         <div class="card-header">
                             <h2>Personal Information</h2>
-                            <a href="/editprofile" class="btn-edit">EDIT PROFILE</a>
+                            <a href="/profile/edit" class="btn-edit">EDIT PROFILE</a>
                         </div>
                         
                         <div class="profile-info">
@@ -140,42 +140,42 @@
                                     </svg>
                                 </div>
                                 <div class="profile-name">
-                                    <h3>Julian Barnes</h3>
-                                    <p>AVID COLLECTOR</p>
+                                    <h3><%= user.firstName %> <%= user.lastName %></h3>
+                                    <p><%= user.role.toUpperCase() %></p>
                                 </div>
                             </div>
 
                             <div class="info-grid">
                                 <div class="info-item">
                                     <label>EMAIL ADDRESS</label>
-                                    <p>j.barnes@bibliophilo.com</p>
+                                    <p><%= user.email %></p>
                                 </div>
                                 <div class="info-item">
                                     <label>PHONE NUMBER</label>
-                                    <p>+1 (555) 234-5678</p>
+                                    <p><%= user.phone || 'Not provided' %></p>
                                 </div>
                                 <div class="info-item">
                                     <label>DATE OF BIRTH</label>
-                                    <p>January 19, 1982</p>
+                                    <p><%= user.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not provided' %></p>
                                 </div>
                                 <div class="info-item">
                                     <label>GENDER</label>
-                                    <p>Male</p>
+                                    <p><%= user.gender || 'Not specified' %></p>
                                 </div>
                                 <div class="info-item">
-                                    <label>LANGUAGE PREFERENCE</label>
-                                    <p>English (UK), French</p>
+                                    <label>VERIFICATION STATUS</label>
+                                    <p><%= user.isVerified ? 'Verified' : 'Not Verified' %></p>
                                 </div>
                                 <div class="info-item">
                                     <label>JOINED DATE</label>
-                                    <p>November 12, 2023</p>
+                                    <p><%= new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
                                 </div>
                             </div>
                         </div>
 
                         <div class="bio-section">
                             <h3>BIO / ABOUT ME</h3>
-                            <p>"A lifelong devotee of the written word, specializing in early 20th-century modernism and forgotten Victorian periodicals. I believe every book is a vessel of history, and I'm currently on a quest to complete my collection of first-edition F. Scott Fitzgerald novels. When I'm not browsing the stacks at Papyrus, you can find me at a quiet corner café with a flat white and a well-worn copy of Ulysses."</p>
+                            <p><%= user.bio || 'No bio provided yet. Click "Edit Profile" to add your story!' %></p>
                         </div>
                     </div>
 
@@ -188,7 +188,7 @@
                                     <path d="M6.5 2H20V22H6.5C5.83696 22 5.20107 21.7366 4.73223 21.2678C4.26339 20.7989 4 20.163 4 19.5V4.5C4 3.83696 4.26339 3.20107 4.73223 2.73223C5.20107 2.26339 5.83696 2 6.5 2Z"/>
                                 </svg>
                                 <label>FAVORITE GENRE</label>
-                                <p>Literary Fiction</p>
+                                <p><%= user.favoriteGenre || 'Not specified' %></p>
                             </div>
                             <div class="literary-card">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -197,7 +197,7 @@
                                     <path d="M2 12l10 5 10-5"/>
                                 </svg>
                                 <label>PRIMARY INTEREST</label>
-                                <p>Rare First Editions</p>
+                                <p><%= user.primaryInterest || 'Not specified' %></p>
                             </div>
                             <div class="literary-card">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -205,7 +205,7 @@
                                     <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
                                 </svg>
                                 <label>READING GOAL</label>
-                                <p>50 Books / Year</p>
+                                <p><%= user.readingGoal ? user.readingGoal + ' Books / Year' : 'Not set' %></p>
                             </div>
                         </div>
                     </div>

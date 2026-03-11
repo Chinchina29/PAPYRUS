@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Error - Papyrus</title>
+    <link rel="stylesheet" href="/css/error.css">
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-content">
+            <div class="logo">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Open Book -->
+                    <path d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 72 L50 85 Q48 88 45 88 L15 88 Q10 88 10 83 Z" fill="#2d5016" stroke="#fff" stroke-width="1.5"/>
+                    <path d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 72 L50 85 Q52 88 55 88 L85 88 Q90 88 90 83 Z" fill="#2d5016" stroke="#fff" stroke-width="1.5"/>
+                    
+                    <!-- Tree trunk/person -->
+                    <path d="M50 72 L45 50 L50 35 L55 50 Z" fill="#2d5016"/>
+                    <circle cx="50" cy="30" r="6" fill="#2d5016"/>
+                    
+                    <!-- Leaves (wilted/broken) -->
+                    <ellipse cx="50" cy="15" rx="4" ry="7" fill="#8B4513" opacity="0.7"/>
+                    <ellipse cx="42" cy="22" rx="4" ry="6" fill="#8B4513" opacity="0.7"/>
+                    <ellipse cx="58" cy="22" rx="4" ry="6" fill="#8B4513" opacity="0.7"/>
+                    <ellipse cx="35" cy="28" rx="5" ry="7" fill="#8B4513" opacity="0.7"/>
+                    <ellipse cx="65" cy="28" rx="5" ry="7" fill="#8B4513" opacity="0.7"/>
+                </svg>
+                <h2>Papyrus</h2>
+            </div>
+
+            <div class="error-illustration">
+                <div class="error-number server-error">500</div>
+                <div class="error-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                </div>
+            </div>
+
+            <h1 class="error-title">Internal Server Error</h1>
+            <p class="error-message">
+                Something went wrong on our end. Our team has been notified and is working to fix the issue. 
+                Please try again in a few moments.
+            </p>
+
+            <div class="error-actions">
+                <button onclick="location.reload()" class="btn btn-primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"/>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                    Try Again
+                </button>
+                <a href="/" class="btn btn-secondary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9,22 9,12 15,12 15,22"/>
+                    </svg>
+                    Go Home
+                </button>
+            </div>
+
+            <div class="error-details">
+                <details>
+                    <summary>Technical Details</summary>
+                    <div class="tech-info">
+                        <p><strong>Error Code:</strong> 500</p>
+                        <p><strong>Time:</strong> <%= new Date().toLocaleString() %></p>
+                        <% if (typeof error !== 'undefined' && process.env.NODE_ENV === 'development') { %>
+                            <p><strong>Error:</strong> <%= error.message %></p>
+                        <% } %>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

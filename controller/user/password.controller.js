@@ -1,7 +1,7 @@
-import * as userService from '../services/user.service.js';
-import * as otpService from '../services/otp.service.js';
-import * as emailService from '../services/email.service.js';
-import { successResponse, errorResponse, redirectResponse } from '../helper/response.helper.js';
+import * as userService from '../../services/user.service.js';
+import * as otpService from '../../services/otp.service.js';
+import * as emailService from '../../services/email.service.js';
+import { successResponse, errorResponse, redirectResponse } from '../../helper/response.helper.js';
 
 export const forgotPassword = async (req, res) => {
     try {
@@ -63,7 +63,7 @@ export const verifyResetOTP = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
     try {
-        const { password } = req.body;
+        const { newPassword } = req.body;
         
         const email = req.session.resetEmail;
         const verified = req.session.resetVerified;
@@ -77,7 +77,7 @@ export const resetPassword = async (req, res) => {
             return errorResponse(res, 'User not found', 404);
         }
 
-        user.password = password;
+        user.password = newPassword;
         otpService.clearOTP(user);
         await user.save();
 
@@ -119,6 +119,34 @@ export const resendResetOTP = async (req, res) => {
         return successResponse(res, 'New OTP sent to your email', { expiresIn: 600 });
     } catch (error) {
         console.error('Resend reset OTP error:', error);
+        return errorResponse(res, 'Server error', 500);
+    }
+};
+export const changePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.session.userId;
+
+        if (!userId) {
+            return errorResponse(res, 'Please login first', 401);
+        }
+
+        const user = await userService.findUserById(userId);
+        if (!user) {
+            return errorResponse(res, 'User not found', 404);
+        }
+
+        const isCurrentPasswordValid = await userService.comparePassword(currentPassword, user.password);
+        if (!isCurrentPasswordValid) {
+            return errorResponse(res, 'Current password is incorrect');
+        }
+
+        user.password = newPassword;
+        await user.save();
+
+        return successResponse(res, 'Password changed successfully');
+    } catch (error) {
+        console.error('Change password error:', error);
         return errorResponse(res, 'Server error', 500);
     }
 };

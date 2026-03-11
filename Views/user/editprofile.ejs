@@ -162,32 +162,35 @@
                                     <div class="form-grid">
                                         <div class="form-group">
                                             <label for="firstName">First Name *</label>
-                                            <input type="text" id="firstName" name="firstName" value="Julian" required>
+                                            <input type="text" id="firstName" name="firstName" value="<%= user.firstName %>" required>
                                         </div>
                                         <div class="form-group">
                                             <label for="lastName">Last Name *</label>
-                                            <input type="text" id="lastName" name="lastName" value="Barnes" required>
+                                            <input type="text" id="lastName" name="lastName" value="<%= user.lastName %>" required>
                                         </div>
                                         <div class="form-group">
                                             <label for="email">Email Address *</label>
-                                            <input type="email" id="email" name="email" value="j.barnes@bibliophilo.com" required>
+                                            <div class="email-field-wrapper">
+                                                <input type="email" id="email" name="email" value="<%= user.email %>" readonly>
+                                                <button type="button" id="changeEmailBtn" class="change-email-btn">Change Email</button>
+                                            </div>
                                         </div>
                                         <div class="form-group">
                                             <label for="phone">Phone Number</label>
-                                            <input type="tel" id="phone" name="phone" value="+1 (555) 234-5678">
+                                            <input type="tel" id="phone" name="phone" value="<%= user.phone || '' %>">
                                         </div>
                                         <div class="form-group">
                                             <label for="dob">Date of Birth</label>
-                                            <input type="date" id="dob" name="dob" value="1982-01-19">
+                                            <input type="date" id="dob" name="dateOfBirth" value="<%= user.dateOfBirth ? user.dateOfBirth.toISOString().split('T')[0] : '' %>">
                                         </div>
                                         <div class="form-group">
                                             <label for="gender">Gender</label>
                                             <select id="gender" name="gender">
                                                 <option value="">Select Gender</option>
-                                                <option value="male" selected>Male</option>
-                                                <option value="female">Female</option>
-                                                <option value="other">Other</option>
-                                                <option value="prefer-not">Prefer not to say</option>
+                                                <option value="male" <%= user.gender === 'male' ? 'selected' : '' %>>Male</option>
+                                                <option value="female" <%= user.gender === 'female' ? 'selected' : '' %>>Female</option>
+                                                <option value="other" <%= user.gender === 'other' ? 'selected' : '' %>>Other</option>
+                                                <option value="prefer-not" <%= user.gender === 'prefer-not' ? 'selected' : '' %>>Prefer not to say</option>
                                             </select>
                                         </div>
                                     </div>
@@ -210,7 +213,7 @@
                                 <div class="form-section">
                                     <h3>Bio / About Me</h3>
                                     <div class="form-group full-width">
-                                        <textarea id="bio" name="bio" rows="6" placeholder="Tell us about yourself and your love for books...">"A lifelong devotee of the written word, specializing in early 20th-century modernism and forgotten Victorian periodicals. I believe every book is a vessel of history, and I'm currently on a quest to complete my collection of first-edition F. Scott Fitzgerald novels. When I'm not browsing the stacks at Papyrus, you can find me at a quiet corner café with a flat white and a well-worn copy of Ulysses."</textarea>
+                                        <textarea id="bio" name="bio" rows="6" placeholder="Tell us about yourself and your love for books..."><%= user.bio || '' %></textarea>
                                         <span class="char-count">0 / 500 characters</span>
                                     </div>
                                 </div>
@@ -224,30 +227,30 @@
                                     <label for="favoriteGenre">Favorite Genre</label>
                                     <select id="favoriteGenre" name="favoriteGenre">
                                         <option value="">Select Genre</option>
-                                        <option value="literary-fiction" selected>Literary Fiction</option>
-                                        <option value="mystery">Mystery</option>
-                                        <option value="sci-fi">Science Fiction</option>
-                                        <option value="fantasy">Fantasy</option>
-                                        <option value="biography">Biography</option>
-                                        <option value="history">History</option>
-                                        <option value="poetry">Poetry</option>
-                                        <option value="classics">Classics</option>
+                                        <option value="literary-fiction" <%= user.favoriteGenre === 'literary-fiction' ? 'selected' : '' %>>Literary Fiction</option>
+                                        <option value="mystery" <%= user.favoriteGenre === 'mystery' ? 'selected' : '' %>>Mystery</option>
+                                        <option value="sci-fi" <%= user.favoriteGenre === 'sci-fi' ? 'selected' : '' %>>Science Fiction</option>
+                                        <option value="fantasy" <%= user.favoriteGenre === 'fantasy' ? 'selected' : '' %>>Fantasy</option>
+                                        <option value="biography" <%= user.favoriteGenre === 'biography' ? 'selected' : '' %>>Biography</option>
+                                        <option value="history" <%= user.favoriteGenre === 'history' ? 'selected' : '' %>>History</option>
+                                        <option value="poetry" <%= user.favoriteGenre === 'poetry' ? 'selected' : '' %>>Poetry</option>
+                                        <option value="classics" <%= user.favoriteGenre === 'classics' ? 'selected' : '' %>>Classics</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="primaryInterest">Primary Interest</label>
                                     <select id="primaryInterest" name="primaryInterest">
                                         <option value="">Select Interest</option>
-                                        <option value="rare-editions" selected>Rare First Editions</option>
-                                        <option value="signed-copies">Signed Copies</option>
-                                        <option value="vintage-books">Vintage Books</option>
-                                        <option value="modern-classics">Modern Classics</option>
-                                        <option value="collectibles">Collectibles</option>
+                                        <option value="rare-editions" <%= user.primaryInterest === 'rare-editions' ? 'selected' : '' %>>Rare First Editions</option>
+                                        <option value="signed-copies" <%= user.primaryInterest === 'signed-copies' ? 'selected' : '' %>>Signed Copies</option>
+                                        <option value="vintage-books" <%= user.primaryInterest === 'vintage-books' ? 'selected' : '' %>>Vintage Books</option>
+                                        <option value="modern-classics" <%= user.primaryInterest === 'modern-classics' ? 'selected' : '' %>>Modern Classics</option>
+                                        <option value="collectibles" <%= user.primaryInterest === 'collectibles' ? 'selected' : '' %>>Collectibles</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="readingGoal">Reading Goal (Books/Year)</label>
-                                    <input type="number" id="readingGoal" name="readingGoal" value="50" min="1" max="365">
+                                    <input type="number" id="readingGoal" name="readingGoal" value="<%= user.readingGoal || '' %>" min="1" max="365">
                                 </div>
                             </div>
                         </div>
@@ -256,6 +259,41 @@
             </div>
         </div>
     </section>
+
+    <!-- Email Change Modal -->
+    <div id="emailChangeModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Change Email Address</h3>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="emailChangeStep1" class="email-step">
+                    <p>Enter your new email address. We'll send a verification code to confirm the change.</p>
+                    <div class="form-group">
+                        <label for="newEmail">New Email Address</label>
+                        <input type="email" id="newEmail" placeholder="Enter new email address" required>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" id="cancelEmailChange" class="btn-cancel">Cancel</button>
+                        <button type="button" id="sendEmailOTP" class="btn-primary">Send Verification Code</button>
+                    </div>
+                </div>
+                
+                <div id="emailChangeStep2" class="email-step" style="display: none;">
+                    <p>We've sent a verification code to your new email address. Please enter it below:</p>
+                    <div class="form-group">
+                        <label for="emailOTP">Verification Code</label>
+                        <input type="text" id="emailOTP" placeholder="Enter 6-digit code" maxlength="6" required>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" id="cancelEmailVerification" class="btn-cancel">Cancel</button>
+                        <button type="button" id="verifyEmailOTP" class="btn-primary">Verify & Change Email</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -324,6 +362,257 @@
         
         // Trigger initial count
         bioTextarea.dispatchEvent(new Event('input'));
+
+        // Email change functionality
+        const emailChangeModal = document.getElementById('emailChangeModal');
+        const changeEmailBtn = document.getElementById('changeEmailBtn');
+        const closeModal = document.getElementById('closeModal');
+        const cancelEmailChange = document.getElementById('cancelEmailChange');
+        const cancelEmailVerification = document.getElementById('cancelEmailVerification');
+        const sendEmailOTP = document.getElementById('sendEmailOTP');
+        const verifyEmailOTP = document.getElementById('verifyEmailOTP');
+        const emailStep1 = document.getElementById('emailChangeStep1');
+        const emailStep2 = document.getElementById('emailChangeStep2');
+
+        // Open email change modal
+        changeEmailBtn.addEventListener('click', () => {
+            emailChangeModal.style.display = 'block';
+            emailStep1.style.display = 'block';
+            emailStep2.style.display = 'none';
+        });
+
+        // Close modal
+        const closeEmailModal = () => {
+            emailChangeModal.style.display = 'none';
+            emailStep1.style.display = 'block';
+            emailStep2.style.display = 'none';
+            document.getElementById('newEmail').value = '';
+            document.getElementById('emailOTP').value = '';
+        };
+
+        closeModal.addEventListener('click', closeEmailModal);
+        cancelEmailChange.addEventListener('click', closeEmailModal);
+        cancelEmailVerification.addEventListener('click', closeEmailModal);
+
+        // Send email OTP
+        sendEmailOTP.addEventListener('click', async () => {
+            const newEmail = document.getElementById('newEmail').value;
+            
+            if (!newEmail) {
+                alert('Please enter a new email address');
+                return;
+            }
+
+            sendEmailOTP.disabled = true;
+            sendEmailOTP.textContent = 'Sending...';
+
+            try {
+                const response = await fetch('/profile/request-email-change', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ newEmail })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    emailStep1.style.display = 'none';
+                    emailStep2.style.display = 'block';
+                } else {
+                    alert(result.message || 'Failed to send verification code');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            } finally {
+                sendEmailOTP.disabled = false;
+                sendEmailOTP.textContent = 'Send Verification Code';
+            }
+        });
+
+        // Verify email OTP
+        verifyEmailOTP.addEventListener('click', async () => {
+            const otp = document.getElementById('emailOTP').value;
+            
+            if (!otp) {
+                alert('Please enter the verification code');
+                return;
+            }
+
+            verifyEmailOTP.disabled = true;
+            verifyEmailOTP.textContent = 'Verifying...';
+
+            try {
+                const response = await fetch('/profile/verify-email-change', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ otp })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Email changed successfully!');
+                    document.getElementById('email').value = result.data.newEmail;
+                    closeEmailModal();
+                    location.reload();
+                } else {
+                    alert(result.message || 'Failed to verify code');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            } finally {
+                verifyEmailOTP.disabled = false;
+                verifyEmailOTP.textContent = 'Verify & Change Email';
+            }
+        });
+
+        // Profile update form
+        document.querySelector('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/profile/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Profile updated successfully!');
+                } else {
+                    alert(result.message || 'Failed to update profile');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
     </script>
+
+    <style>
+        .email-field-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .email-field-wrapper input {
+            flex: 1;
+        }
+
+        .change-email-btn {
+            background: #7A5C3E;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .change-email-btn:hover {
+            background: #5a4a3a;
+        }
+
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 0;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            background: #7A5C3E;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background: #5a4a3a;
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-cancel {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-cancel:hover {
+            background: #e9ecef;
+        }
+    </style>
 </body>
 </html>

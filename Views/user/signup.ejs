@@ -80,11 +80,6 @@
                     <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter your password" required>
                 </div>
 
-                <div class="checkbox-group">
-                    <input type="checkbox" id="terms" name="terms" required>
-                    <label for="terms">I agree to the <a href="/terms">Terms & Conditions</a></label>
-                </div>
-
                 <button type="submit" class="submit-btn">Create Account</button>
                 <p id="errorMessage" style="color: red; text-align: center; margin-top: 10px; display: none;"></p>
 
@@ -128,7 +123,8 @@
                 firstName: document.getElementById('firstName').value,
                 lastName: document.getElementById('lastName').value,
                 email: document.getElementById('email').value,
-                password: password
+                password: password,
+                confirmPassword: confirmPassword
             };
             
             submitBtn.disabled = true;

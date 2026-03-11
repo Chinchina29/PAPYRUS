@@ -1,195 +1,174 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="light" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Papyrus - Add New Address</title>
-    <link rel="stylesheet" href="/css/addaddress.css">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Pappyrus - Address Management</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2D3B2D",
+                        "secondary": "#5C4B3F",
+                        "background-light": "#F5F3ED",
+                        "background-dark": "#1A1D1A",
+                        "accent": "#C2D2BD",
+                        "sage-light": "#E9EBE4",
+                    },
+                    fontFamily: {
+                        "display": ["Playfair Display", "serif"],
+                        "sans": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "4px",
+                        "lg": "4px",
+                        "xl": "4px",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
 </head>
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="logo">
-                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 70 L50 85 Q48 90 45 90 L15 90 Q10 90 10 85 Z" fill="#7A5C3E"/>
-                    <path d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 70 L50 85 Q52 90 55 90 L85 90 Q90 90 90 85 Z" fill="#7A5C3E"/>
-                    <path d="M50 70 L45 50 L50 30 L55 50 Z" fill="#5a4a3a"/>
-                    <circle cx="50" cy="25" r="6" fill="#5a4a3a"/>
-                    <ellipse cx="50" cy="15" rx="4" ry="7" fill="#7A5C3E"/>
-                    <ellipse cx="42" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
-                    <ellipse cx="58" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
-                    <ellipse cx="38" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
-                    <ellipse cx="62" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
-                    <ellipse cx="35" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
-                    <ellipse cx="65" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
-                </svg>
-                <span>Papyrus</span>
+<body class="dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen bg-[#F5F3ED]">
+<div class="flex h-screen overflow-hidden">
+    <aside class="w-64 dark:bg-black flex-shrink-0 flex flex-col border-r bg-[#2D3B2D] border-white/10">
+        <div class="p-6 flex items-center gap-3">
+            <div class="size-8 bg-primary rounded flex items-center justify-center text-white">
+                <span class="material-symbols-outlined">auto_stories</span>
             </div>
-            <nav class="nav">
-                <a href="/home">BROWSE</a>
-                <a href="#about">ABOUT</a>
-                <a href="#stories">STORIES</a>
-            </nav>
-            <div class="header-icons">
-                <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></button>
-                <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
-                <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></button>
+            <div class="flex flex-col">
+                <h1 class="text-white text-lg font-bold leading-tight">Pappyrus</h1>
+                <p class="text-white/60 text-xs font-medium uppercase tracking-wider">User Portal</p>
             </div>
         </div>
-    </header>
-
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-        <div class="container">
-            <a href="/home">SHOP</a>
-            <span>/</span>
-            <a href="/profile">PROFILE</a>
-            <span>/</span>
-            <span>ADDRESS BOOK</span>
+        <nav class="flex-1 px-4 py-4 space-y-1">
+            <a class="flex items-center gap-3 px-3 py-2 text-white/70 hover:bg-white/10 rounded-lg transition-colors" href="/home">
+                <span class="material-symbols-outlined">home</span>
+                <span class="text-sm font-medium">Home</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 text-white/70 hover:bg-white/10 rounded-lg transition-colors" href="/profile">
+                <span class="material-symbols-outlined">person</span>
+                <span class="text-sm font-medium">Profile</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 bg-primary text-white rounded-lg transition-colors shadow-lg shadow-primary/20" href="/profile/address">
+                <span class="material-symbols-outlined">location_on</span>
+                <span class="text-sm font-medium">Address Management</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-white/10">
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer">
+                <div class="size-10 rounded-full bg-primary/20 flex items-center justify-center text-white font-bold">
+                    <%= user.firstName.charAt(0) %><%= user.lastName.charAt(0) %>
+                </div>
+                <div class="flex-1 overflow-hidden">
+                    <p class="text-white text-sm font-semibold truncate"><%= user.firstName %> <%= user.lastName %></p>
+                    <p class="text-white/50 text-xs truncate"><%= user.email %></p>
+                </div>
+            </div>
         </div>
-    </div>
+    </aside>
 
-    <!-- Main Content -->
-    <div class="main-wrapper">
-        <div class="container">
-            <aside class="sidebar">
-                <h2>My Account</h2>
-                <nav class="sidebar-nav">
-                    <a href="/profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> OVERVIEW</a>
-                    <a href="/profile/orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> ORDERS</a>
-                    <a href="/profile/wishlist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> WISHLIST</a>
-                    <a href="/profile/address" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ADDRESS BOOK</a>
-                    <a href="/profile/wallet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> WALLET</a>
-                    <a href="/profile/security"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> SECURITY</a>
-                    <a href="/logout" class="sign-out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> SIGN OUT</a>
-                </nav>
-            </aside>
+    <main class="flex-1 flex flex-col overflow-y-auto">
+        <header class="h-16 flex items-center justify-between px-8 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-background-dark/50 backdrop-blur-md sticky top-0 z-10 bg-[#F5F3ED]/80">
+            <div class="flex-1 max-w-xl">
+                <h2 class="text-lg font-bold">Address Management</h2>
+            </div>
+            <div class="flex items-center gap-4 ml-8">
+                <a href="/logout" class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full">
+                    <span class="material-symbols-outlined">logout</span>
+                </a>
+            </div>
+        </header>
 
-            <main class="main-content">
-                <h1 class="page-title">Add New Address</h1>
+        <div class="p-8 max-w-7xl mx-auto w-full">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div>
+                    <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">My Addresses</h2>
+                    <p class="text-slate-500 dark:text-slate-400 mt-1">Manage your delivery and billing addresses.</p>
+                </div>
+                <button onclick="showAddForm()" class="flex items-center gap-2 bg-[#2D3B2D] hover:bg-[#1e291e] text-white px-5 py-2.5 rounded font-bold transition-all shadow-md active:scale-95">
+                    <span class="material-symbols-outlined">add</span>Add New Address
+                </button>
+            </div>
 
-                <form action="/profile/address/add" method="POST" class="address-form">
-                    <div class="form-group full-width">
-                        <label for="fullName">FULL NAME</label>
-                        <input type="text" id="fullName" name="fullName" placeholder="Julian Barnes" required>
-                    </div>
+            <div id="addressGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                <!-- Addresses will be loaded here -->
+            </div>
 
-                    <div class="form-group full-width">
-                        <label for="streetAddress">STREET ADDRESS</label>
-                        <input type="text" id="streetAddress" name="streetAddress" placeholder="124 Bloomsbury Street" required>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="apartment">APARTMENT / SUITE (OPTIONAL)</label>
-                            <input type="text" id="apartment" name="apartment" placeholder="Apartment 4B">
+            <div id="addForm" class="hidden bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden p-8">
+                <h3 class="text-xl font-bold mb-6">Add New Address</h3>
+                <form id="addressForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Street Address</label>
+                            <input name="street" required class="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none rounded-sm text-sm" type="text"/>
                         </div>
-                        <div class="form-group">
-                            <label for="city">CITY</label>
-                            <input type="text" id="city" name="city" placeholder="London" required>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">City</label>
+                            <input name="city" required class="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none rounded-sm text-sm" type="text"/>
                         </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="state">STATE / PROVINCE</label>
-                            <select id="state" name="state" required>
-                                <option value="">Select State/Province</option>
-                                <option value="Greater London">Greater London</option>
-                                <option value="Manchester">Manchester</option>
-                                <option value="Birmingham">Birmingham</option>
-                                <option value="Edinburgh">Edinburgh</option>
-                                <option value="Cardiff">Cardiff</option>
-                            </select>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">State</label>
+                            <input name="state" required class="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none rounded-sm text-sm" type="text"/>
                         </div>
-                        <div class="form-group">
-                            <label for="zipCode">ZIP / POSTAL CODE</label>
-                            <input type="text" id="zipCode" name="zipCode" placeholder="WC1B 3DH" required>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Zip Code</label>
+                            <input name="zipCode" required class="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none rounded-sm text-sm" type="text"/>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Country</label>
+                            <input name="country" required class="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none rounded-sm text-sm" type="text"/>
                         </div>
                     </div>
-
-                    <div class="form-group full-width">
-                        <label for="phoneNumber">PHONE NUMBER</label>
-                        <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="+44 20 1234 5678" required>
-                    </div>
-
-                    <div class="form-group full-width checkbox-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="setDefault" id="setDefault">
-                            <span>Set as Default Address</span>
-                        </label>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn-save">SAVE ADDRESS</button>
-                        <a href="/profile/address" class="btn-cancel">CANCEL</a>
+                    <div class="flex gap-3 pt-4">
+                        <button type="submit" class="flex-1 py-3 bg-primary text-white text-xs font-bold uppercase tracking-widest rounded hover:bg-slate-800 transition-all">Save Address</button>
+                        <button type="button" onclick="hideAddForm()" class="px-6 py-3 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-primary transition-colors">Cancel</button>
                     </div>
                 </form>
-            </main>
+            </div>
         </div>
-    </div>
+    </main>
+</div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="footer-logo">
-                        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 70 L50 85 Q48 90 45 90 L15 90 Q10 90 10 85 Z" fill="#7A5C3E"/>
-                            <path d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 70 L50 85 Q52 90 55 90 L85 90 Q90 90 90 85 Z" fill="#7A5C3E"/>
-                            <path d="M50 70 L45 50 L50 30 L55 50 Z" fill="#5a4a3a"/>
-                            <circle cx="50" cy="25" r="6" fill="#5a4a3a"/>
-                            <ellipse cx="50" cy="15" rx="4" ry="7" fill="#7A5C3E"/>
-                            <ellipse cx="42" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
-                            <ellipse cx="58" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
-                            <ellipse cx="38" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
-                            <ellipse cx="62" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
-                            <ellipse cx="35" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
-                            <ellipse cx="65" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
-                        </svg>
-                        <span>Papyrus</span>
-                    </div>
-                    <p>Preserving literary heritage through sustainable book trading. Every book has a story, and every story deserves to continue.</p>
-                    <div class="social-icons">
-                        <a href="#"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/></svg></a>
-                        <a href="#"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/></svg></a>
-                        <a href="#"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.237 2.636 7.855 6.356 9.312-.088-.791-.167-2.005.035-2.868.182-.78 1.172-4.97 1.172-4.97s-.299-.6-.299-1.486c0-1.39.806-2.428 1.81-2.428.852 0 1.264.64 1.264 1.408 0 .858-.545 2.14-.828 3.33-.236.995.5 1.807 1.48 1.807 1.778 0 3.144-1.874 3.144-4.58 0-2.393-1.72-4.068-4.177-4.068-2.845 0-4.515 2.135-4.515 4.34 0 .859.331 1.781.745 2.281a.3.3 0 01.069.288l-.278 1.133c-.044.183-.145.223-.335.134-1.249-.581-2.03-2.407-2.03-3.874 0-3.154 2.292-6.052 6.608-6.052 3.469 0 6.165 2.473 6.165 5.776 0 3.447-2.173 6.22-5.19 6.22-1.013 0-1.965-.525-2.291-1.148l-.623 2.378c-.226.869-.835 1.958-1.244 2.621.937.29 1.931.446 2.962.446 5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg></a>
-                    </div>
-                </div>
-                <div class="footer-section">
-                    <h3>EXPLORE</h3>
-                    <ul>
-                        <li><a href="#">Browse Books</a></li>
-                        <li><a href="#">Rare Editions</a></li>
-                        <li><a href="#">Collections</a></li>
-                        <li><a href="#">Gift Cards</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>COMMUNITY</h3>
-                    <ul>
-                        <li><a href="#">About Us</a></li>
-                        <li><a href="#">Reader Stories</a></li>
-                        <li><a href="#">Events</a></li>
-                        <li><a href="#">Contact</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>SUPPORT</h3>
-                    <ul>
-                        <li><a href="#">Shipping Info</a></li>
-                        <li><a href="#">Condition Guide</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Terms of Service</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 PAPYRUS - PRESERVING STORIES SINCE 2024.</p>
-            </div>
-        </div>
-    </footer>
+<script>
+    function showAddForm() {
+        document.getElementById('addForm').classList.remove('hidden');
+    }
+
+    function hideAddForm() {
+        document.getElementById('addForm').classList.add('hidden');
+        document.getElementById('addressForm').reset();
+    }
+
+    document.getElementById('addressForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
+
+        try {
+            const response = await fetch('/profile/address/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                location.reload();
+            } else {
+                alert(result.message || 'Failed to add address');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred');
+        }
+    });
+</script>
 </body>
 </html>
