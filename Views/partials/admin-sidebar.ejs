@@ -1,0 +1,108 @@
+<!-- Sidebar -->
+<aside class="w-64 text-white shadow-lg" style="background-color: #8B4513;">
+    <div class="p-6">
+        <div class="flex items-center gap-3 mb-8">
+            <i class="fas fa-book text-2xl" style="color: #FF8C00;"></i>
+            <div>
+                <h1 class="text-xl font-bold">Papyrus</h1>
+                <p class="text-xs" style="color: #FF8C00;">Admin Panel</p>
+            </div>
+        </div>
+        
+        <nav class="space-y-2">
+            <a href="/admin/dashboard" class="flex items-center gap-3 px-4 py-3 <%= currentPage === 'dashboard' ? 'text-white font-medium' : '' %> rounded-lg transition-colors" 
+               style="<%= currentPage === 'dashboard' ? 'background-color: #FF8C00;' : '' %>"
+               onmouseover="<%= currentPage !== 'dashboard' ? 'this.style.backgroundColor=\'#654321\'' : '' %>"
+               onmouseout="<%= currentPage !== 'dashboard' ? 'this.style.backgroundColor=\'transparent\'' : '' %>">
+                <i class="fas fa-chart-line"></i>
+                <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors hover:bg-opacity-80"
+               onmouseover="this.style.backgroundColor='#654321'"
+               onmouseout="this.style.backgroundColor='transparent'">
+                <i class="fas fa-box"></i>
+                <span>Inventory Management</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+               onmouseover="this.style.backgroundColor='#654321'"
+               onmouseout="this.style.backgroundColor='transparent'">
+                <i class="fas fa-list"></i>
+                <span>Book Listings</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+               onmouseover="this.style.backgroundColor='#654321'"
+               onmouseout="this.style.backgroundColor='transparent'">
+                <i class="fas fa-tags"></i>
+                <span>Category Management</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+               onmouseover="this.style.backgroundColor='#654321'"
+               onmouseout="this.style.backgroundColor='transparent'">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Order Management</span>
+            </a>
+            <a href="/admin/users" class="flex items-center gap-3 px-4 py-3 <%= currentPage === 'users' ? 'text-white font-medium' : '' %> rounded-lg transition-colors"
+               style="<%= currentPage === 'users' ? 'background-color: #FF8C00;' : '' %>"
+               onmouseover="<%= currentPage !== 'users' ? 'this.style.backgroundColor=\'#654321\'' : '' %>"
+               onmouseout="<%= currentPage !== 'users' ? 'this.style.backgroundColor=\'transparent\'' : '' %>">
+                <i class="fas fa-users"></i>
+                <span>User Management</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+               onmouseover="this.style.backgroundColor='#654321'"
+               onmouseout="this.style.backgroundColor='transparent'">
+                <i class="fas fa-wallet"></i>
+                <span>Wallet</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+               onmouseover="this.style.backgroundColor='#654321'"
+               onmouseout="this.style.backgroundColor='transparent'">
+                <i class="fas fa-chart-bar"></i>
+                <span>Sales Reports</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+               onmouseover="this.style.backgroundColor='#654321'"
+               onmouseout="this.style.backgroundColor='transparent'">
+                <i class="fas fa-gift"></i>
+                <span>Coupons</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+               onmouseover="this.style.backgroundColor='#654321'"
+               onmouseout="this.style.backgroundColor='transparent'">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+               onmouseover="this.style.backgroundColor='#654321'"
+               onmouseout="this.style.backgroundColor='transparent'">
+                <i class="fas fa-question-circle"></i>
+                <span>Support</span>
+            </a>
+        </nav>
+    </div>
+    
+    <div class="absolute bottom-0 w-64 p-6 border-t" style="border-color: #654321;">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style="background-color: #FF8C00;">
+                <% if (user && user.firstName && user.lastName) { %>
+                    <%= user.firstName.charAt(0) %><%= user.lastName.charAt(0) %>
+                <% } else { %>
+                    A
+                <% } %>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm font-medium">
+                    <% if (user && user.firstName && user.lastName) { %>
+                        <%= user.firstName %> <%= user.lastName %>
+                    <% } else { %>
+                        Admin User
+                    <% } %>
+                </p>
+                <p class="text-xs" style="color: #FF8C00;">Administrator</p>
+            </div>
+            <a href="/admin/logout" class="hover:text-white" style="color: #FF8C00;">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+    </div>
+</aside>

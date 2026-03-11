@@ -13,7 +13,7 @@ router.get('/', (req, res) => res.render('user/home'));
 router.get('/home', (req, res) => res.render('user/home'));
 
 router.get('/signup', isNotAuthenticated, (req, res) => res.render('user/signup'));
-router.post('/signup', signupValidation, validate, authController.signup);
+router.post('/signup', authController.signup);
 
 router.get('/signup/verify-otp', (req, res) => {
     if (!req.session.tempUserId) {
@@ -29,7 +29,7 @@ router.post('/signup/resend-otp', authController.resendOTP);
 
 router.get('/login', isNotAuthenticated, (req, res) => res.render('user/login'));
 router.get('/signin', isNotAuthenticated, (req, res) => res.render('user/login'));
-router.post('/login', loginValidation, validate, authController.login);
+router.post('/login', authController.login);
 
 router.get('/forgot-password', isNotAuthenticated, (req, res) => res.render('user/forgotpassword'));
 router.post('/forgot-password/send', passwordController.forgotPassword);

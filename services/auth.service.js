@@ -4,12 +4,7 @@ import * as emailService from './email.service.js';
 
 export const signupUser = async (userData) => {
     try {
-        console.log('\n🚀 SIGNUP PROCESS STARTED:');
-        console.log('📝 User data received:', { 
-            firstName: userData.firstName, 
-            lastName: userData.lastName, 
-            email: userData.email 
-        });
+        console.log('🚀 SIGNUP PROCESS STARTED for:', userData.email);
         
         const existingUser = await userService.findUserByEmail(userData.email);
         if (existingUser) {
@@ -17,19 +12,20 @@ export const signupUser = async (userData) => {
             return { success: false, message: 'Email already registered' };
         }
         
-        console.log('✅ Email available, creating user...');
+        console.log('✅ Creating new user...');
         const user = await userService.createUser({
-            ...userData,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            email: userData.email,
+            password: userData.password,
             isVerified: false
         });
         
-        console.log('✅ User created successfully');
-        console.log('🔐 Generating OTP...');
-        
+        console.log('✅ User created, generating OTP...');
         const otp = otpService.setOTP(user);
         await user.save();
         
-        console.log('📧 Attempting to send OTP email...');
+        console.log('📧 Sending OTP email...');
         const emailResult = await emailService.sendOTPEmail(
             user.email,
             otp,
@@ -37,31 +33,43 @@ export const signupUser = async (userData) => {
         );
         
         if (!emailResult.success) {
-            console.log('❌ Email sending failed, cleaning up user...');
+            console.log('❌ Email failed, cleaning up...');
             await userService.deleteUser(user._id);
-            console.error('Email sending failed:', emailResult.error);
             return { success: false, message: 'Failed to send verification email. Please try again.' };
         }
         
-        console.log('✅ SIGNUP PROCESS COMPLETED SUCCESSFULLY\n');
-        return { success: true, user, message: "OTP sent to your email" };
+        console.log('✅ SIGNUP COMPLETED SUCCESSFULLY');
+        return { success: true, user, message: "Account created! Please check your email for verification code." };
     } catch (error) {
-        console.error('❌ SIGNUP SERVICE ERROR:', error);
-        return { success: false, message: 'Registration failed. Please try again.' };
+        console.error('❌ SIGNUP ERROR:', error);
+        return { success: false, message: 'Registration failed: ' + error.message };
     }
 };
  
 export const loginUser = async (email, password) => {
+    console.log('🔐 LOGIN ATTEMPT:', { email, passwordLength: password?.length });
+    
     const user = await userService.findUserByEmail(email);
     if (!user) {
+        console.log('❌ User not found for email:', email);
         return { success: false, message: "Invalid email or password" };
     }
 
+    console.log('👤 User found:', { 
+        email: user.email, 
+        isVerified: user.isVerified, 
+        isBlocked: user.isBlocked,
+        hasPassword: !!user.password,
+        passwordLength: user.password?.length 
+    });
+
     if (user.isBlocked) {
+        console.log('🚫 User is blocked:', email);
         return { success: false, message: "Your account has been blocked. Please contact support." };
     }
 
     if (!user.isVerified) {
+        console.log('📧 User not verified, sending OTP:', email);
         const otp = otpService.setOTP(user);
         await user.save();
         await emailService.sendOTPEmail(user.email, otp, user.firstName);
@@ -73,11 +81,16 @@ export const loginUser = async (email, password) => {
         };
     }
     
+    console.log('🔑 Comparing passwords...');
     const isMatch = await userService.comparePassword(password, user.password);
+    console.log('🔑 Password match result:', isMatch);
+    
     if (!isMatch) {
+        console.log('❌ Password mismatch for user:', email);
         return { success: false, message: 'Invalid email or password' };
     }
     
+    console.log('✅ Login successful for user:', email);
     user.lastLogin = new Date();
     await user.save();
     return { success: true, user, message: "Login successful" };

@@ -19,25 +19,44 @@ export const deleteUser = async(userId)=>{
 }
 
 export const comparePassword = async(plainPassword,hashedPassword)=>{
-    return await bcrypt.compare(plainPassword,hashedPassword)
+    console.log('🔍 Comparing passwords:', { 
+        plainPasswordLength: plainPassword?.length,
+        hashedPasswordLength: hashedPassword?.length,
+        hashedPasswordPrefix: hashedPassword?.substring(0, 10) + '...'
+    });
+    const result = await bcrypt.compare(plainPassword,hashedPassword);
+    console.log('🔍 Password comparison result:', result);
+    return result;
 }
 
 export const updateUser = async (userId,updateData)=>{
     return await  User.findByIdAndUpdate(userId,updateData,{ new:true})
 }
 
-export const getAllUsers = async (page = 1, limit = 10, search = '') => {
+export const getAllUsers = async (page = 1, limit = 10, search = '', status = '') => {
     const skip = (page - 1) * limit;
-    const query = search 
-        ? { 
-            role: 'user',
-            $or: [
-                { firstName: { $regex: search, $options: 'i' } },
-                { lastName: { $regex: search, $options: 'i' } },
-                { email: { $regex: search, $options: 'i' } }
-            ]
-        }
-        : { role: 'user' };
+    
+    // Build query object
+    let query = { role: 'user' };
+    
+    // Add search filter
+    if (search) {
+        query.$or = [
+            { firstName: { $regex: search, $options: 'i' } },
+            { lastName: { $regex: search, $options: 'i' } },
+            { email: { $regex: search, $options: 'i' } }
+        ];
+    }
+    
+    // Add status filter
+    if (status === 'active') {
+        query.isBlocked = false;
+    } else if (status === 'blocked') {
+        query.isBlocked = true;
+    }
+    // If status is 'all' or empty, don't add isBlocked filter
+    
+    console.log('📋 User query:', JSON.stringify(query, null, 2));
     
     const users = await User.find(query)
         .sort({ createdAt: -1 })

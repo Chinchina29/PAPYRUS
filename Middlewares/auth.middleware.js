@@ -1,8 +1,51 @@
-export const isAuthenticated = (req, res, next) => {
+import * as userService from '../services/user.service.js';
+
+export const isAuthenticated = async (req, res, next) => {
     if (req.session && req.session.userId) {
-        return next();
+        try {
+            const user = await userService.findUserById(req.session.userId);
+            if (!user) {
+                req.session.destroy();
+                if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+                    return res.status(401).json({ 
+                        success: false, 
+                        message: 'User not found',
+                        redirectUrl: '/login'
+                    });
+                }
+                return res.status(401).render('error/401');
+            }
+            
+            if (user.isBlocked) {
+                req.session.destroy();
+                if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+                    return res.status(403).json({ 
+                        success: false, 
+                        message: 'Your account has been blocked. Please contact support.',
+                        redirectUrl: '/login'
+                    });
+                }
+                return res.status(403).render('error/403', { 
+                    message: 'Your account has been blocked. Please contact support.' 
+                });
+            }
+            
+            req.user = user;
+            return next();
+        } catch (error) {
+            console.error('Auth middleware error:', error);
+            req.session.destroy();
+            if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+                return res.status(500).json({ 
+                    success: false, 
+                    message: 'Authentication error',
+                    redirectUrl: '/login'
+                });
+            }
+            return res.status(500).render('error/500');
+        }
     }
-    // For AJAX requests, return JSON
+    
     if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
         return res.status(401).json({ 
             success: false, 
@@ -10,7 +53,6 @@ export const isAuthenticated = (req, res, next) => {
             redirectUrl: '/login'
         });
     }
-    // For regular requests, show 401 page
     res.status(401).render('error/401');
 };
 

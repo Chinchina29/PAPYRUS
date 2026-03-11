@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Papyrus - Admin Sign In</title>
     <link rel="stylesheet" href="/css/adminsignin.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
   <body>
     <div class="container">
@@ -177,11 +178,23 @@
           if (result.success) {
             window.location.href = result.redirect || '/admin/dashboard';
           } else {
-            alert(result.message || 'Login failed. Please try again.');
+            Swal.fire({
+              title: 'Login Failed',
+              text: result.message || 'Login failed. Please try again.',
+              icon: 'error',
+              confirmButtonText: 'OK',
+              confirmButtonColor: '#8B4513'
+            });
           }
         } catch (error) {
           console.error('Login error:', error);
-          alert('An error occurred. Please try again.');
+          Swal.fire({
+            title: 'Error',
+            text: 'An error occurred. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#8B4513'
+          });
         } finally {
           submitBtn.innerHTML = originalText;
           submitBtn.disabled = false;

@@ -4,18 +4,11 @@ import { isAdmin, isAdminNotAuthenticated } from '../Middlewares/admin.middlewar
 
 const router = express.Router();
 
-router.get('/signin', (req, res) => {
-    if (req.session.user && req.session.user.role === 'admin') {
-        return res.redirect('/admin/dashboard');
-    }
+router.get('/signin', isAdminNotAuthenticated, (req, res) => {
     res.render('admin/adminsignin');
 });
 
-router.post('/signin', (req, res) => {
-    console.log('🔥 ADMIN SIGNIN ROUTE HIT!');
-    console.log('Body:', req.body);
-    adminController.signin(req, res);
-});
+router.post('/signin', adminController.signin);
 
 router.get('/dashboard', isAdmin, adminController.dashboard);
 

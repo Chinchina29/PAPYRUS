@@ -1,263 +1,256 @@
-<!DOCTYPE html>
-<html class="light" lang="en">
-<head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Pappyrus Admin - User Management</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "#4a3728",
-                        "background-light": "#c9b9a3",
-                        "sidebar-light": "#b8a892",
-                        "card-light": "#f4f1ea",
-                        "forest-green": "#2d4a3e",
-                        "muted-red": "#a34a4a"
-                    },
-                    fontFamily: {
-                        display: ["Playfair Display", "serif"],
-                        sans: ["Inter", "sans-serif"],
-                    },
-                    borderRadius: {
-                        DEFAULT: "12px",
-                        "xl": "20px"
-                    },
-                },
-            },
-        };
-    </script>
-</head>
-<body class="bg-background-light text-primary min-h-screen flex overflow-hidden">
-<div class="flex min-h-screen">
-    <aside class="w-64 bg-sidebar-light border-r border-primary/10 flex flex-col h-screen">
-        <div class="p-6 flex flex-col gap-1">
-            <div class="flex items-center space-x-2 text-primary">
-                <span class="material-symbols-outlined text-3xl font-light">menu_book</span>
-                <span class="display-font text-2xl font-bold tracking-tight">Pappyrus</span>
-            </div>
-        </div>
-        <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
-            <a class="flex items-center space-x-3 px-4 py-3 text-primary/80 hover:bg-primary/10 rounded-lg transition-colors group" href="/admin/dashboard">
-                <span class="material-symbols-outlined group-hover:text-primary">dashboard</span>
-                <span class="font-medium text-sm">Overview</span>
-            </a>
-            <a class="flex items-center space-x-3 px-4 py-3 bg-primary text-white rounded-lg transition-colors" href="/admin/users">
-                <span class="material-symbols-outlined">group</span>
-                <span class="font-medium text-sm">User Management</span>
-            </a>
-            <div class="pt-4 pb-2">
-                <div class="h-px bg-stone-700/50 mx-3"></div>
-            </div>
-            <a class="flex items-center space-x-3 px-4 py-3 text-primary/80 hover:bg-primary/10 rounded-lg transition-colors group" href="/admin/settings">
-                <span class="material-symbols-outlined group-hover:text-primary">settings</span>
-                <span class="font-medium text-sm">Settings</span>
-            </a>
-        </nav>
-        <div class="p-4 bg-stone-900/40">
-            <div class="flex items-center gap-3">
-                <div class="size-10 rounded-full bg-stone-700 flex items-center justify-center text-white font-bold">
-                    <%= user.firstName.charAt(0) %><%= user.lastName.charAt(0) %>
-                </div>
-                <div class="flex-1 overflow-hidden text-ellipsis">
-                    <p class="text-sm font-semibold text-white truncate"><%= user.firstName %> <%= user.lastName %></p>
-                    <p class="text-xs text-stone-400 truncate">Administrator</p>
-                </div>
-                <a href="/admin/logout">
-                    <span class="material-symbols-outlined text-stone-500 cursor-pointer hover:text-white">logout</span>
-                </a>
-            </div>
-        </div>
-    </aside>
+<%- include('../partials/admin-header', { pageTitle: 'User Management' }) %>
 
-    <main class="flex-1 flex flex-col h-screen overflow-hidden">
-        <header class="h-20 bg-background-light/80 backdrop-blur-md border-b border-primary/10 flex items-center justify-between px-8 z-10">
-            <div class="flex items-center gap-4 flex-1 max-w-2xl">
-                <h2 class="display-font text-2xl font-bold text-primary mr-4">User Management</h2>
-                <form method="GET" action="/admin/users" class="relative w-full max-w-md">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-xl">search</span>
-                    <input name="search" value="<%= search %>" class="w-full bg-white border-none rounded-xl py-2 pl-10 pr-10 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-stone-400 text-primary" placeholder="Search users..." type="text"/>
-                    <% if (search) { %>
-                    <a href="/admin/users" class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600">
-                        <span class="material-symbols-outlined text-lg">close</span>
-                    </a>
-                    <% } %>
-                </form>
-            </div>
-            <div class="flex items-center gap-4">
-                <button class="size-10 flex items-center justify-center rounded-xl bg-white text-stone-500 hover:text-primary transition-colors relative">
-                    <span class="material-symbols-outlined">notifications</span>
-                    <span class="absolute top-2.5 right-2.5 size-2 bg-primary rounded-full ring-2 ring-background-light"></span>
-                </button>
-                <div class="h-8 w-px bg-primary/10"></div>
-                <div class="flex items-center gap-2">
-                    <span class="text-sm font-medium text-primary/60">Library Status</span>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-forest-green/10 text-forest-green uppercase tracking-tight">
-                        <span class="size-1.5 bg-emerald-500 rounded-full mr-1"></span> Open
-                    </span>
+<%- include('../partials/admin-sidebar', { currentPage: 'users' }) %>
+
+    <!-- Main Content -->
+    <main class="flex-1 ml-0">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-6">
+                    <form method="GET" action="/admin/users" class="relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input name="search" value="<%= search %>" class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-accent focus:border-transparent" placeholder="Search users..." type="text"/>
+                    </form>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="relative">
+                        <i class="fas fa-bell text-gray-400 text-xl cursor-pointer hover:text-gray-600"></i>
+                        <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-medium text-gray-800">Admin Panel</p>
+                        <p class="text-xs text-gray-500">
+                            <% if (user && user.firstName && user.lastName) { %>
+                                <%= user.firstName %> <%= user.lastName %>
+                            <% } else { %>
+                                AA
+                            <% } %>
+                        </p>
+                    </div>
                 </div>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-8">
-            <div id="confirmBanner" class="hidden bg-card-light/50 p-6 rounded-xl mb-8 border border-primary/10 flex-col md:flex-row gap-6 items-center justify-between shadow-sm">
-                <div class="flex items-center gap-4">
-                    <div class="size-12 rounded-xl bg-forest-green flex items-center justify-center text-white">
-                        <span class="material-symbols-outlined">pending_actions</span>
+        <!-- User Management Content -->
+        <div class="p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">User Management</h2>
+                <div class="flex items-center justify-between">
+                    <p class="text-gray-600">Review and manage registered members of the platform</p>
+                    <% if (search || status) { %>
+                    <div class="flex items-center gap-2 text-sm">
+                        <span class="text-gray-500">Active filters:</span>
+                        <% if (search) { %>
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                            Search: "<%= search %>"
+                        </span>
+                        <% } %>
+                        <% if (status) { %>
+                        <span class="bg-<%= status === 'active' ? 'green' : 'red' %>-100 text-<%= status === 'active' ? 'green' : 'red' %>-800 px-2 py-1 rounded-full">
+                            Status: <%= status.charAt(0).toUpperCase() + status.slice(1) %>
+                        </span>
+                        <% } %>
                     </div>
-                    <div>
-                        <h3 class="text-primary font-bold text-lg leading-tight display-font">Action Pending: Confirm Status Change</h3>
-                        <p class="text-stone-600 text-sm" id="confirmMessage"></p>
-                    </div>
-                </div>
-                <div class="flex gap-3">
-                    <button onclick="cancelAction()" class="px-5 py-2.5 rounded-xl border border-stone-300 text-stone-700 font-semibold text-sm hover:bg-white transition-colors bg-stone-50/50">Cancel</button>
-                    <button onclick="confirmAction()" class="bg-forest-green text-white px-6 py-2.5 rounded-lg text-sm font-bold hover:bg-opacity-90 transition-all shadow-sm">Confirm Action</button>
+                    <% } %>
                 </div>
             </div>
 
-            <div class="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-sm">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-primary/5 text-xs uppercase tracking-wider text-primary/60 font-bold border-b border-primary/5">
-                                <th class="px-6 py-4">Name</th>
-                                <th class="px-6 py-4">Email</th>
-                                <th class="px-6 py-4">Status</th>
-                                <th class="px-6 py-4 flex items-center gap-1">
-                                    Joined Date <span class="material-symbols-outlined text-sm">arrow_downward</span>
-                                </th>
-                                <th class="px-6 py-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-stone-100">
-                            <% users.forEach(user => { %>
-                            <tr class="hover:bg-primary/[0.02] transition-colors group border-b border-primary/5">
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="size-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                                            <%= user.firstName.charAt(0) %><%= user.lastName.charAt(0) %>
-                                        </div>
-                                        <span class="text-sm font-bold text-primary"><%= user.firstName %> <%= user.lastName %></span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-stone-600"><%= user.email %></td>
-                                <td class="px-6 py-4">
-                                    <% if (user.isBlocked) { %>
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary/60 uppercase tracking-tight">Blocked</span>
+            <!-- Filters -->
+            <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                <form method="GET" action="/admin/users" class="flex items-center gap-4">
+                    <div class="relative flex-1 max-w-md">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input name="search" value="<%= search %>" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-accent focus:border-transparent" placeholder="Search by name..." type="text"/>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm font-medium text-gray-700">Role:</label>
+                        <select name="role" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-accent">
+                            <option value="">All Roles</option>
+                            <option value="buyer">Buyer</option>
+                            <option value="seller">Seller</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm font-medium text-gray-700">Status:</label>
+                        <select name="status" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-accent">
+                            <option value="" <%= status === '' ? 'selected' : '' %>>All Status</option>
+                            <option value="active" <%= status === 'active' ? 'selected' : '' %>>Active</option>
+                            <option value="blocked" <%= status === 'blocked' ? 'selected' : '' %>>Blocked</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="bg-warm-brown text-white px-4 py-2 rounded-lg hover:bg-dark-brown transition-colors">
+                        <i class="fas fa-filter mr-2"></i>Filter
+                    </button>
+                    <% if (search || status) { %>
+                    <a href="/admin/users" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                        <i class="fas fa-times mr-2"></i>Clear
+                    </a>
+                    <% } %>
+                </form>
+            </div>
+
+            <!-- Users Table -->
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <% users.forEach(user => { %>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900"><%= user.firstName %> <%= user.lastName %></div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900"><%= user.email %></div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900 capitalize">
+                                    <% if (user.role === 'user') { %>
+                                        Buyer
                                     <% } else { %>
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-forest-green/10 text-forest-green uppercase tracking-tight">Active</span>
+                                        <%= user.role %>
                                     <% } %>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-stone-600">
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">
                                     <%= new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
-                                </td>
-                                <td class="px-6 py-4 text-right">
-                                    <% if (user.isBlocked) { %>
-                                    <button onclick="toggleBlock('<%= user._id %>', '<%= user.firstName %> <%= user.lastName %>', false)" class="text-primary/40 hover:text-forest-green transition-colors">
-                                        <span class="material-symbols-outlined text-base">lock_open</span> Unblock
-                                    </button>
-                                    <% } else { %>
-                                    <button onclick="toggleBlock('<%= user._id %>', '<%= user.firstName %> <%= user.lastName %>', true)" class="text-primary/40 hover:text-muted-red transition-colors">
-                                        <span class="material-symbols-outlined text-base">block</span> Block
-                                    </button>
-                                    <% } %>
-                                </td>
-                            </tr>
-                            <% }); %>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="bg-primary/5 px-8 py-4 flex items-center justify-between border-t border-primary/5">
-                    <p class="text-xs font-semibold text-stone-500 uppercase tracking-wider">
-                        Showing <%= (currentPage - 1) * 10 + 1 %> to <%= Math.min(currentPage * 10, total) %> of <%= total %> users
-                    </p>
-                    <div class="flex items-center gap-1">
-                        <a href="?page=<%= currentPage - 1 %><%= search ? '&search=' + search : '' %>" class="size-8 flex items-center justify-center rounded-lg text-stone-400 hover:text-primary <%= currentPage === 1 ? 'opacity-30 pointer-events-none' : '' %>">
-                            <span class="material-symbols-outlined text-lg">chevron_left</span>
-                        </a>
-                        <% for (let i = 1; i <= Math.min(totalPages, 5); i++) { %>
-                        <a href="?page=<%= i %><%= search ? '&search=' + search : '' %>" class="w-8 h-8 flex items-center justify-center rounded text-xs font-bold <%= currentPage === i ? 'bg-primary text-white shadow-sm' : 'text-stone-600 hover:bg-stone-200/50' %>">
-                            <%= i %>
-                        </a>
-                        <% } %>
-                        <% if (totalPages > 5) { %>
-                        <span class="px-1 text-stone-400 text-xs">...</span>
-                        <a href="?page=<%= totalPages %><%= search ? '&search=' + search : '' %>" class="size-8 flex items-center justify-center rounded-lg text-stone-600 text-xs font-bold hover:bg-stone-200/50">
-                            <%= totalPages %>
-                        </a>
-                        <% } %>
-                        <a href="?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %>" class="size-8 flex items-center justify-center rounded-lg text-stone-400 hover:text-primary <%= currentPage === totalPages ? 'opacity-30 pointer-events-none' : '' %>">
-                            <span class="material-symbols-outlined text-lg">chevron_right</span>
-                        </a>
-                    </div>
-                </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" 
+                                               id="toggle-<%= user._id %>" 
+                                               class="sr-only peer"
+                                               <%= user.isBlocked ? '' : 'checked' %>
+                                               onchange="toggleUserStatus('<%= user._id %>', this.checked)"/>
+                                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                                        <span class="ml-3 text-sm font-medium text-gray-900">
+                                            <%= user.isBlocked ? 'Blocked' : 'Active' %>
+                                        </span>
+                                    </label>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <button class="bg-warm-brown text-white px-4 py-2 rounded-lg text-sm hover:bg-dark-brown transition-colors">
+                                    View Details
+                                </button>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
             </div>
 
-            <footer class="mt-auto py-8 border-t border-primary/10">
-                <div class="flex flex-col items-center justify-center text-center space-y-4">
-                    <p class="display-font text-primary/60 italic text-lg max-w-2xl">"I have always imagined that Paradise will be a kind of library."</p>
-                    <div class="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-stone-400">
-                        <span>Jorge Luis Borges</span>
-                        <span class="size-1 bg-stone-300 rounded-full"></span>
-                        <span>© 2024 Pappyrus Admin Portal</span>
-                    </div>
+            <!-- Pagination -->
+            <div class="mt-6 flex items-center justify-between">
+                <div class="text-sm text-gray-700">
+                    Page <%= currentPage %> of <%= totalPages %> 
+                    <% if (search || status) { %>
+                        <span class="text-gray-500">
+                            (filtered: <%= total %> users)
+                        </span>
+                    <% } else { %>
+                        (<%= total %> total users)
+                    <% } %>
                 </div>
-            </footer>
+                <div class="flex items-center gap-2">
+                    <% 
+                        const buildUrl = (page) => {
+                            let url = `?page=${page}`;
+                            if (search) url += `&search=${encodeURIComponent(search)}`;
+                            if (status) url += `&status=${status}`;
+                            return url;
+                        }
+                    %>
+                    
+                    <button class="px-3 py-1 text-sm text-gray-500 hover:text-gray-700 <%= currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '' %>"
+                            <%= currentPage === 1 ? 'disabled' : '' %>
+                            <% if (currentPage > 1) { %>onclick="window.location.href='<%= buildUrl(currentPage - 1) %>'"<% } %>>
+                        PREVIOUS
+                    </button>
+                    
+                    <% for (let i = 1; i <= Math.min(totalPages, 5); i++) { %>
+                    <button class="w-8 h-8 text-sm rounded <%= currentPage === i ? 'bg-warm-brown text-white' : 'text-gray-700 hover:bg-gray-100' %>"
+                            onclick="window.location.href='<%= buildUrl(i) %>'">
+                        <%= i %>
+                    </button>
+                    <% } %>
+                    
+                    <button class="px-3 py-1 text-sm text-gray-500 hover:text-gray-700 <%= currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : '' %>"
+                            <%= currentPage === totalPages ? 'disabled' : '' %>
+                            <% if (currentPage < totalPages) { %>onclick="window.location.href='<%= buildUrl(currentPage + 1) %>'"<% } %>>
+                        NEXT
+                    </button>
+                </div>
+            </div>
         </div>
     </main>
 </div>
 
+
+
 <script>
-    let pendingAction = null;
-
-    function toggleBlock(userId, userName, isBlocking) {
-        pendingAction = { userId, userName, isBlocking };
-        const message = isBlocking 
-            ? `You are about to block ${userName}. They will not be able to access their account.`
-            : `You are about to unblock ${userName}. They will regain access to their account.`;
+async function toggleUserStatus(userId, isActive) {
+    try {
+        console.log('Toggling user status for:', userId, 'Active:', isActive);
         
-        document.getElementById('confirmMessage').textContent = message;
-        document.getElementById('confirmBanner').classList.remove('hidden');
-        document.getElementById('confirmBanner').classList.add('flex');
-    }
+        const response = await fetch('/admin/users/block-unblock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userId })
+        });
 
-    function cancelAction() {
-        pendingAction = null;
-        document.getElementById('confirmBanner').classList.add('hidden');
-        document.getElementById('confirmBanner').classList.remove('flex');
-    }
-
-    async function confirmAction() {
-        if (!pendingAction) return;
-
-        try {
-            const response = await fetch('/admin/users/block-unblock', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: pendingAction.userId })
-            });
-
-            const data = await response.json();
+        const data = await response.json();
+        console.log('Response:', data);
+        
+        if (data.success) {
+            const message = data.data.isBlocked ? 'User blocked successfully' : 'User unblocked successfully';
+            const icon = data.data.isBlocked ? 'warning' : 'success';
             
-            if (data.success) {
+            Swal.fire({
+                title: 'Success!',
+                text: message,
+                icon: icon,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#8B4513'
+            }).then(() => {
                 location.reload();
-            } else {
-                alert(data.message || 'Action failed');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('An error occurred');
+            });
+        } else {
+            Swal.fire({
+                title: 'Error!',
+                text: data.message || 'Action failed',
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#8B4513'
+            }).then(() => {
+                location.reload();
+            });
         }
-
-        cancelAction();
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            title: 'Error!',
+            text: 'An error occurred: ' + error.message,
+            icon: 'error',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#8B4513'
+        }).then(() => {
+            location.reload();
+        });
     }
+}
 </script>
 </body>
 </html>

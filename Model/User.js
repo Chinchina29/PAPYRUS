@@ -86,8 +86,23 @@ const userSchema = new mongoose.Schema({
     timestamps:true
 })
 userSchema.pre('save', async function() {
-    if (!this.isModified('password')) return;
-    this.password = await bcrypt.hash(this.password, 12);
+    try {
+        if (!this.isModified('password') || !this.password) {
+            return;
+        }
+        
+        // Check if password is already hashed
+        if (this.password.startsWith('$2')) {
+            return;
+        }
+        
+        console.log('🔐 Hashing password for user:', this.email);
+        this.password = await bcrypt.hash(this.password, 12);
+        console.log('✅ Password hashed successfully');
+    } catch (error) {
+        console.error('❌ Password hashing error:', error);
+        throw error;
+    }
 });
 const User=mongoose.model('User',userSchema);
 export default User;

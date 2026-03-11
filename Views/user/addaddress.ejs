@@ -5,6 +5,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Pappyrus - Address Management</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script>
@@ -160,13 +161,33 @@
 
             const result = await response.json();
             if (result.success) {
-                location.reload();
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Address added successfully',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#2D3B2D'
+                }).then(() => {
+                    location.reload();
+                });
             } else {
-                alert(result.message || 'Failed to add address');
+                Swal.fire({
+                    title: 'Error!',
+                    text: result.message || 'Failed to add address',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#2D3B2D'
+                });
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('An error occurred');
+            Swal.fire({
+                title: 'Error!',
+                text: 'An error occurred',
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#2D3B2D'
+            });
         }
     });
 </script>
