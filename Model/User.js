@@ -91,7 +91,6 @@ userSchema.pre('save', async function() {
             return;
         }
         
-        // Check if password is already hashed
         if (this.password.startsWith('$2')) {
             return;
         }

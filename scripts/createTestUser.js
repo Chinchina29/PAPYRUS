@@ -9,10 +9,8 @@ const createTestUser = async () => {
         await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/papyrus');
         console.log('Connected to MongoDB');
 
-        // Delete existing test user
         await User.deleteOne({ email: 'test@example.com' });
         
-        // Create new test user
         const testUser = new User({
             firstName: 'Test',
             lastName: 'User',

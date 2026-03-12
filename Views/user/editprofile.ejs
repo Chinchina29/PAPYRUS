@@ -8,7 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="logo">
@@ -54,20 +53,17 @@
         </div>
     </header>
 
-    <!-- Breadcrumb -->
     <div class="breadcrumb">
         <div class="container">
             <a href="/home">SHOP</a> / <a href="/profile">PROFILE</a> / <span>EDIT PROFILE</span>
         </div>
     </div>
 
-    <!-- Profile Content -->
     <section class="profile-section">
         <div class="container">
             <h1 class="page-title">Edit Profile</h1>
             
             <div class="profile-layout">
-                <!-- Sidebar -->
                 <aside class="sidebar">
                     <nav class="sidebar-nav">
                         <a href="/profile" class="nav-item active">
@@ -124,7 +120,6 @@
                     </nav>
                 </aside>
 
-                <!-- Main Content -->
                 <main class="main-content">
                     <form action="/profile/update" method="POST" enctype="multipart/form-data">
                         <div class="profile-card">
@@ -261,7 +256,6 @@
         </div>
     </section>
 
-    <!-- Email Change Modal -->
     <div id="emailChangeModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -296,7 +290,6 @@
         </div>
     </div>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -347,7 +340,6 @@
     </footer>
 
     <script>
-        // Character counter for bio
         const bioTextarea = document.getElementById('bio');
         const charCount = document.querySelector('.char-count');
         
@@ -361,10 +353,8 @@
             }
         });
         
-        // Trigger initial count
         bioTextarea.dispatchEvent(new Event('input'));
 
-        // Email change functionality
         const emailChangeModal = document.getElementById('emailChangeModal');
         const changeEmailBtn = document.getElementById('changeEmailBtn');
         const closeModal = document.getElementById('closeModal');
@@ -375,14 +365,12 @@
         const emailStep1 = document.getElementById('emailChangeStep1');
         const emailStep2 = document.getElementById('emailChangeStep2');
 
-        // Open email change modal
         changeEmailBtn.addEventListener('click', () => {
             emailChangeModal.style.display = 'block';
             emailStep1.style.display = 'block';
             emailStep2.style.display = 'none';
         });
 
-        // Close modal
         const closeEmailModal = () => {
             emailChangeModal.style.display = 'none';
             emailStep1.style.display = 'block';
@@ -395,7 +383,6 @@
         cancelEmailChange.addEventListener('click', closeEmailModal);
         cancelEmailVerification.addEventListener('click', closeEmailModal);
 
-        // Send email OTP
         sendEmailOTP.addEventListener('click', async () => {
             const newEmail = document.getElementById('newEmail').value;
             
@@ -451,7 +438,6 @@
             }
         });
 
-        // Verify email OTP
         verifyEmailOTP.addEventListener('click', async () => {
             const otp = document.getElementById('emailOTP').value;
             
@@ -516,7 +502,6 @@
             }
         });
 
-        // Profile update form
         document.querySelector('form').addEventListener('submit', async (e) => {
             e.preventDefault();
             

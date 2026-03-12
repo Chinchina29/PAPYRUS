@@ -5,7 +5,6 @@ export const signup = async (req, res) => {
     try {
         console.log('📝 Signup request received:', req.body);
         
-        // Basic validation
         const { firstName, lastName, email, password, confirmPassword } = req.body;
         
         if (!firstName || !lastName || !email || !password || !confirmPassword) {

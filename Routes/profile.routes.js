@@ -23,7 +23,6 @@ router.get('/change-password', isAuthenticated, profileController.showChangePass
 
 router.post('/change-password', isAuthenticated, changePasswordValidation, validate, passwordController.changePassword);
 
-// Address Management Routes
 router.get('/addresses', isAuthenticated, addressController.showAddresses);
 
 router.get('/address/add', isAuthenticated, addressController.showAddAddress);

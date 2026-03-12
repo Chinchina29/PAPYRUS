@@ -2,9 +2,7 @@
 
 <%- include('../partials/admin-sidebar', { currentPage: 'users' }) %>
 
-    <!-- Main Content -->
     <main class="flex-1 ml-0">
-        <!-- Header -->
         <header class="bg-white shadow-sm border-b px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-6">
@@ -32,7 +30,6 @@
             </div>
         </header>
 
-        <!-- User Management Content -->
         <div class="p-6">
             <div class="mb-6">
                 <h2 class="text-2xl font-bold text-gray-800 mb-2">User Management</h2>
@@ -56,7 +53,6 @@
                 </div>
             </div>
 
-            <!-- Filters -->
             <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
                 <form method="GET" action="/admin/users" class="flex items-center gap-4">
                     <div class="relative flex-1 max-w-md">
@@ -90,7 +86,6 @@
                 </form>
             </div>
 
-            <!-- Users Table -->
             <div class="bg-white rounded-lg shadow-sm overflow-hidden">
                 <table class="w-full">
                     <thead class="bg-gray-50 border-b border-gray-200">
@@ -152,7 +147,6 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
             <div class="mt-6 flex items-center justify-between">
                 <div class="text-sm text-gray-700">
                     Page <%= currentPage %> of <%= totalPages %> 

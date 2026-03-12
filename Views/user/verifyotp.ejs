@@ -9,7 +9,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- Progress Steps -->
         <div class="progress-steps">
             <div class="step completed">
                 <div class="step-circle">
@@ -31,7 +30,6 @@
             </div>
         </div>
 
-        <!-- Form Card -->
         <div class="form-card">
             <div class="logo">
                 <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -82,33 +80,28 @@
     </div>
 
     <script>
-        // Auto-focus and auto-advance OTP inputs
         const otpInputs = document.querySelectorAll('.otp-input');
         
         otpInputs.forEach((input, index) => {
             input.addEventListener('input', (e) => {
                 const value = e.target.value;
                 
-                // Only allow numbers
                 if (!/^\d*$/.test(value)) {
                     e.target.value = '';
                     return;
                 }
                 
-                // Move to next input if value is entered
                 if (value && index < otpInputs.length - 1) {
                     otpInputs[index + 1].focus();
                 }
             });
             
             input.addEventListener('keydown', (e) => {
-                // Move to previous input on backspace if current is empty
                 if (e.key === 'Backspace' && !e.target.value && index > 0) {
                     otpInputs[index - 1].focus();
                 }
             });
             
-            // Handle paste
             input.addEventListener('paste', (e) => {
                 e.preventDefault();
                 const pastedData = e.clipboardData.getData('text').slice(0, 6);
@@ -120,17 +113,14 @@
                         }
                     });
                     
-                    // Focus last filled input or last input
                     const lastIndex = Math.min(pastedData.length, otpInputs.length - 1);
                     otpInputs[lastIndex].focus();
                 }
             });
         });
         
-        // Auto-focus first input on load
         otpInputs[0].focus();
 
-        // Form submission
         document.getElementById('otpForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const errorMessage = document.getElementById('errorMessage');
@@ -176,7 +166,6 @@
             }
         });
 
-        // Resend OTP
         document.getElementById('resendBtn').addEventListener('click', async () => {
             const resendBtn = document.getElementById('resendBtn');
             const errorMessage = document.getElementById('errorMessage');

@@ -14,7 +14,6 @@ const fixPasswords = async () => {
         console.log(`Found ${users.length} users with passwords`);
 
         for (const user of users) {
-            // Check if password is already hashed (bcrypt hashes start with $2a$, $2b$, or $2y$)
             if (!user.password.startsWith('$2')) {
                 console.log(`Fixing password for user: ${user.email}`);
                 const hashedPassword = await bcrypt.hash(user.password, 12);

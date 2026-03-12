@@ -36,10 +36,8 @@ export const updateUser = async (userId,updateData)=>{
 export const getAllUsers = async (page = 1, limit = 10, search = '', status = '') => {
     const skip = (page - 1) * limit;
     
-    // Build query object
     let query = { role: 'user' };
     
-    // Add search filter
     if (search) {
         query.$or = [
             { firstName: { $regex: search, $options: 'i' } },
@@ -48,13 +46,11 @@ export const getAllUsers = async (page = 1, limit = 10, search = '', status = ''
         ];
     }
     
-    // Add status filter
     if (status === 'active') {
         query.isBlocked = false;
     } else if (status === 'blocked') {
         query.isBlocked = true;
     }
-    // If status is 'all' or empty, don't add isBlocked filter
     
     console.log('📋 User query:', JSON.stringify(query, null, 2));
     

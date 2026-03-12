@@ -2,9 +2,7 @@
 
 <%- include('../partials/admin-sidebar', { currentPage: 'dashboard' }) %>
 
-    <!-- Main Content -->
     <main class="flex-1 ml-0">
-        <!-- Header -->
         <header class="bg-white shadow-sm border-b px-6 py-4">
             <div class="flex items-center justify-between">
                 <div>
@@ -24,9 +22,7 @@
             </div>
         </header>
 
-        <!-- Dashboard Content -->
         <div class="p-6">
-            <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
                     <div class="flex items-center justify-between">
@@ -89,9 +85,7 @@
                 </div>
             </div>
 
-            <!-- Charts Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <!-- Revenue Growth Chart -->
                 <div class="bg-white rounded-lg shadow-sm p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-semibold text-gray-800">Revenue Growth</h3>
@@ -106,7 +100,6 @@
                     </div>
                 </div>
 
-                <!-- Categories Chart -->
                 <div class="bg-white rounded-lg shadow-sm p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-semibold text-gray-800">Book Categories</h3>
@@ -118,9 +111,7 @@
                 </div>
             </div>
 
-            <!-- Recent Activity Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Recent Orders -->
                 <div class="bg-white rounded-lg shadow-sm p-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Orders</h3>
                     <div class="space-y-4">
@@ -151,7 +142,6 @@
                     </div>
                 </div>
 
-                <!-- Recent Users -->
                 <div class="bg-white rounded-lg shadow-sm p-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Users</h3>
                     <div class="space-y-4">
@@ -192,7 +182,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Revenue Growth Chart
     const revenueCtx = document.getElementById('revenueChart');
     if (revenueCtx) {
         new Chart(revenueCtx, {
@@ -231,7 +220,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Categories Chart
     const categoriesCtx = document.getElementById('categoriesChart');
     if (categoriesCtx) {
         new Chart(categoriesCtx, {
