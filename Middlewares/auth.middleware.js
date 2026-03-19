@@ -1,82 +1,88 @@
-import * as userService from '../services/user.service.js';
+import * as userService from "../services/user.service.js";
 
-export const isAuthenticated = async (req, res, next) => {
-    if (req.session && req.session.userId) {
-        try {
-            const user = await userService.findUserById(req.session.userId);
-            if (!user) {
-                req.session.destroy();
-                if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
-                    return res.status(401).json({ 
-                        success: false, 
-                        message: 'User not found',
-                        redirectUrl: '/login'
-                    });
-                }
-                return res.status(401).render('error/401');
-            }
-            
-            if (user.isBlocked) {
-                req.session.destroy();
-                if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
-                    return res.status(403).json({ 
-                        success: false, 
-                        message: 'Your account has been blocked. Please contact support.',
-                        redirectUrl: '/login'
-                    });
-                }
-                return res.status(403).render('error/403', { 
-                    message: 'Your account has been blocked. Please contact support.' 
-                });
-            }
-            
-            req.user = user;
-            return next();
-        } catch (error) {
-            console.error('Auth middleware error:', error);
-            req.session.destroy();
-            if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
-                return res.status(500).json({ 
-                    success: false, 
-                    message: 'Authentication error',
-                    redirectUrl: '/login'
-                });
-            }
-            return res.status(500).render('error/500');
-        }
+export const setUserLocals = async (req, res, next) => {
+  if (req.session && req.session.userId) {
+    try {
+      const user = await userService.findUserById(req.session.userId);
+      if (!user) {
+        req.session.destroy();
+        return redirectToLogin(req, res, "User not found");
+      }
+
+      if (user.isBlocked) {
+        req.session.destroy();
+        return redirectToLogin(req, res, "Account blocked");
+      }
+
+      req.session.user = {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+      };
+
+      res.locals.user = req.session.user;
+    } catch (error) {
+      console.error("Auth middleware error:", error);
+      req.session.destroy();
+      return redirectToLogin(req, res, "Authentication error");
     }
-    
-    if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
-        return res.status(401).json({ 
-            success: false, 
-            message: 'Authentication required',
-            redirectUrl: '/login'
-        });
-    }
-    res.status(401).render('error/401');
+  }
+  next();
+};
+
+export const isAuthenticated = (req, res, next) => {
+  if (!req.session || !req.session.userId) {
+    return redirectToLogin(req, res, "Authentication required");
+  }
+  next();
 };
 
 export const isNotAuthenticated = (req, res, next) => {
-    if (req.session && req.session.userId) {
-        return res.redirect('/home');
+  if (req.session && req.session.userId) {
+    if (req.session.user && req.session.user.role === "admin") {
+      return res.redirect("/admin/dashboard");
     }
-    next();
+    return res.redirect("/home");
+  }
+  next();
 };
 
-export const isAdmin = (req, res, next) => {
-    if (!req.session || !req.session.userId) {
-        return res.status(401).render('error/401');
-    }
-    
-    if (!req.session.user || req.session.user.role !== 'admin') {
-        return res.status(403).render('error/403');
-    }
-    
-    next();
+function redirectToLogin(req, res, message) {
+  if (req.xhr || req.headers.accept?.indexOf("json") > -1) {
+    return res.status(401).json({
+      success: false,
+      message: message,
+      redirectUrl: "/login",
+    });
+  }
+  const returnTo = req.originalUrl;
+  if (returnTo && returnTo !== "/login" && returnTo !== "/signup") {
+    req.session.returnTo = returnTo;
+  }
+  return res.redirect("/login");
+}
+
+export const requireUserRole = (req, res, next) => {
+  if (
+    req.session &&
+    req.session.userId &&
+    req.session.user &&
+    req.session.user.role === "admin"
+  ) {
+    return res.status(403).render("error/403", {
+      message: "Access denied. This area is for regular users only.",
+    });
+  }
+  next();
 };
 
-export const setUserLocals = (req, res, next) => {
-    res.locals.user = req.session.user || null;
-    res.locals.isAuthenticated = !!req.session.userId;
-    next();
+export const preventConcurrentAdminSessions = async (req, res, next) => {
+  if (req.session.user && req.session.user.role === "admin") {
+    console.log(
+      `Admin session active: ${req.session.user.email} from ${req.ip}`,
+    );
+  }
+  next();
 };

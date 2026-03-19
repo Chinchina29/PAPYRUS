@@ -175,79 +175,205 @@
             }
         }
 
-        document.getElementById('signupForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const errorMessage = document.getElementById('errorMessage');
-            const submitBtn = document.querySelector('.submit-btn');
-            
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            if (password !== confirmPassword) {
-                Swal.fire({
-                    title: 'Password Mismatch',
-                    text: 'Passwords do not match',
-                    icon: 'warning',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#2d5016'
-                });
-                return;
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('signupForm');
+            const firstName = document.getElementById('firstName');
+            const lastName = document.getElementById('lastName');
+            const email = document.getElementById('email');
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirmPassword');
+
+            // Real-time validation
+            firstName.addEventListener('blur', validateFirstName);
+            lastName.addEventListener('blur', validateLastName);
+            email.addEventListener('blur', validateEmail);
+            password.addEventListener('input', validatePassword);
+            confirmPassword.addEventListener('input', validateConfirmPassword);
+
+            function validateFirstName() {
+                const value = firstName.value.trim();
+                if (value.length < 2) {
+                    showError(firstName, 'First name must be at least 2 characters');
+                    return false;
+                }
+                if (!/^[a-zA-Z\s]+$/.test(value)) {
+                    showError(firstName, 'First name can only contain letters');
+                    return false;
+                }
+                showSuccess(firstName);
+                return true;
             }
-            
-            const formData = {
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                email: document.getElementById('email').value,
-                password: password,
-                confirmPassword: confirmPassword
-            };
-            
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Creating Account...';
-            errorMessage.style.display = 'none';
-            
-            try {
-                const response = await fetch('/signup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
+
+            function validateLastName() {
+                const value = lastName.value.trim();
+                if (value.length < 2) {
+                    showError(lastName, 'Last name must be at least 2 characters');
+                    return false;
+                }
+                if (!/^[a-zA-Z\s]+$/.test(value)) {
+                    showError(lastName, 'Last name can only contain letters');
+                    return false;
+                }
+                showSuccess(lastName);
+                return true;
+            }
+
+            function validateEmail() {
+                const value = email.value.trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(value)) {
+                    showError(email, 'Please enter a valid email address');
+                    return false;
+                }
+                showSuccess(email);
+                return true;
+            }
+
+            function validatePassword() {
+                const value = password.value;
+                const requirements = {
+                    length: value.length >= 8,
+                    uppercase: /[A-Z]/.test(value),
+                    lowercase: /[a-z]/.test(value),
+                    number: /[0-9]/.test(value),
+                    special: /[!@#$%^&*(),.?":{}|<>]/.test(value)
+                };
+
+                let message = '';
+                if (!requirements.length) message += 'At least 8 characters, ';
+                if (!requirements.uppercase) message += 'one uppercase letter, ';
+                if (!requirements.lowercase) message += 'one lowercase letter, ';
+                if (!requirements.number) message += 'one number, ';
+                if (!requirements.special) message += 'one special character, ';
+
+                if (message) {
+                    showError(password, 'Password must contain: ' + message.slice(0, -2));
+                    return false;
+                }
+                showSuccess(password);
+                return true;
+            }
+
+            function validateConfirmPassword() {
+                if (confirmPassword.value !== password.value) {
+                    showError(confirmPassword, 'Passwords do not match');
+                    return false;
+                }
+                if (confirmPassword.value.length === 0) {
+                    showError(confirmPassword, 'Please confirm your password');
+                    return false;
+                }
+                showSuccess(confirmPassword);
+                return true;
+            }
+
+            function showError(input, message) {
+                const formGroup = input.parentElement.parentElement || input.parentElement;
+                const error = formGroup.querySelector('.error-message') || document.createElement('div');
+                error.className = 'error-message';
+                error.textContent = message;
+                error.style.color = '#dc3545';
+                error.style.fontSize = '12px';
+                error.style.marginTop = '5px';
                 
-                const result = await response.json();
+                if (!formGroup.querySelector('.error-message')) {
+                    formGroup.appendChild(error);
+                }
+                input.style.borderColor = '#dc3545';
+            }
+
+            function showSuccess(input) {
+                const formGroup = input.parentElement.parentElement || input.parentElement;
+                const error = formGroup.querySelector('.error-message');
+                if (error) error.remove();
+                input.style.borderColor = '#28a745';
+            }
+
+            // Form submission with validation
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
                 
-                if (result.success && result.redirectUrl) {
+                const isValid = validateFirstName() && 
+                               validateLastName() && 
+                               validateEmail() && 
+                               validatePassword() && 
+                               validateConfirmPassword();
+
+                if (!isValid) {
                     Swal.fire({
-                        title: 'Success!',
-                        text: result.message,
-                        icon: 'success',
-                        confirmButtonText: 'Continue',
-                        confirmButtonColor: '#2d5016'
-                    }).then(() => {
-                        window.location.href = result.redirectUrl;
-                    });
-                } else {
-                    Swal.fire({
-                        title: 'Signup Failed',
-                        text: result.message || 'Signup failed',
+                        title: 'Validation Error',
+                        text: 'Please fix the errors before submitting',
                         icon: 'error',
-                        confirmButtonText: 'Try Again',
+                        confirmButtonColor: '#2d5016'
+                    });
+                    return;
+                }
+
+                const errorMessage = document.getElementById('errorMessage');
+                const submitBtn = document.querySelector('.submit-btn');
+                
+                const formData = {
+                    firstName: firstName.value.trim(),
+                    lastName: lastName.value.trim(),
+                    email: email.value.trim(),
+                    password: password.value,
+                    confirmPassword: confirmPassword.value
+                };
+                
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Creating Account...';
+                errorMessage.style.display = 'none';
+                
+                try {
+                    const response = await fetch('/signup', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success && result.redirectUrl) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: result.message,
+                            icon: 'success',
+                            confirmButtonText: 'Continue',
+                            confirmButtonColor: '#2d5016'
+                        }).then(() => {
+                            window.location.href = result.redirectUrl;
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Signup Failed',
+                            text: result.message || 'Signup failed',
+                            icon: 'error',
+                            confirmButtonText: 'Try Again',
+                            confirmButtonColor: '#2d5016'
+                        });
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Create Account';
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'An error occurred. Please try again.',
+                        icon: 'error',
+                        confirmButtonText: 'OK',
                         confirmButtonColor: '#2d5016'
                     });
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Create Account';
                 }
-            } catch (error) {
-                Swal.fire({
-                    title: 'Error',
-                    text: 'An error occurred. Please try again.',
-                    icon: 'error',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#2d5016'
-                });
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Create Account';
-            }
+            });
         });
+        
+        if (window.history && window.history.pushState) {
+            window.history.pushState(null, null, window.location.href);
+            window.addEventListener('popstate', function() {
+                window.history.pushState(null, null, window.location.href);
+            });
+        }
     </script>
 </body>
 </html>

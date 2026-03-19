@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
     },
     gender:{
         type:String,
-        enum:['male','female','other','prefer-not']
+        default: null
     },
     bio:{
         type:String,
@@ -41,11 +41,11 @@ const userSchema = new mongoose.Schema({
     },
     favoriteGenre:{
         type:String,
-        enum:['literary-fiction','mystery','sci-fi','fantasy','biography','history','poetry','classics']
+        default: null
     },
     primaryInterest:{
         type:String,
-        enum:['rare-editions','signed-copies','vintage-books','modern-classics','collectibles']
+        default: null
     },
     readingGoal:{
         type:Number,
@@ -87,6 +87,10 @@ const userSchema = new mongoose.Schema({
 })
 userSchema.pre('save', async function() {
     try {
+        if (this.gender === '') this.gender = null;
+        if (this.favoriteGenre === '') this.favoriteGenre = null;
+        if (this.primaryInterest === '') this.primaryInterest = null;
+        
         if (!this.isModified('password') || !this.password) {
             return;
         }
@@ -99,7 +103,7 @@ userSchema.pre('save', async function() {
         this.password = await bcrypt.hash(this.password, 12);
         console.log('✅ Password hashed successfully');
     } catch (error) {
-        console.error('❌ Password hashing error:', error);
+        console.error('❌ Pre-save error:', error);
         throw error;
     }
 });

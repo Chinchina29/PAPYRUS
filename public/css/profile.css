@@ -17,7 +17,7 @@ body {
     padding: 0 20px;
 }
 
-/* Header */
+/* ─── Header ─────────────────────────────────────────────── */
 .header {
     background: #f5f1ed;
     padding: 15px 0;
@@ -66,6 +66,10 @@ body {
     height: 24px;
     color: #3a3a3a;
     cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .icon-btn svg {
@@ -73,7 +77,7 @@ body {
     height: 100%;
 }
 
-/* Breadcrumb */
+/* ─── Breadcrumb ─────────────────────────────────────────── */
 .breadcrumb {
     background: white;
     padding: 15px 0;
@@ -91,7 +95,7 @@ body {
     font-weight: 600;
 }
 
-/* Profile Section */
+/* ─── Profile Section ────────────────────────────────────── */
 .profile-section {
     padding: 40px 0 80px;
 }
@@ -108,7 +112,7 @@ body {
     gap: 40px;
 }
 
-/* Sidebar */
+/* ─── Sidebar ────────────────────────────────────────────── */
 .sidebar {
     background: white;
     border-radius: 8px;
@@ -155,7 +159,7 @@ body {
     margin-top: 20px;
 }
 
-/* Main Content */
+/* ─── Main Content ───────────────────────────────────────── */
 .main-content {
     display: flex;
     flex-direction: column;
@@ -180,6 +184,7 @@ body {
     font-weight: 700;
 }
 
+/* ─── Buttons ────────────────────────────────────────────── */
 .btn-edit {
     padding: 10px 20px;
     background: #3a3a3a;
@@ -199,6 +204,88 @@ body {
     background: #2a2a2a;
 }
 
+.btn-primary {
+    padding: 12px 30px;
+    background: #3a3a3a;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.3s;
+    text-transform: uppercase;
+}
+
+.btn-primary:hover {
+    background: #2a2a2a;
+}
+
+.btn-secondary {
+    padding: 12px 30px;
+    background: transparent;
+    color: #666;
+    border: 1px solid #e0d5c7;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-secondary:hover {
+    background: #f9f7f4;
+    border-color: #7A5C3E;
+    color: #3a3a3a;
+}
+
+.btn-save {
+    padding: 10px 20px;
+    background: #7A5C3E;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-save:hover {
+    background: #5a4a3a;
+}
+
+.btn-cancel {
+    padding: 10px 20px;
+    background: transparent;
+    color: #666;
+    border: 1px solid #d4c4b0;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s;
+}
+
+.btn-cancel:hover {
+    background: #f9f7f4;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+/* ─── Profile View (profile.ejs) ─────────────────────────── */
 .profile-info {
     display: flex;
     flex-direction: column;
@@ -221,6 +308,27 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
+    border: 3px solid #e0d5c7;
+    flex-shrink: 0;
+}
+
+.avatar-circle .profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-circle .default-avatar {
+    width: 100%;
+    height: 100%;
+    background: #7A5C3E;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 28px;
+    font-weight: 600;
 }
 
 .avatar-circle svg {
@@ -254,6 +362,7 @@ body {
     color: #999;
     letter-spacing: 1px;
     margin-bottom: 8px;
+    text-transform: uppercase;
 }
 
 .info-item p {
@@ -272,6 +381,7 @@ body {
     color: #999;
     letter-spacing: 1px;
     margin-bottom: 15px;
+    text-transform: uppercase;
 }
 
 .bio-section p {
@@ -281,7 +391,166 @@ body {
     font-style: italic;
 }
 
-/* Literary Profile */
+/* ─── Edit Profile Form ──────────────────────────────────── */
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #999;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #e0d5c7;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #3a3a3a;
+    background: white;
+    font-family: inherit;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #7A5C3E;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* alias used in editprofile layout */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-section h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #3a3a3a;
+}
+
+.char-count {
+    font-size: 12px;
+    color: #999;
+    text-align: right;
+    margin-top: 5px;
+}
+
+/* ─── Profile Picture Section ────────────────────────────── */
+.profile-picture-section {
+    margin-bottom: 30px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #e0d5c7;
+}
+
+.profile-picture-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.current-picture {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #e0d5c7;
+}
+
+.current-picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Edit page larger avatar */
+.profile-avatar-edit {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #e0d5c7;
+}
+
+.avatar-upload {
+    flex: 1;
+}
+
+.upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #f9f7f4;
+    border: 1px solid #d4c4b0;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.upload-btn:hover {
+    background: #f5f1ed;
+}
+
+.upload-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.upload-hint {
+    font-size: 12px;
+    color: #999;
+    margin-top: 8px;
+}
+
+.remove-picture {
+    background: #dc3545 !important;
+    color: white !important;
+    border-color: #dc3545 !important;
+}
+
+.remove-picture:hover {
+    background: #c82333 !important;
+    border-color: #c82333 !important;
+}
+
+/* ─── Literary Profile ───────────────────────────────────── */
 .literary-profile {
     background: white;
     border-radius: 8px;
@@ -321,6 +590,7 @@ body {
     color: #999;
     letter-spacing: 1px;
     margin-bottom: 10px;
+    text-transform: uppercase;
 }
 
 .literary-card p {
@@ -329,7 +599,7 @@ body {
     color: #3a3a3a;
 }
 
-/* Footer */
+/* ─── Footer ─────────────────────────────────────────────── */
 .footer {
     background: #3d4f3d;
     color: white;
@@ -374,7 +644,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 50%;
     color: white;
 }
@@ -404,26 +674,40 @@ body {
 .footer-bottom {
     text-align: center;
     padding-top: 30px;
-    border-top: 1px solid rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     font-size: 12px;
     opacity: 0.6;
 }
 
-/* Responsive */
+/* ─── Responsive ─────────────────────────────────────────── */
 @media (max-width: 968px) {
     .profile-layout {
         grid-template-columns: 1fr;
     }
-    
+
+    .form-row,
+    .form-grid,
     .info-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .literary-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .footer-content {
         grid-template-columns: 1fr;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn-cancel,
+    .btn-save,
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        text-align: center;
     }
 }

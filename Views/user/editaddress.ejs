@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Papyrus - Add Address</title>
-    <link rel="stylesheet" href="/css/profile.css" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Papyrus - Edit Address</title>
+    <link rel="stylesheet" href="/css/profile.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       .form-group { margin-bottom: 20px; }
@@ -17,7 +17,7 @@
         border-radius: 4px; font-size: 14px; color: #3a3a3a;
         background: white; transition: border-color 0.3s;
       }
-      .form-group input:focus, .form-group select:focus { outline: none; border-color: #7a5c3e; }
+      .form-group input:focus, .form-group select:focus { outline: none; border-color: #7A5C3E; }
       .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
       .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
       .btn-primary {
@@ -32,13 +32,13 @@
         font-weight: 600; letter-spacing: 0.5px; cursor: pointer; transition: all 0.3s;
         text-transform: uppercase; text-decoration: none; display: inline-block;
       }
-      .btn-secondary:hover { background: #f9f7f4; border-color: #7a5c3e; color: #3a3a3a; }
+      .btn-secondary:hover { background: #f9f7f4; border-color: #7A5C3E; color: #3a3a3a; }
       .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 20px; }
       .checkbox-group input[type="checkbox"] { width: auto; margin: 0; }
       .checkbox-group label { margin: 0; font-size: 14px; color: #3a3a3a; text-transform: none; font-weight: 400; }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <header class="header">
       <div class="container">
         <div class="logo">
@@ -85,7 +85,7 @@
     <div class="breadcrumb">
       <div class="container">
         <a href="/home">SHOP</a> / <a href="/profile">PROFILE</a> /
-        <a href="/profile/addresses">ADDRESSES</a> / <span>ADD ADDRESS</span>
+        <a href="/profile/addresses">ADDRESSES</a> / <span>EDIT ADDRESS</span>
       </div>
     </div>
 
@@ -97,62 +97,62 @@
           <main class="main-content">
             <div class="profile-card">
               <div class="card-header">
-                <h2>Add New Address</h2>
+                <h2>Edit Address</h2>
                 <a href="/profile/addresses" class="btn-secondary">BACK TO ADDRESSES</a>
               </div>
               <form id="addressForm">
                 <div class="form-row">
                   <div class="form-group">
                     <label for="fullName">Full Name</label>
-                    <input type="text" id="fullName" name="fullName" placeholder="Enter full name">
+                    <input type="text" id="fullName" name="fullName" value="<%= address.fullName %>">
                   </div>
                   <div class="form-group">
                     <label for="phone">Phone Number</label>
-                    <input type="tel" id="phone" name="phone" placeholder="9876543210">
+                    <input type="tel" id="phone" name="phone" value="<%= address.phone %>">
                   </div>
                 </div>
                 <div class="form-group">
                   <label for="addressLine1">Address Line 1</label>
-                  <input type="text" id="addressLine1" name="addressLine1" placeholder="House/Flat No., Street Name">
+                  <input type="text" id="addressLine1" name="addressLine1" value="<%= address.addressLine1 %>">
                 </div>
                 <div class="form-group">
                   <label for="addressLine2">Address Line 2 (Optional)</label>
-                  <input type="text" id="addressLine2" name="addressLine2" placeholder="Area, Landmark">
+                  <input type="text" id="addressLine2" name="addressLine2" value="<%= address.addressLine2 || '' %>">
                 </div>
                 <div class="form-row-3">
                   <div class="form-group">
                     <label for="city">City</label>
-                    <input type="text" id="city" name="city" placeholder="Enter city">
+                    <input type="text" id="city" name="city" value="<%= address.city %>">
                   </div>
                   <div class="form-group">
                     <label for="state">State</label>
-                    <input type="text" id="state" name="state" placeholder="Enter state">
+                    <input type="text" id="state" name="state" value="<%= address.state %>">
                   </div>
                   <div class="form-group">
                     <label for="postalCode">Postal Code</label>
-                    <input type="text" id="postalCode" name="postalCode" placeholder="123456">
+                    <input type="text" id="postalCode" name="postalCode" value="<%= address.postalCode %>">
                   </div>
                 </div>
                 <div class="form-row">
                   <div class="form-group">
                     <label for="country">Country</label>
-                    <input type="text" id="country" name="country" value="India">
+                    <input type="text" id="country" name="country" value="<%= address.country %>">
                   </div>
                   <div class="form-group">
                     <label for="type">Address Type</label>
                     <select id="type" name="type">
-                      <option value="home">🏠 Home</option>
-                      <option value="work">🏢 Work</option>
-                      <option value="other">📍 Other</option>
+                      <option value="home" <%= address.type === 'home' ? 'selected' : '' %>>🏠 Home</option>
+                      <option value="work" <%= address.type === 'work' ? 'selected' : '' %>>🏢 Work</option>
+                      <option value="other" <%= address.type === 'other' ? 'selected' : '' %>>📍 Other</option>
                     </select>
                   </div>
                 </div>
                 <div class="checkbox-group">
-                  <input type="checkbox" id="isDefault" name="isDefault">
+                  <input type="checkbox" id="isDefault" name="isDefault" <%= address.isDefault ? 'checked' : '' %>>
                   <label for="isDefault">Set as default address</label>
                 </div>
                 <div style="display: flex; gap: 15px; margin-top: 30px; padding-top: 30px; border-top: 1px solid #e0d5c7;">
-                  <button type="submit" class="btn-primary">Save Address</button>
+                  <button type="submit" class="btn-primary">Update Address</button>
                   <a href="/profile/addresses" class="btn-secondary">Cancel</a>
                 </div>
               </form>
@@ -214,46 +214,47 @@
     </footer>
 
     <script>
-      document.getElementById("addressForm").addEventListener("submit", async (e) => {
+      document.getElementById('addressForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
-        data.isDefault = document.getElementById("isDefault").checked;
+        data.isDefault = document.getElementById('isDefault').checked;
 
         if (!data.fullName || !data.phone || !data.addressLine1 || !data.city || !data.state || !data.postalCode || !data.country) {
-          Swal.fire({ title: "Validation Error!", text: "Please fill all required fields", icon: "error", confirmButtonColor: "#5a4a3a" });
+          Swal.fire({ title: 'Validation Error!', text: 'Please fill all required fields', icon: 'error', confirmButtonColor: '#5a4a3a' });
           return;
         }
         if (!/^[6-9]\d{9}$/.test(data.phone)) {
-          Swal.fire({ title: "Invalid Phone!", text: "Please enter a valid Indian phone number", icon: "error", confirmButtonColor: "#5a4a3a" });
+          Swal.fire({ title: 'Invalid Phone!', text: 'Please enter a valid Indian phone number', icon: 'error', confirmButtonColor: '#5a4a3a' });
           return;
         }
         if (!/^\d{6}$/.test(data.postalCode)) {
-          Swal.fire({ title: "Invalid Postal Code!", text: "Please enter a valid 6-digit postal code", icon: "error", confirmButtonColor: "#5a4a3a" });
+          Swal.fire({ title: 'Invalid Postal Code!', text: 'Please enter a valid 6-digit postal code', icon: 'error', confirmButtonColor: '#5a4a3a' });
           return;
         }
 
         try {
-          const response = await fetch("/profile/addresses/add", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
+          const addressId = '<%= address._id %>';
+          const response = await fetch(`/profile/addresses/${addressId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
           });
           const result = await response.json();
           if (result.success) {
-            Swal.fire({ title: "Success!", text: "Address added successfully", icon: "success", confirmButtonColor: "#5a4a3a" })
-              .then(() => { window.location.href = "/profile/addresses"; });
+            Swal.fire({ title: 'Success!', text: 'Address updated successfully', icon: 'success', confirmButtonColor: '#5a4a3a' })
+              .then(() => { window.location.href = '/profile/addresses'; });
           } else {
-            Swal.fire({ title: "Error!", text: result.message, icon: "error", confirmButtonColor: "#5a4a3a" });
+            Swal.fire({ title: 'Error!', text: result.message, icon: 'error', confirmButtonColor: '#5a4a3a' });
           }
         } catch (error) {
-          Swal.fire({ title: "Error!", text: "Failed to add address", icon: "error", confirmButtonColor: "#5a4a3a" });
+          Swal.fire({ title: 'Error!', text: 'Failed to update address', icon: 'error', confirmButtonColor: '#5a4a3a' });
         }
       });
 
       history.pushState(null, null, location.href);
       window.onpopstate = function () { history.go(1); };
-      window.addEventListener("beforeunload", function () { history.replaceState(null, null, location.href); });
+      window.addEventListener('beforeunload', function () { history.replaceState(null, null, location.href); });
     </script>
-  </body>
+</body>
 </html>

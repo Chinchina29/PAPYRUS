@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Papyrus - Edit Profile</title>
-    <link rel="stylesheet" href="/css/editprofile.css">
+    <link rel="stylesheet" href="/css/profile.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
@@ -61,234 +61,106 @@
 
     <section class="profile-section">
         <div class="container">
-            <h1 class="page-title">Edit Profile</h1>
-            
+            <h1 class="page-title">My Account</h1>
             <div class="profile-layout">
-                <aside class="sidebar">
-                    <nav class="sidebar-nav">
-                        <a href="/profile" class="nav-item active">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="3" width="7" height="7"/>
-                                <rect x="14" y="3" width="7" height="7"/>
-                                <rect x="14" y="14" width="7" height="7"/>
-                                <rect x="3" y="14" width="7" height="7"/>
-                            </svg>
-                            OVERVIEW
-                        </a>
-                        <a href="#orders" class="nav-item">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 2L7 6H21L19 2H9Z"/>
-                                <path d="M7 6L5 20H19L21 6"/>
-                            </svg>
-                            ORDERS
-                        </a>
-                        <a href="#wishlist" class="nav-item">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                            </svg>
-                            WISHLIST
-                        </a>
-                        <a href="#address" class="nav-item">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                                <circle cx="12" cy="10" r="3"/>
-                            </svg>
-                            ADDRESS BOOK
-                        </a>
-                        <a href="#wallet" class="nav-item">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="2" y="5" width="20" height="14" rx="2"/>
-                                <path d="M2 10h20"/>
-                            </svg>
-                            WALLET
-                        </a>
-                        <a href="#security" class="nav-item">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                            SECURITY
-                        </a>
-                        <a href="/logout" class="nav-item logout">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                                <polyline points="16 17 21 12 16 7"/>
-                                <line x1="21" y1="12" x2="9" y2="12"/>
-                            </svg>
-                            SIGN OUT
-                        </a>
-                    </nav>
-                </aside>
-
+                <%- include('../partials/profile-sidebar', { currentPage: 'edit' }) %>
                 <main class="main-content">
-                    <form action="/profile/update" method="POST" enctype="multipart/form-data">
-                        <div class="profile-card">
-                            <div class="card-header">
-                                <h2>Personal Information</h2>
-                                <div class="action-buttons">
-                                    <a href="/profile" class="btn-cancel">CANCEL</a>
-                                    <button type="submit" class="btn-save">SAVE CHANGES</button>
-                                </div>
-                            </div>
-                            
-                            <div class="profile-info">
-                                <div class="profile-avatar-edit">
-                                    <div class="avatar-circle">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                            <circle cx="12" cy="7" r="4"/>
-                                        </svg>
-                                    </div>
-                                    <div class="avatar-upload">
-                                        <label for="avatar" class="upload-btn">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                                <polyline points="17 8 12 3 7 8"/>
-                                                <line x1="12" y1="3" x2="12" y2="15"/>
-                                            </svg>
-                                            Upload Photo
-                                        </label>
-                                        <input type="file" id="avatar" name="avatar" accept="image/*" hidden>
-                                        <p class="upload-hint">JPG, PNG or GIF. Max size 2MB</p>
-                                    </div>
-                                </div>
-
-                                <div class="form-section">
-                                    <h3>Basic Information</h3>
-                                    <div class="form-grid">
-                                        <div class="form-group">
-                                            <label for="firstName">First Name *</label>
-                                            <input type="text" id="firstName" name="firstName" value="<%= user.firstName %>" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="lastName">Last Name *</label>
-                                            <input type="text" id="lastName" name="lastName" value="<%= user.lastName %>" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="email">Email Address *</label>
-                                            <div class="email-field-wrapper">
-                                                <input type="email" id="email" name="email" value="<%= user.email %>" readonly>
-                                                <button type="button" id="changeEmailBtn" class="change-email-btn">Change Email</button>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="phone">Phone Number</label>
-                                            <input type="tel" id="phone" name="phone" value="<%= user.phone || '' %>">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="dob">Date of Birth</label>
-                                            <input type="date" id="dob" name="dateOfBirth" value="<%= user.dateOfBirth ? user.dateOfBirth.toISOString().split('T')[0] : '' %>">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="gender">Gender</label>
-                                            <select id="gender" name="gender">
-                                                <option value="">Select Gender</option>
-                                                <option value="male" <%= user.gender === 'male' ? 'selected' : '' %>>Male</option>
-                                                <option value="female" <%= user.gender === 'female' ? 'selected' : '' %>>Female</option>
-                                                <option value="other" <%= user.gender === 'other' ? 'selected' : '' %>>Other</option>
-                                                <option value="prefer-not" <%= user.gender === 'prefer-not' ? 'selected' : '' %>>Prefer not to say</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="form-section">
-                                    <h3>Preferences</h3>
-                                    <div class="form-grid">
-                                        <div class="form-group full-width">
-                                            <label for="language">Language Preference</label>
-                                            <input type="text" id="language" name="language" value="English (UK), French">
-                                        </div>
-                                        <div class="form-group full-width">
-                                            <label for="userType">User Type</label>
-                                            <input type="text" id="userType" name="userType" value="AVID COLLECTOR">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="form-section">
-                                    <h3>Bio / About Me</h3>
-                                    <div class="form-group full-width">
-                                        <textarea id="bio" name="bio" rows="6" placeholder="Tell us about yourself and your love for books..."><%= user.bio || '' %></textarea>
-                                        <span class="char-count">0 / 500 characters</span>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <h2>Personal Information</h2>
+                            <a href="/profile" class="btn-secondary">BACK TO PROFILE</a>
                         </div>
 
-                        <div class="literary-profile">
-                            <h2>Literary Profile</h2>
-                            <div class="form-grid">
+                        <form id="profileForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="firstName">First Name</label>
+                                    <input type="text" id="firstName" name="firstName" value="<%= user.firstName %>">
+                                </div>
+                                <div class="form-group">
+                                    <label for="lastName">Last Name</label>
+                                    <input type="text" id="lastName" name="lastName" value="<%= user.lastName %>">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="email" id="email" value="<%= user.email %>" disabled style="background: #f9f7f4; color: #999; flex: 1;">
+                                    <button type="button" id="changeEmailBtn" class="btn-secondary" style="padding: 8px 16px; font-size: 12px; white-space: nowrap;">CHANGE EMAIL</button>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="phone">Phone Number</label>
+                                    <input type="tel" id="phone" name="phone" value="<%= user.phone || '' %>" placeholder="Enter phone number">
+                                </div>
+                                <div class="form-group">
+                                    <label for="dateOfBirth">Date of Birth</label>
+                                    <input type="date" id="dateOfBirth" name="dateOfBirth" value="<%= user.dateOfBirth ? user.dateOfBirth.toISOString().split('T')[0] : '' %>">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="gender">Gender</label>
+                                    <select id="gender" name="gender">
+                                        <option value="">Select Gender</option>
+                                        <option value="male" <%= user.gender === 'male' ? 'selected' : '' %>>Male</option>
+                                        <option value="female" <%= user.gender === 'female' ? 'selected' : '' %>>Female</option>
+                                        <option value="other" <%= user.gender === 'other' ? 'selected' : '' %>>Other</option>
+                                    </select>
+                                </div>
                                 <div class="form-group">
                                     <label for="favoriteGenre">Favorite Genre</label>
                                     <select id="favoriteGenre" name="favoriteGenre">
                                         <option value="">Select Genre</option>
-                                        <option value="literary-fiction" <%= user.favoriteGenre === 'literary-fiction' ? 'selected' : '' %>>Literary Fiction</option>
+                                        <option value="fiction" <%= user.favoriteGenre === 'fiction' ? 'selected' : '' %>>Fiction</option>
+                                        <option value="non-fiction" <%= user.favoriteGenre === 'non-fiction' ? 'selected' : '' %>>Non-Fiction</option>
                                         <option value="mystery" <%= user.favoriteGenre === 'mystery' ? 'selected' : '' %>>Mystery</option>
+                                        <option value="romance" <%= user.favoriteGenre === 'romance' ? 'selected' : '' %>>Romance</option>
                                         <option value="sci-fi" <%= user.favoriteGenre === 'sci-fi' ? 'selected' : '' %>>Science Fiction</option>
                                         <option value="fantasy" <%= user.favoriteGenre === 'fantasy' ? 'selected' : '' %>>Fantasy</option>
                                         <option value="biography" <%= user.favoriteGenre === 'biography' ? 'selected' : '' %>>Biography</option>
                                         <option value="history" <%= user.favoriteGenre === 'history' ? 'selected' : '' %>>History</option>
-                                        <option value="poetry" <%= user.favoriteGenre === 'poetry' ? 'selected' : '' %>>Poetry</option>
-                                        <option value="classics" <%= user.favoriteGenre === 'classics' ? 'selected' : '' %>>Classics</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <div class="form-row">
                                 <div class="form-group">
                                     <label for="primaryInterest">Primary Interest</label>
                                     <select id="primaryInterest" name="primaryInterest">
                                         <option value="">Select Interest</option>
-                                        <option value="rare-editions" <%= user.primaryInterest === 'rare-editions' ? 'selected' : '' %>>Rare First Editions</option>
-                                        <option value="signed-copies" <%= user.primaryInterest === 'signed-copies' ? 'selected' : '' %>>Signed Copies</option>
-                                        <option value="vintage-books" <%= user.primaryInterest === 'vintage-books' ? 'selected' : '' %>>Vintage Books</option>
-                                        <option value="modern-classics" <%= user.primaryInterest === 'modern-classics' ? 'selected' : '' %>>Modern Classics</option>
-                                        <option value="collectibles" <%= user.primaryInterest === 'collectibles' ? 'selected' : '' %>>Collectibles</option>
+                                        <option value="reading" <%= user.primaryInterest === 'reading' ? 'selected' : '' %>>Reading</option>
+                                        <option value="writing" <%= user.primaryInterest === 'writing' ? 'selected' : '' %>>Writing</option>
+                                        <option value="collecting" <%= user.primaryInterest === 'collecting' ? 'selected' : '' %>>Book Collecting</option>
+                                        <option value="reviewing" <%= user.primaryInterest === 'reviewing' ? 'selected' : '' %>>Book Reviewing</option>
+                                        <option value="discussing" <%= user.primaryInterest === 'discussing' ? 'selected' : '' %>>Book Discussions</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label for="readingGoal">Reading Goal (Books/Year)</label>
-                                    <input type="number" id="readingGoal" name="readingGoal" value="<%= user.readingGoal || '' %>" min="1" max="365">
+                                    <label for="readingGoal">Reading Goal (books/year)</label>
+                                    <input type="number" id="readingGoal" name="readingGoal" value="<%= user.readingGoal || '' %>" placeholder="12" min="1" max="365">
                                 </div>
                             </div>
-                        </div>
-                    </form>
+
+                            <div class="form-group">
+                                <label for="bio">Bio / About Me</label>
+                                <textarea id="bio" name="bio" placeholder="Tell us about yourself..."><%= user.bio || '' %></textarea>
+                            </div>
+
+                            <div style="display: flex; gap: 15px; margin-top: 30px; padding-top: 30px; border-top: 1px solid #e0d5c7;">
+                                <button type="submit" class="btn-primary">Save Changes</button>
+                                <a href="/profile" class="btn-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
                 </main>
             </div>
         </div>
     </section>
-
-    <div id="emailChangeModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Change Email Address</h3>
-                <span class="close" id="closeModal">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div id="emailChangeStep1" class="email-step">
-                    <p>Enter your new email address. We'll send a verification code to confirm the change.</p>
-                    <div class="form-group">
-                        <label for="newEmail">New Email Address</label>
-                        <input type="email" id="newEmail" placeholder="Enter new email address" required>
-                    </div>
-                    <div class="modal-actions">
-                        <button type="button" id="cancelEmailChange" class="btn-cancel">Cancel</button>
-                        <button type="button" id="sendEmailOTP" class="btn-primary">Send Verification Code</button>
-                    </div>
-                </div>
-                
-                <div id="emailChangeStep2" class="email-step" style="display: none;">
-                    <p>We've sent a verification code to your new email address. Please enter it below:</p>
-                    <div class="form-group">
-                        <label for="emailOTP">Verification Code</label>
-                        <input type="text" id="emailOTP" placeholder="Enter 6-digit code" maxlength="6" required>
-                    </div>
-                    <div class="modal-actions">
-                        <button type="button" id="cancelEmailVerification" class="btn-cancel">Cancel</button>
-                        <button type="button" id="verifyEmailOTP" class="btn-primary">Verify & Change Email</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <footer class="footer">
         <div class="container">
@@ -306,7 +178,12 @@
                         </svg>
                         <span>PAPYRUS</span>
                     </div>
-                    <p>Preserving literary heritage through sustainable book trading. Every book has a story, and every story deserves to be shared.</p>
+                    <p>Preserving literary heritage through sustainable book trading.</p>
+                    <div class="social-links">
+                        <a href="#"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg></a>
+                        <a href="#"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg></a>
+                        <a href="#"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg></a>
+                    </div>
                 </div>
                 <div class="footer-section">
                     <h4>Explore</h4>
@@ -314,6 +191,7 @@
                         <li><a href="/browse">Browse Books</a></li>
                         <li><a href="/rare">Rare Editions</a></li>
                         <li><a href="/collections">Collections</a></li>
+                        <li><a href="/gifts">Gift Cards</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
@@ -321,6 +199,7 @@
                     <ul>
                         <li><a href="/about">About Us</a></li>
                         <li><a href="/stories">Reader Stories</a></li>
+                        <li><a href="/events">Events</a></li>
                         <li><a href="/contact">Contact</a></li>
                     </ul>
                 </div>
@@ -328,6 +207,7 @@
                     <h4>Support</h4>
                     <ul>
                         <li><a href="/shipping">Shipping Info</a></li>
+                        <li><a href="/guide">Condition Guide</a></li>
                         <li><a href="/privacy">Privacy Policy</a></li>
                         <li><a href="/terms">Terms of Service</a></li>
                     </ul>
@@ -339,327 +219,309 @@
         </div>
     </footer>
 
+    <!-- Email Change Modal -->
+    <div id="emailChangeModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 400px; position: relative;">
+            <button id="closeEmailModal" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: #999;">&times;</button>
+            <h3 style="margin: 0 0 20px 0; color: #5a4a3a;">Change Email Address</h3>
+
+            <div id="emailStep1">
+                <p style="margin-bottom: 15px; color: #666; font-size: 14px;">Enter your new email address. We'll send a verification code to confirm the change.</p>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; color: #5a4a3a; font-weight: 500;">New Email Address</label>
+                    <input type="email" id="newEmail" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="sendEmailOTP" style="flex: 1; background: #5a4a3a; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">Send Verification Code</button>
+                    <button id="cancelEmailChange" style="flex: 1; background: #ccc; color: #666; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">Cancel</button>
+                </div>
+            </div>
+
+            <div id="emailStep2" style="display: none;">
+                <p style="margin-bottom: 15px; color: #666; font-size: 14px;">We've sent a verification code to your new email address. Please enter it below.</p>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; color: #5a4a3a; font-weight: 500;">Verification Code</label>
+                    <input type="text" id="emailOTP" maxlength="6" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; text-align: center; letter-spacing: 2px;">
+                </div>
+                <div id="emailTimer" style="text-align: center; margin-bottom: 10px; color: #666; font-size: 12px;"></div>
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <button id="resendOTPBtn" disabled style="background: none; border: none; color: #999; font-size: 13px; cursor: not-allowed;">
+                        Resend OTP (<span id="resendCountdown">30</span>s)
+                    </button>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="verifyEmailOTP" style="flex: 1; background: #5a4a3a; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">Verify & Change Email</button>
+                    <button id="backToEmailStep1" style="flex: 1; background: #ccc; color: #666; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">Back</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const bioTextarea = document.getElementById('bio');
-        const charCount = document.querySelector('.char-count');
-        
-        bioTextarea.addEventListener('input', function() {
-            const count = this.value.length;
-            charCount.textContent = `${count} / 500 characters`;
-            if (count > 500) {
-                charCount.style.color = '#d9534f';
-            } else {
-                charCount.style.color = '#999';
-            }
-        });
-        
-        bioTextarea.dispatchEvent(new Event('input'));
+        let emailTimer;
+        let emailTimeLeft = 0;
+        let resendCountdownTimer;
 
-        const emailChangeModal = document.getElementById('emailChangeModal');
-        const changeEmailBtn = document.getElementById('changeEmailBtn');
-        const closeModal = document.getElementById('closeModal');
-        const cancelEmailChange = document.getElementById('cancelEmailChange');
-        const cancelEmailVerification = document.getElementById('cancelEmailVerification');
-        const sendEmailOTP = document.getElementById('sendEmailOTP');
-        const verifyEmailOTP = document.getElementById('verifyEmailOTP');
-        const emailStep1 = document.getElementById('emailChangeStep1');
-        const emailStep2 = document.getElementById('emailChangeStep2');
-
-        changeEmailBtn.addEventListener('click', () => {
-            emailChangeModal.style.display = 'block';
-            emailStep1.style.display = 'block';
-            emailStep2.style.display = 'none';
-        });
-
-        const closeEmailModal = () => {
-            emailChangeModal.style.display = 'none';
-            emailStep1.style.display = 'block';
-            emailStep2.style.display = 'none';
+        document.getElementById('changeEmailBtn').addEventListener('click', () => {
+            document.getElementById('emailChangeModal').style.display = 'flex';
+            document.getElementById('emailStep1').style.display = 'block';
+            document.getElementById('emailStep2').style.display = 'none';
             document.getElementById('newEmail').value = '';
-            document.getElementById('emailOTP').value = '';
-        };
+        });
 
-        closeModal.addEventListener('click', closeEmailModal);
-        cancelEmailChange.addEventListener('click', closeEmailModal);
-        cancelEmailVerification.addEventListener('click', closeEmailModal);
+        document.getElementById('closeEmailModal').addEventListener('click', () => {
+            document.getElementById('emailChangeModal').style.display = 'none';
+            if (emailTimer) clearInterval(emailTimer);
+            if (resendCountdownTimer) clearInterval(resendCountdownTimer);
+        });
 
-        sendEmailOTP.addEventListener('click', async () => {
-            const newEmail = document.getElementById('newEmail').value;
-            
+        document.getElementById('cancelEmailChange').addEventListener('click', () => {
+            document.getElementById('emailChangeModal').style.display = 'none';
+            if (emailTimer) clearInterval(emailTimer);
+            if (resendCountdownTimer) clearInterval(resendCountdownTimer);
+        });
+
+        document.getElementById('backToEmailStep1').addEventListener('click', () => {
+            document.getElementById('emailStep1').style.display = 'block';
+            document.getElementById('emailStep2').style.display = 'none';
+            if (emailTimer) clearInterval(emailTimer);
+            if (resendCountdownTimer) clearInterval(resendCountdownTimer);
+        });
+
+        document.getElementById('sendEmailOTP').addEventListener('click', async () => {
+            const newEmail = document.getElementById('newEmail').value.trim();
             if (!newEmail) {
-                Swal.fire({
-                    title: 'Missing Email',
-                    text: 'Please enter a new email address',
-                    icon: 'warning',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#7A5C3E'
-                });
+                Swal.fire({ title: 'Error!', text: 'Please enter a new email address', icon: 'error', confirmButtonColor: '#5a4a3a' });
                 return;
             }
-
-            sendEmailOTP.disabled = true;
-            sendEmailOTP.textContent = 'Sending...';
-
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+                Swal.fire({ title: 'Invalid Email!', text: 'Please enter a valid email address', icon: 'error', confirmButtonColor: '#5a4a3a' });
+                return;
+            }
             try {
                 const response = await fetch('/profile/request-email-change', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ newEmail })
                 });
-
                 const result = await response.json();
-
                 if (result.success) {
-                    emailStep1.style.display = 'none';
-                    emailStep2.style.display = 'block';
+                    document.getElementById('emailStep1').style.display = 'none';
+                    document.getElementById('emailStep2').style.display = 'block';
+                    document.getElementById('emailOTP').value = '';
+                    emailTimeLeft = 600;
+                    updateEmailTimer();
+                    emailTimer = setInterval(updateEmailTimer, 1000);
+                    startResendCountdown();
+                    Swal.fire({ title: 'OTP Sent!', text: 'Verification code sent to your new email address', icon: 'success', confirmButtonColor: '#5a4a3a' });
                 } else {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: result.message || 'Failed to send verification code',
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#7A5C3E'
-                    });
+                    Swal.fire({ title: 'Error!', text: result.message, icon: 'error', confirmButtonColor: '#5a4a3a' });
                 }
             } catch (error) {
-                console.error('Error:', error);
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'An error occurred. Please try again.',
-                    icon: 'error',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#7A5C3E'
-                });
-            } finally {
-                sendEmailOTP.disabled = false;
-                sendEmailOTP.textContent = 'Send Verification Code';
+                Swal.fire({ title: 'Error!', text: 'Failed to send verification code', icon: 'error', confirmButtonColor: '#5a4a3a' });
             }
         });
 
-        verifyEmailOTP.addEventListener('click', async () => {
-            const otp = document.getElementById('emailOTP').value;
-            
+        document.getElementById('verifyEmailOTP').addEventListener('click', async () => {
+            const otp = document.getElementById('emailOTP').value.trim();
             if (!otp) {
-                Swal.fire({
-                    title: 'Missing OTP',
-                    text: 'Please enter the verification code',
-                    icon: 'warning',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#7A5C3E'
-                });
+                Swal.fire({ title: 'Error!', text: 'Please enter the verification code', icon: 'error', confirmButtonColor: '#5a4a3a' });
                 return;
             }
-
-            verifyEmailOTP.disabled = true;
-            verifyEmailOTP.textContent = 'Verifying...';
-
+            if (otp.length !== 6) {
+                Swal.fire({ title: 'Invalid Code!', text: 'Verification code must be 6 digits', icon: 'error', confirmButtonColor: '#5a4a3a' });
+                return;
+            }
             try {
                 const response = await fetch('/profile/verify-email-change', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ otp })
                 });
-
                 const result = await response.json();
-
                 if (result.success) {
-                    Swal.fire({
-                        title: 'Success!',
-                        text: 'Email changed successfully!',
-                        icon: 'success',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#7A5C3E'
-                    }).then(() => {
-                        document.getElementById('email').value = result.data.newEmail;
-                        closeEmailModal();
-                        location.reload();
-                    });
+                    document.getElementById('emailChangeModal').style.display = 'none';
+                    if (emailTimer) clearInterval(emailTimer);
+                    if (resendCountdownTimer) clearInterval(resendCountdownTimer);
+                    Swal.fire({ title: 'Success!', text: 'Email address changed successfully', icon: 'success', confirmButtonColor: '#5a4a3a' })
+                        .then(() => {
+                            document.getElementById('email').value = result.data.newEmail;
+                            window.location.reload();
+                        });
                 } else {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: result.message || 'Failed to verify code',
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#7A5C3E'
-                    });
+                    Swal.fire({ title: 'Error!', text: result.message, icon: 'error', confirmButtonColor: '#5a4a3a' });
                 }
             } catch (error) {
-                console.error('Error:', error);
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'An error occurred. Please try again.',
-                    icon: 'error',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#7A5C3E'
-                });
-            } finally {
-                verifyEmailOTP.disabled = false;
-                verifyEmailOTP.textContent = 'Verify & Change Email';
+                Swal.fire({ title: 'Error!', text: 'Failed to verify code', icon: 'error', confirmButtonColor: '#5a4a3a' });
             }
         });
 
-        document.querySelector('form').addEventListener('submit', async (e) => {
+        document.getElementById('resendOTPBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('resendOTPBtn');
+            if (btn.disabled) return;
+            try {
+                const response = await fetch('/profile/resend-email-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('emailOTP').value = '';
+                    emailTimeLeft = 600;
+                    if (emailTimer) clearInterval(emailTimer);
+                    updateEmailTimer();
+                    emailTimer = setInterval(updateEmailTimer, 1000);
+                    startResendCountdown();
+                    Swal.fire({ title: 'OTP Resent!', text: 'A new verification code has been sent', icon: 'success', confirmButtonColor: '#5a4a3a' });
+                } else {
+                    Swal.fire({ title: 'Error!', text: result.message, icon: 'error', confirmButtonColor: '#5a4a3a' });
+                }
+            } catch (error) {
+                Swal.fire({ title: 'Error!', text: 'Failed to resend OTP', icon: 'error', confirmButtonColor: '#5a4a3a' });
+            }
+        });
+
+        function startResendCountdown() {
+            if (resendCountdownTimer) clearInterval(resendCountdownTimer);
+            const btn = document.getElementById('resendOTPBtn');
+            let seconds = 30;
+            btn.disabled = true;
+            btn.style.color = '#999';
+            btn.style.cursor = 'not-allowed';
+            btn.style.textDecoration = 'none';
+            btn.innerHTML = `Resend OTP (<span id="resendCountdown">${seconds}</span>s)`;
+
+            resendCountdownTimer = setInterval(() => {
+                seconds--;
+                const span = document.getElementById('resendCountdown');
+                if (span) span.textContent = seconds;
+                if (seconds <= 0) {
+                    clearInterval(resendCountdownTimer);
+                    btn.disabled = false;
+                    btn.style.color = '#5a4a3a';
+                    btn.style.cursor = 'pointer';
+                    btn.style.textDecoration = 'underline';
+                    btn.innerHTML = 'Resend OTP';
+                }
+            }, 1000);
+        }
+
+        function updateEmailTimer() {
+            if (emailTimeLeft <= 0) {
+                clearInterval(emailTimer);
+                document.getElementById('emailTimer').innerHTML = '<span style="color: #e74c3c;">Code expired. Please request a new one.</span>';
+                return;
+            }
+            const minutes = Math.floor(emailTimeLeft / 60);
+            const seconds = emailTimeLeft % 60;
+            document.getElementById('emailTimer').innerHTML = `Code expires in ${minutes}:${seconds.toString().padStart(2, '0')}`;
+            emailTimeLeft--;
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData);
-            
+            const data = {};
+            for (let [key, value] of formData.entries()) { data[key] = value; }
+            if (!validateForm(data)) return;
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Updating...';
+            submitBtn.disabled = true;
             try {
                 const response = await fetch('/profile/update', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                
                 const result = await response.json();
-                
                 if (result.success) {
-                    Swal.fire({
-                        title: 'Success!',
-                        text: 'Profile updated successfully!',
-                        icon: 'success',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#7A5C3E'
-                    });
+                    Swal.fire({ title: 'Success!', text: 'Profile updated successfully', icon: 'success', confirmButtonColor: '#5a4a3a' })
+                        .then(() => { window.location.href = '/profile'; });
                 } else {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: result.message || 'Failed to update profile',
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#7A5C3E'
-                    });
+                    Swal.fire({ title: 'Error!', text: result.message, icon: 'error', confirmButtonColor: '#5a4a3a' });
                 }
             } catch (error) {
-                console.error('Error:', error);
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'An error occurred. Please try again.',
-                    icon: 'error',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#7A5C3E'
-                });
+                Swal.fire({ title: 'Error!', text: 'Failed to update profile: ' + error.message, icon: 'error', confirmButtonColor: '#5a4a3a' });
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
             }
         });
+
+        function validateForm(data) {
+            clearErrors();
+            let isValid = true;
+            if (!data.firstName || data.firstName.trim().length < 2) {
+                showError('firstName', 'First name must be at least 2 characters');
+                isValid = false;
+            }
+            if (!data.lastName || data.lastName.trim().length < 2) {
+                showError('lastName', 'Last name must be at least 2 characters');
+                isValid = false;
+            }
+            if (data.phone && data.phone.trim()) {
+                if (!/^[0-9]{10}$/.test(data.phone.replace(/\D/g, ''))) {
+                    showError('phone', 'Please enter a valid 10-digit phone number');
+                    isValid = false;
+                }
+            }
+            if (data.dateOfBirth) {
+                const age = new Date().getFullYear() - new Date(data.dateOfBirth).getFullYear();
+                if (age < 13 || age > 120) {
+                    showError('dateOfBirth', 'Please enter a valid date of birth');
+                    isValid = false;
+                }
+            }
+            if (data.readingGoal && (data.readingGoal < 1 || data.readingGoal > 365)) {
+                showError('readingGoal', 'Reading goal must be between 1 and 365 books');
+                isValid = false;
+            }
+            if (data.bio && data.bio.length > 500) {
+                showError('bio', 'Bio must be less than 500 characters');
+                isValid = false;
+            }
+            if (!isValid) {
+                Swal.fire({ title: 'Validation Error!', text: 'Please fix the errors and try again', icon: 'error', confirmButtonColor: '#5a4a3a' });
+            }
+            return isValid;
+        }
+
+        function showError(fieldName, message) {
+            const field = document.getElementById(fieldName);
+            if (field) {
+                field.style.borderColor = '#dc3545';
+                let errorDiv = field.parentNode.querySelector('.error-message');
+                if (!errorDiv) {
+                    errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message';
+                    errorDiv.style.color = '#dc3545';
+                    errorDiv.style.fontSize = '12px';
+                    errorDiv.style.marginTop = '5px';
+                    field.parentNode.appendChild(errorDiv);
+                }
+                errorDiv.textContent = message;
+            }
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.error-message').forEach(e => e.remove());
+            document.querySelectorAll('input, select, textarea').forEach(i => { i.style.borderColor = '#e0d5c7'; });
+        }
+
+        document.querySelectorAll('input, select, textarea').forEach(input => {
+            input.addEventListener('input', () => {
+                if (input.style.borderColor === 'rgb(220, 53, 69)') {
+                    input.style.borderColor = '#e0d5c7';
+                    const errorMsg = input.parentNode.querySelector('.error-message');
+                    if (errorMsg) errorMsg.remove();
+                }
+            });
+        });
+
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () { history.go(1); };
+        window.addEventListener('beforeunload', function () { history.replaceState(null, null, location.href); });
     </script>
-
-    <style>
-        .email-field-wrapper {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .email-field-wrapper input {
-            flex: 1;
-        }
-
-        .change-email-btn {
-            background: #7A5C3E;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-
-        .change-email-btn:hover {
-            background: #5a4a3a;
-        }
-
-        .modal {
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 0;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h3 {
-            margin: 0;
-            color: #333;
-        }
-
-        .close {
-            color: #aaa;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .close:hover {
-            color: #000;
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-
-        .btn-primary {
-            background: #7A5C3E;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .btn-primary:hover {
-            background: #5a4a3a;
-        }
-
-        .btn-primary:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        .btn-cancel {
-            background: #f8f9fa;
-            color: #6c757d;
-            border: 1px solid #dee2e6;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .btn-cancel:hover {
-            background: #e9ecef;
-        }
-    </style>
 </body>
 </html>

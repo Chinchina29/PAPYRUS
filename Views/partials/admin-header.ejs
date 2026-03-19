@@ -4,30 +4,94 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Papyrus Admin - <%= pageTitle %></title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        "warm-brown": "#8B4513",
-                        "light-brown": "#D2B48C",
-                        "cream": "#F5F5DC",
-                        "dark-brown": "#654321",
-                        "orange-accent": "#FF8C00",
-                        "beige-bg": "#F5F5DC"
-                    },
-                    fontFamily: {
-                        "sans": ["Inter", "sans-serif"]
-                    }
-                }
-            }
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-    </script>
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f9f7f4;
+            color: #3a3a3a;
+        }
+        
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            background: #f9f7f4;
+        }
+        
+        .top-header {
+            background: white;
+            padding: 16px 32px;
+            border-bottom: 1px solid #e8dcc8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .search-bar {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 10px 16px;
+            border: 1px solid #e8dcc8;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #f9f7f4;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .notification-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: #f9f7f4;
+            border: 1px solid #e8dcc8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .notification-btn:hover {
+            background: #e8dcc8;
+        }
+        
+        .admin-info {
+            text-align: right;
+        }
+        
+        .admin-panel-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #3a3a3a;
+        }
+        
+        .admin-name {
+            font-size: 12px;
+            color: #5a4d42;
+        }
+    </style>
 </head>
-<body class="bg-beige-bg font-sans">
-<div class="flex min-h-screen">
+<body>
+<div class="admin-layout">

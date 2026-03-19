@@ -1,212 +1,377 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Papyrus - Verify Email</title>
-    <link rel="stylesheet" href="/css/verifyotp.css">
+    <link rel="stylesheet" href="/css/verifyotp.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="progress-steps">
-            <div class="step completed">
-                <div class="step-circle">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                        <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                </div>
-                <span class="step-label">Email</span>
-            </div>
-            <div class="step-line completed"></div>
-            <div class="step active">
-                <div class="step-circle">2</div>
-                <span class="step-label">Verify</span>
-            </div>
-            <div class="step-line"></div>
-            <div class="step">
-                <div class="step-circle">3</div>
-                <span class="step-label">Reset</span>
-            </div>
+      <div class="progress-steps">
+        <div class="step completed">
+          <div class="step-circle">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <span class="step-label">Email</span>
+        </div>
+        <div class="step-line completed"></div>
+        <div class="step active">
+          <div class="step-circle">2</div>
+          <span class="step-label">Verify</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-circle">3</div>
+          <span class="step-label">Reset</span>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="logo">
+          <svg
+            viewBox="0 0 100 100"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 70 L50 85 Q48 90 45 90 L15 90 Q10 90 10 85 Z"
+              fill="#7A5C3E"
+            />
+            <path
+              d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 70 L50 85 Q52 90 55 90 L85 90 Q90 90 90 85 Z"
+              fill="#7A5C3E"
+            />
+            <path d="M50 70 L45 50 L50 30 L55 50 Z" fill="#5a4a3a" />
+            <circle cx="50" cy="25" r="6" fill="#5a4a3a" />
+            <ellipse cx="50" cy="15" rx="4" ry="7" fill="#7A5C3E" />
+            <ellipse cx="42" cy="20" rx="4" ry="6" fill="#7A5C3E" />
+            <ellipse cx="58" cy="20" rx="4" ry="6" fill="#7A5C3E" />
+            <ellipse cx="38" cy="28" rx="5" ry="7" fill="#7A5C3E" />
+            <ellipse cx="62" cy="28" rx="5" ry="7" fill="#7A5C3E" />
+            <ellipse cx="35" cy="38" rx="4" ry="6" fill="#7A5C3E" />
+            <ellipse cx="65" cy="38" rx="4" ry="6" fill="#7A5C3E" />
+          </svg>
+          <h2>Papyrus</h2>
         </div>
 
-        <div class="form-card">
-            <div class="logo">
-                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 70 L50 85 Q48 90 45 90 L15 90 Q10 90 10 85 Z" fill="#7A5C3E"/>
-                    <path d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 70 L50 85 Q52 90 55 90 L85 90 Q90 90 90 85 Z" fill="#7A5C3E"/>
-                    <path d="M50 70 L45 50 L50 30 L55 50 Z" fill="#5a4a3a"/>
-                    <circle cx="50" cy="25" r="6" fill="#5a4a3a"/>
-                    <ellipse cx="50" cy="15" rx="4" ry="7" fill="#7A5C3E"/>
-                    <ellipse cx="42" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
-                    <ellipse cx="58" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
-                    <ellipse cx="38" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
-                    <ellipse cx="62" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
-                    <ellipse cx="35" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
-                    <ellipse cx="65" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
-                </svg>
-                <h2>Papyrus</h2>
-            </div>
+        <h1 class="form-title">Verify Your Email</h1>
+        <p class="form-subtitle">
+          We've sent a 6-digit verification code to<br />
+          <strong><%= email %></strong>
+        </p>
 
-            <h1 class="form-title">Verify Your Email</h1>
-            <p class="form-subtitle">We've sent a 6-digit verification code to<br><strong><%= email %></strong></p>
+        <form
+          action="<%= type === 'signup' ? '/signup/verify-otp' : '/forgot-password/verify' %>"
+          method="POST"
+          id="otpForm"
+        >
+          <div class="otp-inputs">
+            <input
+              type="text"
+              maxlength="1"
+              class="otp-input"
+              name="otp1"
+              required
+            />
+            <input
+              type="text"
+              maxlength="1"
+              class="otp-input"
+              name="otp2"
+              required
+            />
+            <input
+              type="text"
+              maxlength="1"
+              class="otp-input"
+              name="otp3"
+              required
+            />
+            <input
+              type="text"
+              maxlength="1"
+              class="otp-input"
+              name="otp4"
+              required
+            />
+            <input
+              type="text"
+              maxlength="1"
+              class="otp-input"
+              name="otp5"
+              required
+            />
+            <input
+              type="text"
+              maxlength="1"
+              class="otp-input"
+              name="otp6"
+              required
+            />
+          </div>
 
-            <form action="<%= type === 'signup' ? '/signup/verify-otp' : '/forgot-password/verify' %>" method="POST" id="otpForm">
-                <div class="otp-inputs">
-                    <input type="text" maxlength="1" class="otp-input" name="otp1" required>
-                    <input type="text" maxlength="1" class="otp-input" name="otp2" required>
-                    <input type="text" maxlength="1" class="otp-input" name="otp3" required>
-                    <input type="text" maxlength="1" class="otp-input" name="otp4" required>
-                    <input type="text" maxlength="1" class="otp-input" name="otp5" required>
-                    <input type="text" maxlength="1" class="otp-input" name="otp6" required>
-                </div>
+          <button type="submit" class="submit-btn">Verify Code</button>
+          <p
+            id="errorMessage"
+            style="
+              color: red;
+              text-align: center;
+              margin-top: 10px;
+              display: none;
+            "
+          ></p>
+        </form>
 
-                <button type="submit" class="submit-btn">Verify Code</button>
-                <p id="errorMessage" style="color: red; text-align: center; margin-top: 10px; display: none;"></p>
-            </form>
-
-            <div class="resend-section">
-                <p>Didn't receive the code?</p>
-                <button type="button" class="resend-link" id="resendBtn" style="background: none; border: none; color: #7A5C3E; cursor: pointer; text-decoration: underline;">Resend Code</button>
-            </div>
-
-            <a href="/resetpassword" class="back-link">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 12H5M12 19l-7-7 7-7"/>
-                </svg>
-                Back to Sign In
-            </a>
+        <div class="timer-section" style="text-align: center; margin: 15px 0">
+          <p style="color: #666; font-size: 14px">
+            Resend available in:
+            <span id="timer" style="font-weight: bold; color: #333">1:00</span>
+          </p>
         </div>
+
+        <div class="resend-section">
+          <p>Didn't receive the code?</p>
+          <button
+            type="button"
+            class="resend-link"
+            id="resendBtn"
+            style="
+              background: none;
+              border: none;
+              color: #7a5c3e;
+              cursor: pointer;
+              text-decoration: underline;
+            "
+          >
+            Resend Code
+          </button>
+        </div>
+
+        <a href="/signin" class="back-link">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          Back to Sign In
+        </a>
+      </div>
     </div>
 
     <script>
-        const otpInputs = document.querySelectorAll('.otp-input');
-        
+      document.addEventListener("DOMContentLoaded", function () {
+        const otpInputs = document.querySelectorAll(".otp-input");
+        const resendBtn = document.getElementById("resendBtn");
+        const timerElement = document.getElementById("timer");
+        let timeLeft = 60; // 1 minute resend cooldown
+        let timerInterval;
+
+        // Start timer on page load
+        startTimer();
+
+        // OTP input handling
         otpInputs.forEach((input, index) => {
-            input.addEventListener('input', (e) => {
-                const value = e.target.value;
-                
-                if (!/^\d*$/.test(value)) {
-                    e.target.value = '';
-                    return;
-                }
-                
-                if (value && index < otpInputs.length - 1) {
-                    otpInputs[index + 1].focus();
-                }
+          input.addEventListener("input", (e) => {
+            const value = e.target.value;
+            if (!/^\d*$/.test(value)) {
+              e.target.value = "";
+              return;
+            }
+            if (value && index < otpInputs.length - 1) {
+              otpInputs[index + 1].focus();
+            }
+          });
+
+          input.addEventListener("keydown", (e) => {
+            if (e.key === "Backspace" && !e.target.value && index > 0) {
+              otpInputs[index - 1].focus();
+            }
+          });
+
+          input.addEventListener("paste", (e) => {
+            e.preventDefault();
+            const pastedData = e.clipboardData.getData("text").slice(0, 6);
+            pastedData.split("").forEach((char, i) => {
+              if (otpInputs[i] && /^\d$/.test(char)) {
+                otpInputs[i].value = char;
+              }
             });
-            
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace' && !e.target.value && index > 0) {
-                    otpInputs[index - 1].focus();
-                }
-            });
-            
-            input.addEventListener('paste', (e) => {
-                e.preventDefault();
-                const pastedData = e.clipboardData.getData('text').slice(0, 6);
-                
-                if (/^\d+$/.test(pastedData)) {
-                    pastedData.split('').forEach((char, i) => {
-                        if (otpInputs[i]) {
-                            otpInputs[i].value = char;
-                        }
-                    });
-                    
-                    const lastIndex = Math.min(pastedData.length, otpInputs.length - 1);
-                    otpInputs[lastIndex].focus();
-                }
-            });
+            const lastIndex = Math.min(pastedData.length, otpInputs.length - 1);
+            otpInputs[lastIndex].focus();
+          });
         });
-        
+
+        function startTimer() {
+          clearInterval(timerInterval); // prevent duplicate timers
+          updateTimerDisplay();
+          resendBtn.disabled = true;
+          resendBtn.style.opacity = "0.5";
+          resendBtn.style.cursor = "not-allowed";
+
+          timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay();
+            if (timeLeft <= 0) {
+              clearInterval(timerInterval);
+              enableResendButton();
+            }
+          }, 1000);
+        }
+
+        function updateTimerDisplay() {
+          const minutes = Math.floor(timeLeft / 60);
+          const seconds = timeLeft % 60;
+          timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+          timerElement.style.color = "#333";
+        }
+
+        function enableResendButton() {
+          resendBtn.disabled = false;
+          resendBtn.style.opacity = "1";
+          resendBtn.style.cursor = "pointer";
+          timerElement.textContent = "You can resend now";
+          timerElement.style.color = "#28a745"; // green
+        }
+
+        // Auto-focus first input
         otpInputs[0].focus();
 
-        document.getElementById('otpForm').addEventListener('submit', async (e) => {
+        // Form submission
+        document
+          .getElementById("otpForm")
+          .addEventListener("submit", async (e) => {
             e.preventDefault();
-            const errorMessage = document.getElementById('errorMessage');
-            const submitBtn = document.querySelector('.submit-btn');
-            
-            const formData = {
-                otp1: otpInputs[0].value,
-                otp2: otpInputs[1].value,
-                otp3: otpInputs[2].value,
-                otp4: otpInputs[3].value,
-                otp5: otpInputs[4].value,
-                otp6: otpInputs[5].value
-            };
-            
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Verifying...';
-            errorMessage.style.display = 'none';
-            
-            try {
-                const response = await fetch(e.target.action, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-                
-                const result = await response.json();
-                
-                if (result.success && result.redirectUrl) {
-                    window.location.href = result.redirectUrl;
-                } else {
-                    errorMessage.textContent = result.message || 'Invalid OTP';
-                    errorMessage.style.display = 'block';
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Verify Code';
-                    otpInputs.forEach(input => input.value = '');
-                    otpInputs[0].focus();
-                }
-            } catch (error) {
-                errorMessage.textContent = 'An error occurred. Please try again.';
-                errorMessage.style.display = 'block';
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Verify Code';
-            }
-        });
 
-        document.getElementById('resendBtn').addEventListener('click', async () => {
-            const resendBtn = document.getElementById('resendBtn');
-            const errorMessage = document.getElementById('errorMessage');
-            const type = '<%= type %>';
-            
-            resendBtn.disabled = true;
-            resendBtn.textContent = 'Sending...';
-            errorMessage.style.display = 'none';
-            
-            try {
-                const endpoint = type === 'signup' ? '/signup/resend-otp' : '/forgot-password/resend';
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    Swal.fire({
-                        title: 'Success!',
-                        text: 'New code sent to your email!',
-                        icon: 'success',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#7A5C3E'
-                    });
-                    resendBtn.disabled = false;
-                    resendBtn.textContent = 'Resend Code';
-                } else {
-                    errorMessage.textContent = result.message || 'Failed to resend code';
-                    errorMessage.style.display = 'block';
-                    resendBtn.disabled = false;
-                    resendBtn.textContent = 'Resend Code';
-                }
-            } catch (error) {
-                errorMessage.textContent = 'An error occurred. Please try again.';
-                errorMessage.style.display = 'block';
-                resendBtn.disabled = false;
-                resendBtn.textContent = 'Resend Code';
+            const otp = Array.from(otpInputs)
+              .map((input) => input.value)
+              .join("");
+
+            if (otp.length !== 6) {
+              Swal.fire({
+                title: "Invalid OTP",
+                text: "Please enter all 6 digits",
+                icon: "error",
+                confirmButtonColor: "#7A5C3E",
+              });
+              return;
             }
+
+            const submitBtn = document.querySelector(".submit-btn");
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Verifying...";
+
+            try {
+              const response = await fetch(e.target.action, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  otp1: otp[0],
+                  otp2: otp[1],
+                  otp3: otp[2],
+                  otp4: otp[3],
+                  otp5: otp[4],
+                  otp6: otp[5],
+                }),
+              });
+
+              const data = await response.json();
+
+              if (data.success) {
+                Swal.fire({
+                  title: "Success!",
+                  text: data.message,
+                  icon: "success",
+                  confirmButtonColor: "#7A5C3E",
+                }).then(() => {
+                  if (data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                  }
+                });
+              } else {
+                Swal.fire({
+                  title: "Error!",
+                  text: data.message,
+                  icon: "error",
+                  confirmButtonColor: "#7A5C3E",
+                });
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Verify Code";
+                otpInputs.forEach((input) => (input.value = ""));
+                otpInputs[0].focus();
+              }
+            } catch (error) {
+              Swal.fire({
+                title: "Error!",
+                text: "Something went wrong. Please try again.",
+                icon: "error",
+                confirmButtonColor: "#7A5C3E",
+              });
+              submitBtn.disabled = false;
+              submitBtn.textContent = "Verify Code";
+            }
+          });
+
+        // Resend OTP
+        resendBtn.addEventListener("click", async () => {
+          if (resendBtn.disabled) return;
+
+          const type = "<%= type %>";
+          const endpoint =
+            type === "signup"
+              ? "/signup/resend-otp"
+              : "/forgot-password/resend";
+
+          try {
+            const response = await fetch(endpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              timeLeft = 60; // reset to 1 minute cooldown
+              startTimer();
+
+              otpInputs.forEach((input) => (input.value = ""));
+              otpInputs[0].focus();
+
+              Swal.fire({
+                title: "OTP Sent!",
+                text: "A new OTP has been sent to your email",
+                icon: "success",
+                confirmButtonColor: "#7A5C3E",
+              });
+            } else {
+              Swal.fire({
+                title: "Error!",
+                text: data.message,
+                icon: "error",
+                confirmButtonColor: "#7A5C3E",
+              });
+            }
+          } catch (error) {
+            Swal.fire({
+              title: "Error!",
+              text: "Failed to resend OTP. Please try again.",
+              icon: "error",
+              confirmButtonColor: "#7A5C3E",
+            });
+          }
         });
+      });
     </script>
-</body>
+  </body>
 </html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Papyrus - Address Management</title>
+    <link rel="stylesheet" href="/css/profile.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .btn-secondary {
+            padding: 10px 20px; background: transparent; color: #666;
+            border: 1px solid #e0d5c7; border-radius: 4px; font-size: 12px;
+            font-weight: 600; letter-spacing: 0.5px; cursor: pointer; transition: all 0.3s;
+            text-transform: uppercase; text-decoration: none; display: inline-block;
+        }
+        .btn-secondary:hover { background: #f9f7f4; border-color: #7A5C3E; color: #3a3a3a; }
+        @media (max-width: 768px) { .form-row, .form-row-3 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <header class="header">
+      <div class="container">
+        <div class="logo">
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 70 L50 85 Q48 90 45 90 L15 90 Q10 90 10 85 Z" fill="#7A5C3E"/>
+            <path d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 70 L50 85 Q52 90 55 90 L85 90 Q90 90 90 85 Z" fill="#7A5C3E"/>
+            <path d="M50 70 L45 50 L50 30 L55 50 Z" fill="#5a4a3a"/>
+            <circle cx="50" cy="25" r="6" fill="#5a4a3a"/>
+            <ellipse cx="50" cy="15" rx="4" ry="7" fill="#7A5C3E"/>
+            <ellipse cx="42" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
+            <ellipse cx="58" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
+            <ellipse cx="38" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
+            <ellipse cx="62" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
+            <ellipse cx="35" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
+            <ellipse cx="65" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
+          </svg>
+          <span>Papyrus</span>
+        </div>
+        <nav class="nav">
+          <a href="/home">Browse</a>
+          <a href="/about">About</a>
+          <a href="/stories">Stories</a>
+        </nav>
+        <div class="header-icons">
+          <a href="/cart" class="icon-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 2L7 6H21L19 2H9Z"/><path d="M7 6L5 20H19L21 6"/>
+            </svg>
+          </a>
+          <a href="/wishlist" class="icon-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </a>
+          <a href="/profile" class="icon-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <div class="breadcrumb">
+      <div class="container">
+        <a href="/home">SHOP</a> / <a href="/profile">PROFILE</a> / <span>ADDRESSES</span>
+      </div>
+    </div>
+
+    <section class="profile-section">
+      <div class="container">
+        <h1 class="page-title">My Account</h1>
+        <div class="profile-layout">
+          <%- include('../partials/profile-sidebar', { currentPage: 'addresses' }) %>
+          <main class="main-content">
+            <div class="profile-card">
+              <div class="card-header">
+                <h2>My Addresses</h2>
+                <div style="display: flex; gap: 15px;">
+                  <a href="/profile/addresses/add" class="btn-edit">ADD NEW ADDRESS</a>
+                </div>
+              </div>
+
+              <div id="addressGrid" style="display: grid; gap: 20px;">
+                <% if (addresses && addresses.length > 0) { %>
+                  <% addresses.forEach(address => { %>
+                    <div class="address-card" style="border: 1px solid #e0d5c7; border-radius: 8px; padding: 20px; background: white; <%= address.isDefault ? 'border-color: #8b7355; box-shadow: 0 2px 8px rgba(139, 115, 85, 0.1);' : '' %>">
+                      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                          <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #8b7355 0%, #6b5d52 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px;">
+                            <%= address.fullName.charAt(0).toUpperCase() %>
+                          </div>
+                          <div>
+                            <h3 style="font-weight: bold; font-size: 18px; color: #3a3a3a; margin: 0 0 5px 0;"><%= address.fullName %></h3>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                              <% if (address.isDefault) { %>
+                                <span style="background: #8b7355; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">✓ DEFAULT</span>
+                              <% } %>
+                              <span style="background: #f5f1ed; color: #5a4d42; padding: 4px 12px; border-radius: 15px; font-size: 12px; font-weight: 500; text-transform: uppercase;">
+                                <% if (address.type === 'home') { %>🏠<% } else if (address.type === 'work') { %>🏢<% } else { %>📍<% } %> <%= address.type %>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                          <button onclick="editAddress('<%= address._id %>')" style="padding: 8px; color: #8b7355; background: #f5f1ed; border: none; border-radius: 6px; cursor: pointer;" onmouseover="this.style.background='#e8dcc8'" onmouseout="this.style.background='#f5f1ed'">
+                            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                          </button>
+                          <button onclick="deleteAddress('<%= address._id %>')" style="padding: 8px; color: #dc3545; background: #fdf2f2; border: none; border-radius: 6px; cursor: pointer;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fdf2f2'">
+                            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div style="background: #f5f1ed; border-radius: 6px; padding: 15px; margin-bottom: 15px;">
+                        <div style="color: #5a4d42; line-height: 1.5;">
+                          <p style="margin: 0 0 5px 0; font-weight: 500;"><%= address.addressLine1 %></p>
+                          <% if (address.addressLine2) { %><p style="margin: 0 0 5px 0;"><%= address.addressLine2 %></p><% } %>
+                          <p style="margin: 0 0 5px 0;"><%= address.city %>, <%= address.state %> <%= address.postalCode %></p>
+                          <p style="margin: 0;"><%= address.country %></p>
+                        </div>
+                      </div>
+
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; color: #5a4d42;">
+                          <span style="margin-right: 8px;">📞</span>
+                          <span style="font-weight: 500;"><%= address.phone %></span>
+                        </div>
+                        <% if (!address.isDefault) { %>
+                          <button onclick="setDefaultAddress('<%= address._id %>')" style="background: #8b7355; color: white; padding: 8px 16px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; text-transform: uppercase;" onmouseover="this.style.background='#7a6449'" onmouseout="this.style.background='#8b7355'">
+                            Set as Default
+                          </button>
+                        <% } else { %>
+                          <span style="color: #8b7355; font-weight: 600; font-size: 12px; text-transform: uppercase;">✓ Default Address</span>
+                        <% } %>
+                      </div>
+                    </div>
+                  <% }); %>
+                <% } else { %>
+                  <div style="text-align: center; padding: 60px 20px;">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; border-radius: 50%; background: linear-gradient(135deg, #f5f1ed 0%, #e8dcc8 100%); display: flex; align-items: center; justify-content: center;">
+                      <svg style="width: 40px; height: 40px; color: #8b7355;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
+                    <h3 style="font-size: 20px; font-weight: bold; margin: 0 0 10px 0; color: #3a3a3a;">No addresses found</h3>
+                    <p style="margin: 0 0 30px 0; color: #6b5d52;">Add your first address to get started with deliveries</p>
+                    <a href="/profile/addresses/add" class="btn-primary" style="display: inline-block; padding: 12px 30px; background: #3a3a3a; color: white; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background='#3a3a3a'">
+                      Add Address
+                    </a>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3>About Papyrus</h3>
+            <p>Preserving literary heritage through sustainable book trading.</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      function editAddress(addressId) {
+        window.location.href = `/profile/addresses/edit/${addressId}`;
+      }
+
+      async function deleteAddress(addressId) {
+        const result = await Swal.fire({
+          title: 'Delete Address?', text: 'This action cannot be undone', icon: 'warning',
+          showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Yes, delete it!', cancelButtonText: 'Cancel'
+        });
+        if (result.isConfirmed) {
+          try {
+            const response = await fetch(`/profile/addresses/${addressId}`, { method: 'DELETE' });
+            const data = await response.json();
+            if (data.success) {
+              Swal.fire({ title: 'Deleted!', text: 'Address has been deleted', icon: 'success', confirmButtonColor: '#5a4a3a' })
+                .then(() => { window.location.reload(); });
+            } else {
+              Swal.fire({ title: 'Error!', text: data.message, icon: 'error', confirmButtonColor: '#5a4a3a' });
+            }
+          } catch (error) {
+            Swal.fire({ title: 'Error!', text: 'Failed to delete address', icon: 'error', confirmButtonColor: '#5a4a3a' });
+          }
+        }
+      }
+
+      async function setDefaultAddress(addressId) {
+        try {
+          const response = await fetch(`/profile/addresses/${addressId}/set-default`, { method: 'POST' });
+          const data = await response.json();
+          if (data.success) {
+            Swal.fire({ title: 'Success!', text: 'Default address updated', icon: 'success', confirmButtonColor: '#5a4a3a' })
+              .then(() => { window.location.reload(); });
+          } else {
+            Swal.fire({ title: 'Error!', text: data.message, icon: 'error', confirmButtonColor: '#5a4a3a' });
+          }
+        } catch (error) {
+          Swal.fire({ title: 'Error!', text: 'Failed to set default address', icon: 'error', confirmButtonColor: '#5a4a3a' });
+        }
+      }
+
+      history.pushState(null, null, location.href);
+      window.onpopstate = function () { history.go(1); };
+      window.addEventListener('beforeunload', function () { history.replaceState(null, null, location.href); });
+    </script>
+</body>
+</html>

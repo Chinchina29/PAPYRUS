@@ -68,7 +68,7 @@
                 id="email"
                 name="email"
                 placeholder="admin@papyrus.com"
-                required
+                autocomplete="username"
               />
             </div>
 
@@ -80,7 +80,7 @@
                   id="password"
                   name="password"
                   placeholder="••••••••"
-                  required
+                  autocomplete="current-password"
                 />
                 <button
                   type="button"
@@ -152,54 +152,217 @@
         passwordInput.type = type;
       }
 
-      document.getElementById('adminSigninForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const submitBtn = document.getElementById('signinBtn');
-        const originalText = submitBtn.innerHTML;
-        
-        submitBtn.innerHTML = 'Signing In...';
-        submitBtn.disabled = true;
-        
-        try {
-          const formData = new FormData(e.target);
-          const data = Object.fromEntries(formData);
-          
-          const response = await fetch('/admin/signin', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-          });
-          
-          const result = await response.json();
-          
-          if (result.success) {
-            window.location.href = result.redirect || '/admin/dashboard';
-          } else {
-            Swal.fire({
-              title: 'Login Failed',
-              text: result.message || 'Login failed. Please try again.',
-              icon: 'error',
-              confirmButtonText: 'OK',
-              confirmButtonColor: '#8B4513'
-            });
-          }
-        } catch (error) {
-          console.error('Login error:', error);
-          Swal.fire({
-            title: 'Error',
-            text: 'An error occurred. Please try again.',
-            icon: 'error',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#8B4513'
-          });
-        } finally {
-          submitBtn.innerHTML = originalText;
-          submitBtn.disabled = false;
+      function validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      }
+
+      function validatePassword(password) {
+        return password && password.length >= 6;
+      }
+
+      function showValidationMessage(inputId, message) {
+        const existingError = document.querySelector(`#${inputId}-error`);
+        if (existingError) {
+          existingError.remove();
+        }
+
+        const errorDiv = document.createElement('div');
+        errorDiv.id = `${inputId}-error`;
+        errorDiv.style.color = '#dc3545';
+        errorDiv.style.fontSize = '12px';
+        errorDiv.style.marginTop = '5px';
+        errorDiv.textContent = message;
+
+        const input = document.getElementById(inputId);
+        const parent = input.closest('.form-group');
+        parent.appendChild(errorDiv);
+
+        input.focus();
+        input.style.borderColor = '#dc3545';
+      }
+
+      function clearValidationMessage(inputId) {
+        const errorDiv = document.querySelector(`#${inputId}-error`);
+        if (errorDiv) {
+          errorDiv.remove();
+        }
+        const input = document.getElementById(inputId);
+        input.style.borderColor = '#ddd';
+      }
+
+      document.getElementById("email").addEventListener("input", function() {
+        const email = this.value.trim();
+        if (email && !validateEmail(email)) {
+          showValidationMessage('email', 'Please enter a valid email address.');
+        } else {
+          clearValidationMessage('email');
         }
       });
+
+      document.getElementById("password").addEventListener("input", function() {
+        const password = this.value;
+        if (password && !validatePassword(password)) {
+          showValidationMessage('password', 'Password must be at least 6 characters long.');
+        } else {
+          clearValidationMessage('password');
+        }
+      });
+
+      document
+        .getElementById("adminSigninForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const email = document.getElementById("email").value.trim();
+          const password = document.getElementById("password").value;
+          let hasErrors = false;
+
+          clearValidationMessage('email');
+          clearValidationMessage('password');
+
+          if (!email) {
+            showValidationMessage('email', 'Email address is required.');
+            hasErrors = true;
+          } else if (!validateEmail(email)) {
+            showValidationMessage('email', 'Please enter a valid email address.');
+            hasErrors = true;
+          }
+
+          if (!password) {
+            showValidationMessage('password', 'Password is required.');
+            hasErrors = true;
+          } else if (!validatePassword(password)) {
+            showValidationMessage('password', 'Password must be at least 6 characters long.');
+            hasErrors = true;
+          }
+
+          if (hasErrors) {
+            return;
+          }
+
+          const submitBtn = document.getElementById("signinBtn");
+          const originalText = submitBtn.innerHTML;
+
+          submitBtn.innerHTML = "Signing In...";
+          submitBtn.disabled = true;
+
+          try {
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            const response = await fetch("/admin/signin", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              const successDiv = document.createElement('div');
+              successDiv.style.color = '#28a745';
+              successDiv.style.textAlign = 'center';
+              successDiv.style.marginTop = '10px';
+              successDiv.style.fontWeight = 'bold';
+              successDiv.textContent = 'Login successful! Redirecting...';
+              
+              const form = document.getElementById('adminSigninForm');
+              form.appendChild(successDiv);
+              
+              setTimeout(() => {
+                window.location.href = result.redirect || "/admin/dashboard";
+              }, 2000);
+            } else {
+              const errorDiv = document.createElement('div');
+              errorDiv.style.color = '#dc3545';
+              errorDiv.style.textAlign = 'center';
+              errorDiv.style.marginTop = '10px';
+              errorDiv.style.padding = '10px';
+              errorDiv.style.backgroundColor = '#f8d7da';
+              errorDiv.style.border = '1px solid #f5c6cb';
+              errorDiv.style.borderRadius = '4px';
+              errorDiv.textContent = result.message || 'Invalid credentials. Please try again.';
+              
+              const existingError = document.querySelector('.login-error');
+              if (existingError) {
+                existingError.remove();
+              }
+              
+              errorDiv.className = 'login-error';
+              const form = document.getElementById('adminSigninForm');
+              form.appendChild(errorDiv);
+            }
+          } catch (error) {
+            console.error("Login error:", error);
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.style.color = '#dc3545';
+            errorDiv.style.textAlign = 'center';
+            errorDiv.style.marginTop = '10px';
+            errorDiv.style.padding = '10px';
+            errorDiv.style.backgroundColor = '#f8d7da';
+            errorDiv.style.border = '1px solid #f5c6cb';
+            errorDiv.style.borderRadius = '4px';
+            errorDiv.textContent = 'Connection error. Please check your internet and try again.';
+            
+            const existingError = document.querySelector('.login-error');
+            if (existingError) {
+              existingError.remove();
+            }
+            
+            errorDiv.className = 'login-error';
+            const form = document.getElementById('adminSigninForm');
+            form.appendChild(errorDiv);
+          } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+          }
+        });
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      
+      if (error) {
+        let message = "An error occurred during authentication.";
+        
+        switch(error) {
+          case 'blocked':
+            message = "Your admin account has been blocked. Please contact support.";
+            break;
+          case 'session':
+            message = "Your session has expired. Please login again.";
+            break;
+          case 'multiple-tabs':
+            message = "For security reasons, please use only one tab. Please login again.";
+            break;
+          case 'security':
+            message = "Session security violation detected. Please login again.";
+            break;
+          case 'timeout':
+            message = "Your session has timed out due to inactivity. Please login again.";
+            break;
+          default:
+            message = "Please try logging in again.";
+        }
+        
+        const errorDiv = document.createElement('div');
+        errorDiv.style.color = '#dc3545';
+        errorDiv.style.textAlign = 'center';
+        errorDiv.style.marginBottom = '20px';
+        errorDiv.style.padding = '10px';
+        errorDiv.style.backgroundColor = '#f8d7da';
+        errorDiv.style.border = '1px solid #f5c6cb';
+        errorDiv.style.borderRadius = '4px';
+        errorDiv.textContent = message;
+        
+        const form = document.getElementById('adminSigninForm');
+        form.insertBefore(errorDiv, form.firstChild);
+        
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
     </script>
   </body>
 </html>

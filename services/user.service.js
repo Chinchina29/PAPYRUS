@@ -19,19 +19,17 @@ export const deleteUser = async(userId)=>{
 }
 
 export const comparePassword = async(plainPassword,hashedPassword)=>{
-    console.log('🔍 Comparing passwords:', { 
-        plainPasswordLength: plainPassword?.length,
-        hashedPasswordLength: hashedPassword?.length,
-        hashedPasswordPrefix: hashedPassword?.substring(0, 10) + '...'
-    });
     const result = await bcrypt.compare(plainPassword,hashedPassword);
-    console.log('🔍 Password comparison result:', result);
     return result;
 }
 
 export const updateUser = async (userId,updateData)=>{
     return await  User.findByIdAndUpdate(userId,updateData,{ new:true})
 }
+
+export const getUserById = async (userId) => {
+    return await User.findById(userId).select('-password');
+};
 
 export const getAllUsers = async (page = 1, limit = 10, search = '', status = '') => {
     const skip = (page - 1) * limit;
@@ -51,8 +49,6 @@ export const getAllUsers = async (page = 1, limit = 10, search = '', status = ''
     } else if (status === 'blocked') {
         query.isBlocked = true;
     }
-    
-    console.log('📋 User query:', JSON.stringify(query, null, 2));
     
     const users = await User.find(query)
         .sort({ createdAt: -1 })

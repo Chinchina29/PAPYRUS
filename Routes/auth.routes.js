@@ -9,8 +9,23 @@ import passport from '../config/passport.config.js';
 
 const router = express.Router();
 
-router.get('/', (req, res) => res.render('user/home'));
-router.get('/home', (req, res) => res.render('user/home'));
+router.get('/', (req, res) => {
+    if (req.session && req.session.userId) {
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+    }
+    res.render('user/home');
+});
+
+router.get('/home', (req, res) => {
+    if (req.session && req.session.userId) {
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+    }
+    res.render('user/home');
+});
 
 router.get('/signup', isNotAuthenticated, (req, res) => res.render('user/signup'));
 router.post('/signup', authController.signup);
@@ -54,15 +69,9 @@ router.get('/forgot-password/reset', (req, res) => {
 });
 router.post('/forgot-password/reset', passwordResetValidation, validate, passwordController.resetPassword);
 
-router.get('/auth/google', (req, res, next) => {
-    console.log('🔐 Starting Google OAuth flow...');
-    console.log('📍 Redirect URI will be: http://localhost:3000/auth/google/callback');
-    next();
-}, passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 router.get('/auth/google/callback', (req, res, next) => {
-    console.log('🔄 Google OAuth callback received');
-    console.log('📝 Query params:', req.query);
     next();
 }, passport.authenticate('google', { failureRedirect: '/login' }), oauthController.googleCallback);
 
@@ -71,7 +80,6 @@ router.get('/logout', authController.logout);
 if (process.env.NODE_ENV === 'development') {
     router.get('/test-email/:email', async (req, res) => {
         try {
-            console.log('📧 Testing email to:', req.params.email);
             const testResult = await emailService.sendOTPEmail(
                 req.params.email,
                 '123456',
@@ -84,14 +92,12 @@ if (process.env.NODE_ENV === 'development') {
                 email: req.params.email
             });
         } catch (error) {
-            console.error('Test email error:', error);
             res.json({ success: false, message: 'Email test error', error: error.message });
         }
     });
     
     router.get('/test-email-simple', async (req, res) => {
         try {
-            console.log('📧 Testing email to default address');
             const testResult = await emailService.sendOTPEmail(
                 'chinchinalalu.kmm@gmail.com',
                 '123456',
@@ -103,7 +109,6 @@ if (process.env.NODE_ENV === 'development') {
                 error: testResult.error || null
             });
         } catch (error) {
-            console.error('Test email error:', error);
             res.json({ success: false, message: 'Email test error', error: error.message });
         }
     });

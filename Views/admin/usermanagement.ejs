@@ -2,249 +2,930 @@
 
 <%- include('../partials/admin-sidebar', { currentPage: 'users' }) %>
 
-    <main class="flex-1 ml-0">
-        <header class="bg-white shadow-sm border-b px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-6">
-                    <form method="GET" action="/admin/users" class="relative">
-                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        <input name="search" value="<%= search %>" class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-accent focus:border-transparent" placeholder="Search users..." type="text"/>
-                    </form>
-                </div>
-                <div class="flex items-center gap-4">
-                    <div class="relative">
-                        <i class="fas fa-bell text-gray-400 text-xl cursor-pointer hover:text-gray-600"></i>
-                        <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-sm font-medium text-gray-800">Admin Panel</p>
-                        <p class="text-xs text-gray-500">
-                            <% if (user && user.firstName && user.lastName) { %>
-                                <%= user.firstName %> <%= user.lastName %>
-                            <% } else { %>
-                                AA
-                            <% } %>
-                        </p>
-                    </div>
-                </div>
+<div class="main-content">
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="search-bar">
+            <input type="text" class="search-input" placeholder="Search users by name or email...">
+        </div>
+        
+        <div class="header-actions">
+            <button class="notification-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+            </button>
+            
+            <div class="admin-info">
+                <div class="admin-panel-text">Admin Panel</div>
+                <div class="admin-name"><%= user?.firstName || 'Admin' %> <%= user?.lastName || 'User' %></div>
             </div>
-        </header>
+        </div>
+    </div>
 
-        <div class="p-6">
-            <div class="mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">User Management</h2>
-                <div class="flex items-center justify-between">
-                    <p class="text-gray-600">Review and manage registered members of the platform</p>
-                    <% if (search || status) { %>
-                    <div class="flex items-center gap-2 text-sm">
-                        <span class="text-gray-500">Active filters:</span>
-                        <% if (search) { %>
-                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                            Search: "<%= search %>"
-                        </span>
-                        <% } %>
-                        <% if (status) { %>
-                        <span class="bg-<%= status === 'active' ? 'green' : 'red' %>-100 text-<%= status === 'active' ? 'green' : 'red' %>-800 px-2 py-1 rounded-full">
-                            Status: <%= status.charAt(0).toUpperCase() + status.slice(1) %>
-                        </span>
-                        <% } %>
-                    </div>
+    <!-- User Management Content -->
+    <div class="user-management-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-title">
+                <h1>User Management</h1>
+                <p>Review and manage registered members of the platform</p>
+            </div>
+            
+            <div class="page-actions">
+                <% if (search || status) { %>
+                <div class="active-filters">
+                    <span class="filter-label">Active filters:</span>
+                    <% if (search) { %>
+                    <span class="filter-tag search-filter">
+                        Search: "<%= search %>"
+                    </span>
+                    <% } %>
+                    <% if (status) { %>
+                    <span class="filter-tag status-filter <%= status %>">
+                        Status: <%= status.charAt(0).toUpperCase() + status.slice(1) %>
+                    </span>
                     <% } %>
                 </div>
+                <% } %>
+                
+                <button class="export-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7,10 12,15 17,10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Export Users
+                </button>
             </div>
+        </div>
 
-            <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-                <form method="GET" action="/admin/users" class="flex items-center gap-4">
-                    <div class="relative flex-1 max-w-md">
-                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        <input name="search" value="<%= search %>" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-accent focus:border-transparent" placeholder="Search by name..." type="text"/>
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <form method="GET" action="/admin/users" class="filter-form">
+                <div class="filter-group">
+                    <div class="search-filter">
+                        <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                        <input name="search" value="<%= search %>" class="filter-input" placeholder="Search by name or email..." type="text"/>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <label class="text-sm font-medium text-gray-700">Role:</label>
-                        <select name="role" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-accent">
+                    
+                    <div class="select-filter">
+                        <label class="filter-label">Role:</label>
+                        <select name="role" class="filter-select">
                             <option value="">All Roles</option>
                             <option value="buyer">Buyer</option>
                             <option value="seller">Seller</option>
                         </select>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <label class="text-sm font-medium text-gray-700">Status:</label>
-                        <select name="status" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-accent">
+                    
+                    <div class="select-filter">
+                        <label class="filter-label">Status:</label>
+                        <select name="status" class="filter-select">
                             <option value="" <%= status === '' ? 'selected' : '' %>>All Status</option>
                             <option value="active" <%= status === 'active' ? 'selected' : '' %>>Active</option>
                             <option value="blocked" <%= status === 'blocked' ? 'selected' : '' %>>Blocked</option>
                         </select>
                     </div>
-                    <button type="submit" class="bg-warm-brown text-white px-4 py-2 rounded-lg hover:bg-dark-brown transition-colors">
-                        <i class="fas fa-filter mr-2"></i>Filter
+                </div>
+                
+                <div class="filter-actions">
+                    <button type="submit" class="filter-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M8 6h13"/>
+                            <path d="M6 12h9"/>
+                            <path d="M4 18h7"/>
+                        </svg>
+                        Filter
                     </button>
                     <% if (search || status) { %>
-                    <a href="/admin/users" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
-                        <i class="fas fa-times mr-2"></i>Clear
+                    <a href="/admin/users" class="clear-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                        Clear
                     </a>
                     <% } %>
-                </form>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <table class="w-full">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <% users.forEach(user => { %>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900"><%= user.firstName %> <%= user.lastName %></div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900"><%= user.email %></div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900 capitalize">
-                                    <% if (user.role === 'user') { %>
-                                        Buyer
-                                    <% } else { %>
-                                        <%= user.role %>
-                                    <% } %>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">
-                                    <%= new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" 
-                                               id="toggle-<%= user._id %>" 
-                                               class="sr-only peer"
-                                               <%= user.isBlocked ? '' : 'checked' %>
-                                               onchange="toggleUserStatus('<%= user._id %>', this.checked)"/>
-                                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-                                        <span class="ml-3 text-sm font-medium text-gray-900">
-                                            <%= user.isBlocked ? 'Blocked' : 'Active' %>
-                                        </span>
-                                    </label>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <button class="bg-warm-brown text-white px-4 py-2 rounded-lg text-sm hover:bg-dark-brown transition-colors">
-                                    View Details
-                                </button>
-                            </td>
-                        </tr>
-                        <% }); %>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="mt-6 flex items-center justify-between">
-                <div class="text-sm text-gray-700">
-                    Page <%= currentPage %> of <%= totalPages %> 
-                    <% if (search || status) { %>
-                        <span class="text-gray-500">
-                            (filtered: <%= total %> users)
-                        </span>
-                    <% } else { %>
-                        (<%= total %> total users)
-                    <% } %>
                 </div>
-                <div class="flex items-center gap-2">
-                    <% 
-                        const buildUrl = (page) => {
-                            let url = `?page=${page}`;
-                            if (search) url += `&search=${encodeURIComponent(search)}`;
-                            if (status) url += `&status=${status}`;
-                            return url;
-                        }
-                    %>
+            </form>
+        </div>
+
+        <!-- Users Table -->
+        <div class="users-table-container">
+            <div class="table-header">
+                <div class="header-cell">User</div>
+                <div class="header-cell">Email</div>
+                <div class="header-cell">Role</div>
+                <div class="header-cell">Joined Date</div>
+                <div class="header-cell">Status</div>
+                <div class="header-cell">Actions</div>
+            </div>
+
+            <div class="table-body">
+                <% users.forEach(user => { %>
+                <div class="table-row">
+                    <div class="table-cell user-cell">
+                        <div class="user-avatar">
+                            <% if (user.profilePicture) { %>
+                                <img src="<%= user.profilePicture %>" alt="<%= user.firstName %>" />
+                            <% } else { %>
+                                <span><%= user.firstName?.charAt(0) || 'U' %><%= user.lastName?.charAt(0) || 'U' %></span>
+                            <% } %>
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name"><%= user.firstName %> <%= user.lastName %></div>
+                            <div class="user-id">ID: <%= user._id.toString().slice(-8) %></div>
+                        </div>
+                    </div>
                     
-                    <button class="px-3 py-1 text-sm text-gray-500 hover:text-gray-700 <%= currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '' %>"
-                            <%= currentPage === 1 ? 'disabled' : '' %>
-                            <% if (currentPage > 1) { %>onclick="window.location.href='<%= buildUrl(currentPage - 1) %>'"<% } %>>
-                        PREVIOUS
-                    </button>
+                    <div class="table-cell email-cell">
+                        <div class="email-text"><%= user.email %></div>
+                        <% if (user.isVerified) { %>
+                        <div class="verified-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20,6 9,17 4,12"/>
+                            </svg>
+                            Verified
+                        </div>
+                        <% } %>
+                    </div>
                     
+                    <div class="table-cell role-cell">
+                        <span class="role-badge <%= user.role %>">
+                            <% if (user.role === 'user') { %>
+                                Buyer
+                            <% } else { %>
+                                <%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %>
+                            <% } %>
+                        </span>
+                    </div>
+                    
+                    <div class="table-cell date-cell">
+                        <div class="date-text">
+                            <%= new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                        </div>
+                        <div class="time-text">
+                            <%= new Date(user.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) %>
+                        </div>
+                    </div>
+                    
+                    <div class="table-cell status-cell">
+                        <label class="status-toggle">
+                            <input type="checkbox" 
+                                   id="toggle-<%= user._id %>" 
+                                   class="toggle-input"
+                                   <%= user.isBlocked ? '' : 'checked' %>
+                                   onchange="toggleUserStatus('<%= user._id %>', this.checked)"/>
+                            <div class="toggle-slider"></div>
+                            <span class="status-text">
+                                <%= user.isBlocked ? 'Blocked' : 'Active' %>
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <div class="table-cell actions-cell">
+                        <button class="action-btn view-btn" onclick="viewUserDetails('<%= user._id %>')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            View Details
+                        </button>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-section">
+            <div class="pagination-info">
+                <span class="page-text">Page <%= currentPage %> of <%= totalPages %></span>
+                <% if (search || status) { %>
+                    <span class="total-text">(filtered: <%= total %> users)</span>
+                <% } else { %>
+                    <span class="total-text">(<%= total %> total users)</span>
+                <% } %>
+            </div>
+            
+            <div class="pagination-controls">
+                <% 
+                    const buildUrl = (page) => {
+                        let url = `?page=${page}`;
+                        if (search) url += `&search=${encodeURIComponent(search)}`;
+                        if (status) url += `&status=${status}`;
+                        return url;
+                    }
+                %>
+                
+                <button class="pagination-btn <%= currentPage === 1 ? 'disabled' : '' %>"
+                        <%= currentPage === 1 ? 'disabled' : '' %>
+                        <% if (currentPage > 1) { %>onclick="window.location.href='<%= buildUrl(currentPage - 1) %>'"<% } %>>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15,18 9,12 15,6"/>
+                    </svg>
+                    Previous
+                </button>
+                
+                <div class="page-numbers">
                     <% for (let i = 1; i <= Math.min(totalPages, 5); i++) { %>
-                    <button class="w-8 h-8 text-sm rounded <%= currentPage === i ? 'bg-warm-brown text-white' : 'text-gray-700 hover:bg-gray-100' %>"
+                    <button class="page-number <%= currentPage === i ? 'active' : '' %>"
                             onclick="window.location.href='<%= buildUrl(i) %>'">
                         <%= i %>
                     </button>
                     <% } %>
-                    
-                    <button class="px-3 py-1 text-sm text-gray-500 hover:text-gray-700 <%= currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : '' %>"
-                            <%= currentPage === totalPages ? 'disabled' : '' %>
-                            <% if (currentPage < totalPages) { %>onclick="window.location.href='<%= buildUrl(currentPage + 1) %>'"<% } %>>
-                        NEXT
-                    </button>
                 </div>
+                
+                <button class="pagination-btn <%= currentPage === totalPages ? 'disabled' : '' %>"
+                        <%= currentPage === totalPages ? 'disabled' : '' %>
+                        <% if (currentPage < totalPages) { %>onclick="window.location.href='<%= buildUrl(currentPage + 1) %>'"<% } %>>
+                    Next
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9,18 15,12 9,6"/>
+                    </svg>
+                </button>
             </div>
         </div>
-    </main>
+    </div>
 </div>
 
+<style>
+.user-management-content {
+    padding: 32px;
+}
 
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+}
+
+.page-title h1 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #3a3a3a;
+    margin-bottom: 4px;
+}
+
+.page-title p {
+    color: #5a4d42;
+    font-size: 14px;
+}
+
+.page-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.active-filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 16px;
+}
+
+.filter-label {
+    font-size: 12px;
+    color: #5a4d42;
+    font-weight: 500;
+}
+
+.filter-tag {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.search-filter {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.status-filter.active {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.status-filter.blocked {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.export-btn {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid #8b7355;
+    background: #8b7355;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.export-btn:hover {
+    background: #5a4a3a;
+    border-color: #5a4a3a;
+}
+
+.export-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.filter-section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid #e8dcc8;
+}
+
+.filter-form {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+}
+
+.search-filter {
+    position: relative;
+    flex: 1;
+    max-width: 300px;
+}
+
+.filter-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: #8b7355;
+}
+
+.filter-input {
+    width: 100%;
+    padding: 10px 16px 10px 40px;
+    border: 1px solid #e8dcc8;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #f9f7f4;
+    transition: all 0.2s ease;
+}
+
+.filter-input:focus {
+    outline: none;
+    border-color: #8b7355;
+    background: white;
+}
+
+.select-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.select-filter .filter-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #5a4d42;
+    white-space: nowrap;
+}
+
+.filter-select {
+    padding: 10px 12px;
+    border: 1px solid #e8dcc8;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    color: #3a3a3a;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #8b7355;
+}
+
+.filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.filter-btn, .clear-btn {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.filter-btn {
+    background: #8b7355;
+    color: white;
+    border: 1px solid #8b7355;
+}
+
+.filter-btn:hover {
+    background: #5a4a3a;
+    border-color: #5a4a3a;
+}
+
+.clear-btn {
+    background: #6c757d;
+    color: white;
+    border: 1px solid #6c757d;
+}
+
+.clear-btn:hover {
+    background: #5a6268;
+    border-color: #5a6268;
+}
+
+.filter-btn svg, .clear-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.users-table-container {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e8dcc8;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.table-header {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr 1.2fr 1.2fr 1.5fr;
+    background: #f5f1ed;
+    border-bottom: 1px solid #e8dcc8;
+}
+
+.header-cell {
+    padding: 16px 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #5a4d42;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table-body {
+    background: white;
+}
+
+.table-row {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr 1.2fr 1.2fr 1.5fr;
+    border-bottom: 1px solid #e8dcc8;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.table-row:hover {
+    background: #f9f7f4;
+}
+
+.table-row:last-child {
+    border-bottom: none;
+}
+
+.table-cell {
+    padding: 20px;
+    font-size: 14px;
+}
+
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #8b7355;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #3a3a3a;
+    margin-bottom: 2px;
+}
+
+.user-id {
+    font-size: 12px;
+    color: #5a4d42;
+    font-family: monospace;
+}
+
+.email-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.email-text {
+    color: #3a3a3a;
+    font-weight: 500;
+}
+
+.verified-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #2e7d32;
+    font-weight: 500;
+}
+
+.verified-badge svg {
+    width: 12px;
+    height: 12px;
+}
+
+.role-cell {
+    display: flex;
+    align-items: center;
+}
+
+.role-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.role-badge.user {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.role-badge.admin {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.date-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.date-text {
+    color: #3a3a3a;
+    font-weight: 500;
+}
+
+.time-text {
+    font-size: 12px;
+    color: #5a4d42;
+}
+
+.status-cell {
+    display: flex;
+    align-items: center;
+}
+
+.status-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.toggle-input {
+    display: none;
+}
+
+.toggle-slider {
+    width: 44px;
+    height: 24px;
+    background: #e8dcc8;
+    border-radius: 12px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.toggle-input:checked + .toggle-slider {
+    background: #4caf50;
+}
+
+.toggle-input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+}
+
+.status-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #3a3a3a;
+}
+
+.actions-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    border: 1px solid;
+}
+
+.view-btn {
+    background: #8b7355;
+    color: white;
+    border-color: #8b7355;
+}
+
+.view-btn:hover {
+    background: #5a4a3a;
+    border-color: #5a4a3a;
+}
+
+.action-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.pagination-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 20px 24px;
+    border-radius: 12px;
+    border: 1px solid #e8dcc8;
+}
+
+.pagination-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.page-text {
+    color: #3a3a3a;
+    font-weight: 500;
+}
+
+.total-text {
+    color: #5a4d42;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pagination-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid #e8dcc8;
+    background: white;
+    color: #5a4d42;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(.disabled) {
+    background: #f5f1ed;
+    border-color: #8b7355;
+    color: #3a3a3a;
+}
+
+.pagination-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.page-numbers {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 8px;
+}
+
+.page-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    border: 1px solid #e8dcc8;
+    background: white;
+    color: #5a4d42;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.page-number:hover {
+    background: #f5f1ed;
+    border-color: #8b7355;
+    color: #3a3a3a;
+}
+
+.page-number.active {
+    background: #8b7355;
+    color: white;
+    border-color: #8b7355;
+}
+
+@media (max-width: 1200px) {
+    .table-header, .table-row {
+        grid-template-columns: 1.5fr 1.5fr 1fr 1fr 1fr 1fr;
+    }
+    
+    .filter-form {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .user-management-content {
+        padding: 16px;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+    
+    .table-header, .table-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .header-cell, .table-cell {
+        padding: 12px 16px;
+    }
+    
+    .pagination-section {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .pagination-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+</style>
 
 <script>
+function viewUserDetails(userId) {
+    window.location.href = `/admin/users/${userId}`;
+}
+
 async function toggleUserStatus(userId, isActive) {
     try {
-        console.log('Toggling user status for:', userId, 'Active:', isActive);
-        
         const response = await fetch('/admin/users/block-unblock', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             body: JSON.stringify({ userId: userId })
         });
 
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
-        console.log('Response:', data);
         
         if (data.success) {
             const message = data.data.isBlocked ? 'User blocked successfully' : 'User unblocked successfully';
             const icon = data.data.isBlocked ? 'warning' : 'success';
             
-            Swal.fire({
+            await Swal.fire({
                 title: 'Success!',
                 text: message,
                 icon: icon,
                 confirmButtonText: 'OK',
                 confirmButtonColor: '#8B4513'
-            }).then(() => {
-                location.reload();
             });
+            
+            const toggle = document.getElementById(`toggle-${userId}`);
+            const statusText = toggle.parentElement.querySelector('span');
+            toggle.checked = !data.data.isBlocked;
+            statusText.textContent = data.data.isBlocked ? 'Blocked' : 'Active';
+            
         } else {
-            Swal.fire({
-                title: 'Error!',
-                text: data.message || 'Action failed',
-                icon: 'error',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#8B4513'
-            }).then(() => {
-                location.reload();
-            });
+            throw new Error(data.message || 'Action failed');
         }
     } catch (error) {
-        console.error('Error:', error);
-        Swal.fire({
+        const toggle = document.getElementById(`toggle-${userId}`);
+        toggle.checked = !toggle.checked;
+        
+        await Swal.fire({
             title: 'Error!',
             text: 'An error occurred: ' + error.message,
             icon: 'error',
             confirmButtonText: 'OK',
             confirmButtonColor: '#8B4513'
-        }).then(() => {
-            location.reload();
         });
     }
 }
+
+history.pushState(null, null, location.href);
+window.onpopstate = function () {
+    history.go(1);
+};
+
+window.addEventListener('beforeunload', function() {
+    history.replaceState(null, null, location.href);
+});
 </script>
 </body>
 </html>

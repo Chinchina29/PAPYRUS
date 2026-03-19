@@ -1,107 +1,265 @@
-<aside class="w-64 text-white shadow-lg" style="background-color: #8B4513;">
-    <div class="p-6">
-        <div class="flex items-center gap-3 mb-8">
-            <i class="fas fa-book text-2xl" style="color: #FF8C00;"></i>
-            <div>
-                <h1 class="text-xl font-bold">Papyrus</h1>
-                <p class="text-xs" style="color: #FF8C00;">Admin Panel</p>
-            </div>
+<!-- Admin Sidebar -->
+<div class="admin-sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            <span>Papyrus</span>
         </div>
-        
-        <nav class="space-y-2">
-            <a href="/admin/dashboard" class="flex items-center gap-3 px-4 py-3 <%= currentPage === 'dashboard' ? 'text-white font-medium' : '' %> rounded-lg transition-colors" 
-               style="<%= currentPage === 'dashboard' ? 'background-color: #FF8C00;' : '' %>"
-               onmouseover="<%= currentPage !== 'dashboard' ? 'this.style.backgroundColor=\'#654321\'' : '' %>"
-               onmouseout="<%= currentPage !== 'dashboard' ? 'this.style.backgroundColor=\'transparent\'' : '' %>">
-                <i class="fas fa-chart-line"></i>
-                <span>Overview</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors hover:bg-opacity-80"
-               onmouseover="this.style.backgroundColor='#654321'"
-               onmouseout="this.style.backgroundColor='transparent'">
-                <i class="fas fa-box"></i>
-                <span>Inventory Management</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
-               onmouseover="this.style.backgroundColor='#654321'"
-               onmouseout="this.style.backgroundColor='transparent'">
-                <i class="fas fa-list"></i>
-                <span>Book Listings</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
-               onmouseover="this.style.backgroundColor='#654321'"
-               onmouseout="this.style.backgroundColor='transparent'">
-                <i class="fas fa-tags"></i>
-                <span>Category Management</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
-               onmouseover="this.style.backgroundColor='#654321'"
-               onmouseout="this.style.backgroundColor='transparent'">
-                <i class="fas fa-shopping-cart"></i>
-                <span>Order Management</span>
-            </a>
-            <a href="/admin/users" class="flex items-center gap-3 px-4 py-3 <%= currentPage === 'users' ? 'text-white font-medium' : '' %> rounded-lg transition-colors"
-               style="<%= currentPage === 'users' ? 'background-color: #FF8C00;' : '' %>"
-               onmouseover="<%= currentPage !== 'users' ? 'this.style.backgroundColor=\'#654321\'' : '' %>"
-               onmouseout="<%= currentPage !== 'users' ? 'this.style.backgroundColor=\'transparent\'' : '' %>">
-                <i class="fas fa-users"></i>
-                <span>User Management</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
-               onmouseover="this.style.backgroundColor='#654321'"
-               onmouseout="this.style.backgroundColor='transparent'">
-                <i class="fas fa-wallet"></i>
-                <span>Wallet</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
-               onmouseover="this.style.backgroundColor='#654321'"
-               onmouseout="this.style.backgroundColor='transparent'">
-                <i class="fas fa-chart-bar"></i>
-                <span>Sales Reports</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
-               onmouseover="this.style.backgroundColor='#654321'"
-               onmouseout="this.style.backgroundColor='transparent'">
-                <i class="fas fa-gift"></i>
-                <span>Coupons</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
-               onmouseover="this.style.backgroundColor='#654321'"
-               onmouseout="this.style.backgroundColor='transparent'">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
-               onmouseover="this.style.backgroundColor='#654321'"
-               onmouseout="this.style.backgroundColor='transparent'">
-                <i class="fas fa-question-circle"></i>
-                <span>Support</span>
-            </a>
-        </nav>
     </div>
     
-    <div class="absolute bottom-0 w-64 p-6 border-t" style="border-color: #654321;">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style="background-color: #FF8C00;">
-                <% if (user && user.firstName && user.lastName) { %>
-                    <%= user.firstName.charAt(0) %><%= user.lastName.charAt(0) %>
-                <% } else { %>
-                    A
-                <% } %>
-            </div>
-            <div class="flex-1">
-                <p class="text-sm font-medium">
-                    <% if (user && user.firstName && user.lastName) { %>
-                        <%= user.firstName %> <%= user.lastName %>
-                    <% } else { %>
-                        Admin User
-                    <% } %>
-                </p>
-                <p class="text-xs" style="color: #FF8C00;">Administrator</p>
-            </div>
-            <a href="/admin/logout" class="hover:text-white" style="color: #FF8C00;">
-                <i class="fas fa-sign-out-alt"></i>
-            </a>
-        </div>
+    <nav class="sidebar-nav">
+        <a href="/admin/dashboard" class="nav-item <%= currentPage === 'dashboard' ? 'active' : '' %>">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            <span>Overview</span>
+        </a>
+        
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27,6.96 12,12.01 20.73,6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+            <span>Inventory Management</span>
+        </a>
+        
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            <span>Book Listings</span>
+        </a>
+        
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <span>Category Management</span>
+        </a>
+        
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="9" cy="21" r="1"/>
+                <circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+            <span>Order Management</span>
+        </a>
+        
+        <a href="/admin/users" class="nav-item <%= currentPage === 'users' ? 'active' : '' %>">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <span>User Management</span>
+        </a>
+        
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+            <span>Wallet</span>
+        </a>
+        
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 19c-5 0-8-3-8-6s3-6 8-6c5 0 8 3 8 6s-3 6-8 6"/>
+                <path d="M17 7h4a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-4"/>
+                <path d="M22 11h-6"/>
+            </svg>
+            <span>Sales Reports</span>
+        </a>
+        
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            </svg>
+            <span>Coupons</span>
+        </a>
+    </nav>
+    
+    <div class="sidebar-footer">
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V6a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <span>Settings</span>
+        </a>
+        
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span>Support</span>
+        </a>
     </div>
-</aside>
+    
+    <div class="user-profile">
+        <div class="user-avatar">
+            <span><%= user?.firstName?.charAt(0) || 'A' %><%= user?.lastName?.charAt(0) || 'D' %></span>
+        </div>
+        <div class="user-info">
+            <div class="user-name"><%= user?.firstName || 'Admin' %> <%= user?.lastName || 'User' %></div>
+            <div class="user-role">Admin Access</div>
+        </div>
+        <a href="/admin/logout" class="logout-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16,17 21,12 16,7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+        </a>
+    </div>
+</div>
+
+<style>
+.admin-sidebar {
+    width: 280px;
+    height: 100vh;
+    background: #f5f1ed;
+    border-right: 1px solid #e8dcc8;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+}
+
+.sidebar-header {
+    padding: 24px 20px;
+    border-bottom: 1px solid #e8dcc8;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #3a3a3a;
+}
+
+.logo svg {
+    width: 24px;
+    height: 24px;
+    color: #8b7355;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 20px 0;
+    overflow-y: auto;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: #5a4d42;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+    background: #e8dcc8;
+    color: #3a3a3a;
+}
+
+.nav-item.active {
+    background: #e8dcc8;
+    color: #3a3a3a;
+    border-left-color: #8b7355;
+}
+
+.nav-item svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.sidebar-footer {
+    border-top: 1px solid #e8dcc8;
+    padding: 20px 0;
+}
+
+.user-profile {
+    padding: 20px;
+    border-top: 1px solid #e8dcc8;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #e8dcc8;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #8b7355;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #3a3a3a;
+}
+
+.user-role {
+    font-size: 12px;
+    color: #5a4d42;
+}
+
+.logout-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: #8b7355;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+    background: #5a4a3a;
+}
+
+.logout-btn svg {
+    width: 16px;
+    height: 16px;
+}
+</style>
