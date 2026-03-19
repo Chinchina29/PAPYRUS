@@ -99,11 +99,9 @@ userSchema.pre('save', async function() {
             return;
         }
         
-        console.log('🔐 Hashing password for user:', this.email);
         this.password = await bcrypt.hash(this.password, 12);
-        console.log('✅ Password hashed successfully');
     } catch (error) {
-        console.error('❌ Pre-save error:', error);
+        console.error('Pre-save error:', error);
         throw error;
     }
 });

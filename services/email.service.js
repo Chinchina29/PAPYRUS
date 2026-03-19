@@ -18,11 +18,8 @@ const createTransporter = () => {
 export const sendEmail = async (to, subject, html) => {
   try {
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-      console.error("EMAIL_USER or EMAIL_PASSWORD missing from .env");
       return { success: false, error: "Email credentials missing" };
     }
-
-    console.log(`Sending email to: ${to}`);
 
     const transporter = createTransporter();
     await transporter.verify();
@@ -34,7 +31,6 @@ export const sendEmail = async (to, subject, html) => {
       html: html,
     });
 
-    console.log(`Email sent! MessageId: ${info.messageId}`);
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error("Email send failed:", error.message);

@@ -1,38 +1,24 @@
 import * as userService from "../services/user.service.js";
 
 export const isAdmin = async (req, res, next) => {
-  console.log("Admin middleware - checking session:", {
-    hasSession: !!req.session,
-    userId: req.session?.userId,
-    userRole: req.session?.user?.role,
-    sessionId: req.sessionID,
-  });
-
   try {
     if (!req.session || !req.session.userId) {
-      console.log("No session or userId found, redirecting to signin");
       return res.redirect("/admin/signin?error=auth");
     }
 
-    console.log("Session found, looking up user:", req.session.userId);
     const user = await userService.findUserById(req.session.userId);
     if (!user) {
-      console.log("User not found in database, destroying session");
       req.session.destroy();
       return res.redirect("/admin/signin?error=user");
     }
 
-    console.log("User found:", { email: user.email, role: user.role });
-
     if (user.role !== "admin") {
-      console.log("User is not admin, denying access");
       return res.status(403).render("error/403", {
         message: "Access denied. Admin privileges required.",
       });
     }
 
     if (user.isBlocked) {
-      console.log("Admin user is blocked");
       req.session.destroy();
       return res.redirect("/admin/signin?error=blocked");
     }
@@ -46,7 +32,6 @@ export const isAdmin = async (req, res, next) => {
     };
 
     req.user = user;
-    console.log("Admin middleware passed, proceeding to dashboard");
     next();
   } catch (error) {
     console.error("Admin middleware error:", error);
@@ -63,9 +48,6 @@ export const isAdminNotAuthenticated = (req, res, next) => {
     req.session.user &&
     req.session.user.role === "admin"
   ) {
-    console.log(
-      `🔄 Already authenticated admin redirected: ${req.session.user.email}`,
-    );
     return res.redirect("/admin/dashboard");
   }
   next();

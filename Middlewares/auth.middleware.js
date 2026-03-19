@@ -79,10 +79,5 @@ export const requireUserRole = (req, res, next) => {
 };
 
 export const preventConcurrentAdminSessions = async (req, res, next) => {
-  if (req.session.user && req.session.user.role === "admin") {
-    console.log(
-      `Admin session active: ${req.session.user.email} from ${req.ip}`,
-    );
-  }
   next();
 };

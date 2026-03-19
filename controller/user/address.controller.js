@@ -35,8 +35,6 @@ export const showAddAddress = (req, res) => {
 export const addAddress = async (req, res) => {
   try {
     const userId = req.session.userId;
-    console.log("userId:", userId);
-    console.log("body:", req.body);
 
     const {
       fullName,
