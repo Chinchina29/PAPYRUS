@@ -1,9 +1,13 @@
-import nodemailer from 'nodemailer';
-import { otpEmailTemplate, passwordResetTemplate, emailChangeOTPTemplate } from '../config/email.config.js';
+import nodemailer from "nodemailer";
+import {
+  otpEmailTemplate,
+  passwordResetTemplate,
+  emailChangeOTPTemplate,
+} from "../config/email.config.js";
 
 const createTransporter = () => {
   return nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD,
@@ -14,8 +18,11 @@ const createTransporter = () => {
 export const sendEmail = async (to, subject, html) => {
   try {
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-      return { success: true };
+      console.error("EMAIL_USER or EMAIL_PASSWORD missing from .env");
+      return { success: false, error: "Email credentials missing" };
     }
+
+    console.log(`Sending email to: ${to}`);
 
     const transporter = createTransporter();
     await transporter.verify();
@@ -27,15 +34,17 @@ export const sendEmail = async (to, subject, html) => {
       html: html,
     });
 
+    console.log(`Email sent! MessageId: ${info.messageId}`);
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    if (error.code === 'EAUTH') {
-      return { 
-        success: false, 
-        error: 'Gmail authentication failed. Please check your email credentials and app password.' 
+    console.error("Email send failed:", error.message);
+    if (error.code === "EAUTH") {
+      return {
+        success: false,
+        error:
+          "Gmail authentication failed. Please check your email credentials and app password.",
       };
     }
-    
     return { success: false, error: error.message };
   }
 };
@@ -52,6 +61,5 @@ export const sendPasswordResetOTP = async (email, firstName, otp) => {
 
 export const sendEmailChangeOTP = async (newEmail, firstName, otp) => {
   const html = emailChangeOTPTemplate(firstName, otp, newEmail);
-  const result = await sendEmail(newEmail, "Verify Your New Email - Papyrus", html);
-  return result;
+  return await sendEmail(newEmail, "Verify Your New Email - Papyrus", html);
 };

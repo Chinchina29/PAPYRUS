@@ -142,8 +142,8 @@ export const login = async (req, res) => {
       email: result.user.email,
       role: result.user.role,
     };
-    
-    const tabId = req.get('X-Tab-ID');
+
+    const tabId = req.get("X-Tab-ID");
     if (tabId) {
       req.session.activeTabId = tabId;
     }
@@ -163,10 +163,10 @@ export const login = async (req, res) => {
 };
 
 export const logout = (req, res) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  res.set('Pragma', 'no-cache');
-  res.set('Expires', '0');
-  
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
+
   req.session.destroy((err) => {
     if (err) {
       return errorResponse(res, "Error logging out", 500);
