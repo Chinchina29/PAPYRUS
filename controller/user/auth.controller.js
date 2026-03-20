@@ -10,19 +10,15 @@ export const signup = async (req, res) => {
     const { firstName, lastName, email, password, confirmPassword } = req.body;
 
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
     }
-
     if (password !== confirmPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "Passwords do not match",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Passwords do not match" });
     }
-
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
@@ -31,12 +27,8 @@ export const signup = async (req, res) => {
     }
 
     const result = await authService.signupUser(req.body);
-
     if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: result.message,
-      });
+      return res.status(400).json({ success: false, message: result.message });
     }
 
     req.session.tempUserId = result.user._id.toString();
@@ -49,10 +41,9 @@ export const signup = async (req, res) => {
     });
   } catch (error) {
     console.error("Signup error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error: " + error.message,
-    });
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error: " + error.message });
   }
 };
 
@@ -60,13 +51,13 @@ export const verifyOTP = async (req, res) => {
   try {
     const { otp1, otp2, otp3, otp4, otp5, otp6 } = req.body;
     const otpCode = `${otp1}${otp2}${otp3}${otp4}${otp5}${otp6}`;
+
     const result = await authService.verifyUserOTP(
       req.session.tempUserId,
       otpCode,
     );
-    if (!result.success) {
-      return errorResponse(res, result.message);
-    }
+    if (!result.success) return errorResponse(res, result.message);
+
     req.session.userId = result.user._id.toString();
     req.session.user = {
       id: result.user._id,
@@ -80,7 +71,7 @@ export const verifyOTP = async (req, res) => {
 
     return redirectResponse(res, result.message, "/home");
   } catch (error) {
-    console.error("Verify OTP error :", error);
+    console.error("Verify OTP error:", error);
     return errorResponse(res, "Server error", 500);
   }
 };
@@ -88,12 +79,10 @@ export const verifyOTP = async (req, res) => {
 export const resendOTP = async (req, res) => {
   try {
     const result = await authService.resendUserOTP(req.session.tempUserId);
-    if (!result.success) {
-      return errorResponse(res, result.message);
-    }
+    if (!result.success) return errorResponse(res, result.message);
     return successResponse(res, result.message, { expiresIn: 600 });
   } catch (error) {
-    console.error("Resend OTP error :", error);
+    console.error("Resend OTP error:", error);
     return errorResponse(res, "Server error", 500);
   }
 };
@@ -103,10 +92,9 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Email and password are required",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Email and password are required" });
     }
 
     const result = await authService.loginUser(email, password);
@@ -121,9 +109,13 @@ export const login = async (req, res) => {
           redirectUrl: "/signup/verify-otp",
         });
       }
-      return res.status(400).json({
+      return res.status(400).json({ success: false, message: result.message });
+    }
+
+    if (result.user.role === "admin") {
+      return res.status(403).json({
         success: false,
-        message: result.message,
+        message: "Please use the admin login page.",
       });
     }
 
@@ -142,11 +134,7 @@ export const login = async (req, res) => {
       email: result.user.email,
       role: result.user.role,
     };
-
-    const tabId = req.get("X-Tab-ID");
-    if (tabId) {
-      req.session.activeTabId = tabId;
-    }
+    req.session.lastActivity = new Date();
 
     return res.json({
       success: true,
@@ -155,10 +143,9 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     console.error("Login error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error: " + error.message,
-    });
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error: " + error.message });
   }
 };
 
@@ -168,9 +155,8 @@ export const logout = (req, res) => {
   res.set("Expires", "0");
 
   req.session.destroy((err) => {
-    if (err) {
-      return errorResponse(res, "Error logging out", 500);
-    }
+    if (err) return errorResponse(res, "Error logging out", 500);
+    res.clearCookie("papyrus.user.sid");
     res.redirect("/login");
   });
 };

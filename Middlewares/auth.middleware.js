@@ -1,9 +1,12 @@
 import * as userService from "../services/user.service.js";
 
 export const setUserLocals = async (req, res, next) => {
+  if (req.path.startsWith("/admin")) return next();
+
   if (req.session && req.session.userId) {
     try {
       const user = await userService.findUserById(req.session.userId);
+
       if (!user) {
         req.session.destroy();
         return redirectToLogin(req, res, "User not found");
@@ -12,6 +15,10 @@ export const setUserLocals = async (req, res, next) => {
       if (user.isBlocked) {
         req.session.destroy();
         return redirectToLogin(req, res, "Account blocked");
+      }
+      if (user.role === "admin") {
+        req.session.destroy();
+        return redirectToLogin(req, res, "Please use admin login");
       }
 
       req.session.user = {
@@ -41,19 +48,25 @@ export const isAuthenticated = (req, res, next) => {
 
 export const isNotAuthenticated = (req, res, next) => {
   if (req.session && req.session.userId) {
-    if (req.session.user && req.session.user.role === "admin") {
-      return res.redirect("/admin/dashboard");
-    }
     return res.redirect("/home");
   }
   next();
 };
 
+export const requireUserRole = (req, res, next) => {
+  if (req.session && req.session.userId && req.session.user?.role === "admin") {
+    return res.status(403).render("error/403", {
+      message: "Access denied. This area is for regular users only.",
+    });
+  }
+  next();
+};
+
 function redirectToLogin(req, res, message) {
-  if (req.xhr || req.headers.accept?.indexOf("json") > -1) {
+  if (req.xhr || req.headers.accept?.includes("json")) {
     return res.status(401).json({
       success: false,
-      message: message,
+      message,
       redirectUrl: "/login",
     });
   }
@@ -64,20 +77,4 @@ function redirectToLogin(req, res, message) {
   return res.redirect("/login");
 }
 
-export const requireUserRole = (req, res, next) => {
-  if (
-    req.session &&
-    req.session.userId &&
-    req.session.user &&
-    req.session.user.role === "admin"
-  ) {
-    return res.status(403).render("error/403", {
-      message: "Access denied. This area is for regular users only.",
-    });
-  }
-  next();
-};
-
-export const preventConcurrentAdminSessions = async (req, res, next) => {
-  next();
-};
+export const preventConcurrentAdminSessions = async (req, res, next) => next();
