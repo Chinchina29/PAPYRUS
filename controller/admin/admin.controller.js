@@ -236,13 +236,13 @@ export const forgotPassword = async (req, res) => {
 
     const throttle = otpService.checkThrottle(user);
     if (!throttle.allowed) {
-      const statusCode = throttle.type === 'lockout' ? 423 : 429; // 423 = Locked, 429 = Too Many Requests
-      return res.status(statusCode).json({ 
-        success: false, 
+      const statusCode = throttle.type === "lockout" ? 423 : 429; // 423 = Locked, 429 = Too Many Requests
+      return res.status(statusCode).json({
+        success: false,
         message: throttle.reason,
         type: throttle.type,
         secondsLeft: throttle.secondsLeft,
-        minutesLeft: throttle.minutesLeft
+        minutesLeft: throttle.minutesLeft,
       });
     }
 
@@ -296,18 +296,19 @@ export const verifyForgotOTP = async (req, res) => {
 
     const result = otpService.verifyUserOTP(user, otpCode);
     if (!result.success) {
-      await user.save(); // Save failed attempt count
-      
-      const statusCode = result.type === 'lockout' || result.type === 'locked' ? 423 : 400;
-      return res.status(statusCode).json({ 
-        success: false, 
+      await user.save();
+
+      const statusCode =
+        result.type === "lockout" || result.type === "locked" ? 423 : 400;
+      return res.status(statusCode).json({
+        success: false,
         message: result.message,
         type: result.type,
-        attemptsLeft: result.attemptsLeft
+        attemptsLeft: result.attemptsLeft,
       });
     }
 
-    await user.save(); // Save successful verification (resets failed attempts)
+    await user.save();
     req.session.adminResetVerified = true;
 
     return res.json({
