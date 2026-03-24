@@ -2,35 +2,55 @@ import * as userService from "../services/user.service.js";
 
 export const isAdmin = async (req, res, next) => {
   try {
+    const isAjax =
+      req.xhr ||
+      req.headers.accept?.includes("application/json") ||
+      req.get("X-Requested-With") === "XMLHttpRequest";
+
     if (!req.session || !req.session.adminId) {
+      if (isAjax) {
+        return res.status(401).json({
+          success: false,
+          message: "Admin authentication required.",
+          redirectUrl: "/admin/signin",
+        });
+      }
       return res.redirect("/admin/signin?error=auth");
     }
 
     const user = await userService.findUserById(req.session.adminId);
 
     if (!user) {
-      req.session.destroy();
-      return res.redirect("/admin/signin?error=user");
+      return req.session.destroy(() => {
+        res.clearCookie("papyrus.admin.sid");
+        return res.redirect("/admin/signin?error=user");
+      });
     }
 
     if (user.role !== "admin") {
-      req.session.destroy();
-      return res.status(403).render("error/403", {
-        message: "Access denied. Admin privileges required.",
+      return req.session.destroy(() => {
+        res.clearCookie("papyrus.admin.sid");
+        return res.status(403).render("error/403", {
+          message: "Access denied. Admin privileges required.",
+        });
       });
     }
 
     if (user.isBlocked) {
-      req.session.destroy();
-      return res.redirect("/admin/signin?error=blocked");
+      return req.session.destroy(() => {
+        res.clearCookie("papyrus.admin.sid");
+        return res.redirect("/admin/signin?error=blocked");
+      });
     }
 
     if (req.session.lastActivity) {
       const timeDiff =
         Date.now() - new Date(req.session.lastActivity).getTime();
       if (timeDiff > 1000 * 60 * 15) {
-        req.session.destroy();
-        return res.redirect("/admin/signin?error=timeout");
+        return req.session.destroy(() => {
+          res.clearCookie("papyrus.admin.sid");
+          return res.redirect("/admin/signin?error=timeout");
+        });
       }
     }
 
@@ -51,34 +71,33 @@ export const isAdmin = async (req, res, next) => {
     });
   }
 };
-
 export const isAdminNotAuthenticated = async (req, res, next) => {
   try {
     if (!req.session || !req.session.adminId) {
       return next();
     }
-
     const user = await userService.findUserById(req.session.adminId);
-
     if (!user || user.role !== "admin") {
-      req.session.destroy();
-      return next();
+      return req.session.destroy(() => {
+        res.clearCookie("papyrus.admin.sid");
+        return next();
+      });
     }
-
     return res.redirect("/admin/dashboard");
   } catch (error) {
     console.error("isAdminNotAuthenticated error:", error);
     return next();
   }
 };
+
 export const blockUserFromAdmin = (req, res, next) => {
   const isAjax =
+    req.xhr ||
     req.get("X-Requested-With") === "XMLHttpRequest" ||
-    req.get("Content-Type") === "application/json";
+    req.headers.accept?.includes("application/json");
 
   if (
     req.session &&
-    req.session.adminId &&
     req.session.adminUser &&
     req.session.adminUser.role === "user"
   ) {
@@ -91,6 +110,25 @@ export const blockUserFromAdmin = (req, res, next) => {
     return res.status(403).render("error/403", {
       message: "Access denied. This area is restricted to administrators only.",
     });
+  }
+  next();
+};
+
+export const preventUserFromAdminRoutes = (req, res, next) => {
+  if (req.session && req.session.userId && !req.session.adminId) {
+    const isAjax =
+      req.xhr ||
+      req.get("X-Requested-With") === "XMLHttpRequest" ||
+      req.headers.accept?.includes("application/json");
+
+    if (isAjax) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Please login as admin.",
+        redirectUrl: "/home",
+      });
+    }
+    return res.redirect("/home");
   }
   next();
 };

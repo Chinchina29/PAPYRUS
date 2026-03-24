@@ -8,7 +8,6 @@ import {
 export const signup = async (req, res) => {
   try {
     const { firstName, lastName, email, password, confirmPassword } = req.body;
-
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
       return res
         .status(400)
@@ -25,15 +24,12 @@ export const signup = async (req, res) => {
         message: "Password must be at least 6 characters",
       });
     }
-
     const result = await authService.signupUser(req.body);
     if (!result.success) {
       return res.status(400).json({ success: false, message: result.message });
     }
-
     req.session.tempUserId = result.user._id.toString();
     req.session.tempUserEmail = result.user.email;
-
     return res.json({
       success: true,
       message: result.message,
@@ -51,13 +47,11 @@ export const verifyOTP = async (req, res) => {
   try {
     const { otp1, otp2, otp3, otp4, otp5, otp6 } = req.body;
     const otpCode = `${otp1}${otp2}${otp3}${otp4}${otp5}${otp6}`;
-
     const result = await authService.verifyUserOTP(
       req.session.tempUserId,
       otpCode,
     );
     if (!result.success) return errorResponse(res, result.message);
-
     req.session.userId = result.user._id.toString();
     req.session.user = {
       id: result.user._id,
@@ -68,7 +62,6 @@ export const verifyOTP = async (req, res) => {
     };
     delete req.session.tempUserId;
     delete req.session.tempUserEmail;
-
     return redirectResponse(res, result.message, "/home");
   } catch (error) {
     console.error("Verify OTP error:", error);
@@ -90,15 +83,12 @@ export const resendOTP = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     if (!email || !password) {
       return res
         .status(400)
         .json({ success: false, message: "Email and password are required" });
     }
-
     const result = await authService.loginUser(email, password);
-
     if (!result.success) {
       if (result.needsVerification) {
         req.session.tempUserId = result.userId.toString();
@@ -111,21 +101,17 @@ export const login = async (req, res) => {
       }
       return res.status(400).json({ success: false, message: result.message });
     }
-
     if (result.user.role === "admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Please use the admin login page.",
-      });
+      return res
+        .status(403)
+        .json({ success: false, message: "Please use the admin login page." });
     }
-
     if (result.user.isBlocked) {
       return res.status(403).json({
         success: false,
         message: "Your account has been blocked. Please contact support.",
       });
     }
-
     req.session.userId = result.user._id.toString();
     req.session.user = {
       id: result.user._id,
@@ -135,7 +121,6 @@ export const login = async (req, res) => {
       role: result.user.role,
     };
     req.session.lastActivity = new Date();
-
     return res.json({
       success: true,
       message: result.message,
@@ -155,8 +140,10 @@ export const logout = (req, res) => {
   res.set("Expires", "0");
 
   req.session.destroy((err) => {
-    if (err) return errorResponse(res, "Error logging out", 500);
+    if (err) {
+      console.error("Logout error:", err);
+    }
     res.clearCookie("papyrus.user.sid");
-    res.redirect("/login");
+    return res.json({ success: true, redirectUrl: "/login" });
   });
 };

@@ -83,27 +83,27 @@
             <h1 class="form-title">Create Account</h1>
             <p class="form-subtitle">Join thousands of book lovers in our community</p>
 
-            <form action="/signup" method="POST" id="signupForm">
+            <form action="/signup" method="POST" id="signupForm" novalidate>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="firstName">First Name</label>
-                        <input type="text" id="firstName" name="firstName" placeholder="John" required>
+                        <input type="text" id="firstName" name="firstName" placeholder="John" maxlength="50" novalidate>
                     </div>
                     <div class="form-group">
                         <label for="lastName">Last Name</label>
-                        <input type="text" id="lastName" name="lastName" placeholder="Doe" required>
+                        <input type="text" id="lastName" name="lastName" placeholder="Doe" maxlength="50" novalidate>
                     </div>
                 </div>
 
                 <div class="form-group full-width">
                     <label for="email">Email Address</label>
-                    <input type="email" id="email" name="email" placeholder="your.email@example.com" required>
+                    <input type="email" id="email" name="email" placeholder="your.email@example.com" maxlength="100" novalidate>
                 </div>
 
                 <div class="form-group full-width">
                     <label for="password">Password</label>
                     <div class="password-input-container">
-                        <input type="password" id="password" name="password" placeholder="Create a strong password" required>
+                        <input type="password" id="password" name="password" placeholder="Create a strong password" maxlength="128" novalidate>
                         <button type="button" class="eye-btn" onclick="togglePassword('password')">
                             <svg id="eye-icon-password" class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -120,7 +120,7 @@
                 <div class="form-group full-width">
                     <label for="confirmPassword">Confirm Password</label>
                     <div class="password-input-container">
-                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter your password" required>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter your password" maxlength="128" novalidate>
                         <button type="button" class="eye-btn" onclick="togglePassword('confirmPassword')">
                             <svg id="eye-icon-confirmPassword" class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -293,19 +293,165 @@
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
-                const isValid = validateFirstName() && 
-                               validateLastName() && 
-                               validateEmail() && 
-                               validatePassword() && 
-                               validateConfirmPassword();
+                const firstNameValue = firstName.value.trim();
+                const lastNameValue = lastName.value.trim();
+                const emailValue = email.value.trim();
+                const passwordValue = password.value;
+                const confirmPasswordValue = confirmPassword.value;
 
-                if (!isValid) {
-                    Swal.fire({
-                        title: 'Validation Error',
-                        text: 'Please fix the errors before submitting',
+                // Validate first name
+                if (!firstNameValue) {
+                    await Swal.fire({
+                        title: 'First Name Required',
+                        text: 'Please enter your first name',
                         icon: 'error',
                         confirmButtonColor: '#2d5016'
                     });
+                    firstName.focus();
+                    return;
+                }
+
+                if (firstNameValue.length < 2) {
+                    await Swal.fire({
+                        title: 'Invalid First Name',
+                        text: 'First name must be at least 2 characters long',
+                        icon: 'error',
+                        confirmButtonColor: '#2d5016'
+                    });
+                    firstName.focus();
+                    return;
+                }
+
+                if (!/^[a-zA-Z\s]+$/.test(firstNameValue)) {
+                    await Swal.fire({
+                        title: 'Invalid First Name',
+                        text: 'First name can only contain letters and spaces',
+                        icon: 'error',
+                        confirmButtonColor: '#2d5016'
+                    });
+                    firstName.focus();
+                    return;
+                }
+
+                // Validate last name
+                if (!lastNameValue) {
+                    await Swal.fire({
+                        title: 'Last Name Required',
+                        text: 'Please enter your last name',
+                        icon: 'error',
+                        confirmButtonColor: '#2d5016'
+                    });
+                    lastName.focus();
+                    return;
+                }
+
+                if (lastNameValue.length < 2) {
+                    await Swal.fire({
+                        title: 'Invalid Last Name',
+                        text: 'Last name must be at least 2 characters long',
+                        icon: 'error',
+                        confirmButtonColor: '#2d5016'
+                    });
+                    lastName.focus();
+                    return;
+                }
+
+                if (!/^[a-zA-Z\s]+$/.test(lastNameValue)) {
+                    await Swal.fire({
+                        title: 'Invalid Last Name',
+                        text: 'Last name can only contain letters and spaces',
+                        icon: 'error',
+                        confirmButtonColor: '#2d5016'
+                    });
+                    lastName.focus();
+                    return;
+                }
+
+                // Validate email
+                if (!emailValue) {
+                    await Swal.fire({
+                        title: 'Email Required',
+                        text: 'Please enter your email address',
+                        icon: 'error',
+                        confirmButtonColor: '#2d5016'
+                    });
+                    email.focus();
+                    return;
+                }
+
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(emailValue)) {
+                    await Swal.fire({
+                        title: 'Invalid Email',
+                        text: 'Please enter a valid email address',
+                        icon: 'error',
+                        confirmButtonColor: '#2d5016'
+                    });
+                    email.focus();
+                    return;
+                }
+
+                // Validate password
+                if (!passwordValue) {
+                    await Swal.fire({
+                        title: 'Password Required',
+                        text: 'Please create a password',
+                        icon: 'error',
+                        confirmButtonColor: '#2d5016'
+                    });
+                    password.focus();
+                    return;
+                }
+
+                if (passwordValue.length < 8) {
+                    await Swal.fire({
+                        title: 'Password Too Short',
+                        text: 'Password must be at least 8 characters long',
+                        icon: 'error',
+                        confirmButtonColor: '#2d5016'
+                    });
+                    password.focus();
+                    return;
+                }
+
+                const requirements = {
+                    uppercase: /[A-Z]/.test(passwordValue),
+                    lowercase: /[a-z]/.test(passwordValue),
+                    number: /[0-9]/.test(passwordValue),
+                    special: /[!@#$%^&*(),.?":{}|<>]/.test(passwordValue)
+                };
+
+                if (!requirements.uppercase || !requirements.lowercase || !requirements.number || !requirements.special) {
+                    await Swal.fire({
+                        title: 'Weak Password',
+                        text: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+                        icon: 'error',
+                        confirmButtonColor: '#2d5016'
+                    });
+                    password.focus();
+                    return;
+                }
+
+                // Validate confirm password
+                if (!confirmPasswordValue) {
+                    await Swal.fire({
+                        title: 'Confirm Password Required',
+                        text: 'Please confirm your password',
+                        icon: 'error',
+                        confirmButtonColor: '#2d5016'
+                    });
+                    confirmPassword.focus();
+                    return;
+                }
+
+                if (confirmPasswordValue !== passwordValue) {
+                    await Swal.fire({
+                        title: 'Passwords Don\'t Match',
+                        text: 'Please make sure both passwords are identical',
+                        icon: 'error',
+                        confirmButtonColor: '#2d5016'
+                    });
+                    confirmPassword.focus();
                     return;
                 }
 
@@ -313,11 +459,11 @@
                 const submitBtn = document.querySelector('.submit-btn');
                 
                 const formData = {
-                    firstName: firstName.value.trim(),
-                    lastName: lastName.value.trim(),
-                    email: email.value.trim(),
-                    password: password.value,
-                    confirmPassword: confirmPassword.value
+                    firstName: firstNameValue,
+                    lastName: lastNameValue,
+                    email: emailValue,
+                    password: passwordValue,
+                    confirmPassword: confirmPasswordValue
                 };
                 
                 submitBtn.disabled = true;
@@ -334,19 +480,21 @@
                     const result = await response.json();
                     
                     if (result.success && result.redirectUrl) {
-                        Swal.fire({
-                            title: 'Success!',
+                        await Swal.fire({
+                            title: 'Account Created!',
                             text: result.message,
                             icon: 'success',
                             confirmButtonText: 'Continue',
-                            confirmButtonColor: '#2d5016'
-                        }).then(() => {
-                            window.location.href = result.redirectUrl;
+                            confirmButtonColor: '#2d5016',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            timerProgressBar: true
                         });
+                        window.location.href = result.redirectUrl;
                     } else {
-                        Swal.fire({
+                        await Swal.fire({
                             title: 'Signup Failed',
-                            text: result.message || 'Signup failed',
+                            text: result.message || 'Failed to create account. Please try again.',
                             icon: 'error',
                             confirmButtonText: 'Try Again',
                             confirmButtonColor: '#2d5016'
@@ -355,9 +503,9 @@
                         submitBtn.textContent = 'Create Account';
                     }
                 } catch (error) {
-                    Swal.fire({
-                        title: 'Error',
-                        text: 'An error occurred. Please try again.',
+                    await Swal.fire({
+                        title: 'Connection Error',
+                        text: 'Please check your internet connection and try again.',
                         icon: 'error',
                         confirmButtonText: 'OK',
                         confirmButtonColor: '#2d5016'

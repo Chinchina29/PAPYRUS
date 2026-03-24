@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import multer from "multer";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import connectDB from "./config/mongo.config.js";
@@ -72,7 +73,7 @@ const adminSession = session({
 });
 
 app.use("/admin", adminSession);
-app.use("/", userSession);
+app.use(userSession);
 
 app.use((req, res, next) => {
   if (req.path.startsWith("/admin")) return next();
@@ -106,6 +107,7 @@ app.use("/admin", (req, res, next) => {
 
     if (timeDiff > maxInactivity) {
       return req.session.destroy(() => {
+        res.clearCookie("papyrus.admin.sid");
         if (req.xhr || req.headers.accept?.includes("json")) {
           return res.status(401).json({
             success: false,
@@ -143,6 +145,39 @@ app.use("/", authRoutes);
 app.use("/profile", profileRoutes);
 
 app.use((req, res) => res.status(404).render("error/404"));
+
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    switch (err.code) {
+      case "LIMIT_FILE_SIZE":
+        return res.status(400).json({
+          error: "File too large",
+          message: "Maximum file size exceeded.",
+        });
+      case "LIMIT_FILE_COUNT":
+        return res.status(400).json({
+          error: "Too many files",
+          message: "Too many files uploaded.",
+        });
+      case "LIMIT_UNEXPECTED_FILE":
+        return res.status(400).json({
+          error: "Unexpected field",
+          message: "File field name not allowed.",
+        });
+      default:
+        return res.status(400).json({
+          error: "Upload error",
+          message: err.message,
+        });
+    }
+  }
+
+  console.error(err);
+  res.status(500).json({
+    error: "Internal server error",
+    message: "Something went wrong during file upload.",
+  });
+});
 app.use((err, req, res, next) => {
   console.error("Error:", err);
   res.status(500).render("error/500", { error: err });

@@ -93,3 +93,23 @@ export const getRecentUsers = async (limit = 5) => {
         .limit(limit)
         .select('firstName lastName email createdAt isBlocked');
 };
+
+export const getDashboardStats = async () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const totalUsers = await User.countDocuments({ role: 'user' });
+    const activeUsers = await User.countDocuments({ role: 'user', isBlocked: false });
+    const blockedUsers = await User.countDocuments({ role: 'user', isBlocked: true });
+    const newUsersToday = await User.countDocuments({ 
+        role: 'user', 
+        createdAt: { $gte: today } 
+    });
+    
+    return {
+        totalUsers,
+        activeUsers,
+        blockedUsers,
+        newUsersToday
+    };
+};

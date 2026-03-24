@@ -16,11 +16,13 @@
             </svg>
             <span>Papyrus</span>
         </div>
+
         <nav class="nav">
             <a href="/home">Browse</a>
             <a href="/about">About</a>
             <a href="/stories">Stories</a>
         </nav>
+
         <div class="header-icons">
             <a href="/cart" class="icon-btn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -39,6 +41,20 @@
                     <circle cx="12" cy="7" r="4"/>
                 </svg>
             </a>
+
+            <!-- Logout button - only shown when user is logged in -->
+            <% if (locals.isLoggedIn || (locals.user && locals.user.id)) { %>
+            </a>
+        <a href="/logout" class="nav-item logout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            
+        </a>
+            <% } %>
+
         </div>
     </div>
 </header>
@@ -48,3 +64,56 @@
         <a href="/home">SHOP</a> / <span>PROFILE</span>
     </div>
 </div>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    async function handleUserLogout() {
+        const result = await Swal.fire({
+            title: 'Sign out?',
+            text: 'Are you sure you want to sign out?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, sign out',
+            cancelButtonText: 'Stay',
+            confirmButtonColor: '#7A5C3E',
+            cancelButtonColor: '#6c757d',
+            reverseButtons: true,
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const res  = await fetch('/logout', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Signed Out',
+                    text: 'You have been signed out successfully.',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    timerProgressBar: true,
+                });
+                window.location.href = data.redirectUrl || '/login';
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Could not sign out. Please try again.',
+                });
+            }
+        } catch {
+            Swal.fire({
+                icon: 'error',
+                title: 'Connection Error',
+                text: 'Please try again.',
+            });
+        }
+    }
+</script>

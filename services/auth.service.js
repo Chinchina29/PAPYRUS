@@ -47,145 +47,197 @@ export const signupUser = async (userData) => {
 };
 
 export const loginUser = async (email, password) => {
-  const user = await userService.findUserByEmail(email);
-  if (!user) {
-    return { success: false, message: "Invalid email or password" };
-  }
+  try {
+    const user = await userService.findUserByEmail(email);
+    if (!user) {
+      return { success: false, message: "Invalid email or password" };
+    }
 
-  if (!user.password) {
-    return {
-      success: false,
-      message: "This account uses Google Sign-In. Please login with Google.",
-    };
-  }
+    if (!user.password) {
+      return {
+        success: false,
+        message: "This account uses Google Sign-In. Please login with Google.",
+      };
+    }
 
-  if (user.isBlocked) {
-    return {
-      success: false,
-      message: "Your account has been blocked. Please contact support.",
-    };
-  }
+    if (user.isBlocked) {
+      return {
+        success: false,
+        message: "Your account has been blocked. Please contact support.",
+      };
+    }
 
-  if (!user.isVerified) {
-    const otp = otpService.setOTP(user);
+    if (!user.isVerified) {
+      const throttle = otpService.checkThrottle(user);
+      if (!throttle.allowed) {
+        return {
+          success: false,
+          message: throttle.reason,
+          needsVerification: true,
+          userId: user._id,
+        };
+      }
+
+      const otp = otpService.setOTP(user);
+      await user.save();
+      await emailService.sendOTPEmail(user.email, user.firstName, otp);
+      return {
+        success: false,
+        message:
+          "Please verify your email first. A new OTP has been sent to your email.",
+        needsVerification: true,
+        email: user.email,
+        userId: user._id,
+      };
+    }
+
+    const isMatch = await userService.comparePassword(password, user.password);
+    if (!isMatch) {
+      return { success: false, message: "Invalid email or password" };
+    }
+
+    if (user.gender === "") user.gender = null;
+    if (user.favoriteGenre === "") user.favoriteGenre = null;
+    if (user.primaryInterest === "") user.primaryInterest = null;
     await user.save();
-    await emailService.sendOTPEmail(user.email, user.firstName, otp);
-    return {
-      success: false,
-      message:
-        "Please verify your email first. A new OTP has been sent to your email.",
-      needsVerification: true,
-      email: user.email,
-      userId: user._id,
-    };
+
+    return { success: true, user, message: "Login successful" };
+  } catch (error) {
+    console.error("Login error:", error);
+    return { success: false, message: "Server error during login" };
   }
-
-  const isMatch = await userService.comparePassword(password, user.password);
-  if (!isMatch) {
-    return { success: false, message: "Invalid email or password" };
-  }
-
-  if (user.gender === "") user.gender = null;
-  if (user.favoriteGenre === "") user.favoriteGenre = null;
-  if (user.primaryInterest === "") user.primaryInterest = null;
-  await user.save();
-
-  return { success: true, user, message: "Login successful" };
 };
 
 export const verifyUserOTP = async (userId, otp) => {
-  const user = await userService.findUserById(userId);
-  if (!user) {
-    return { success: false, message: "User not found" };
+  try {
+    const user = await userService.findUserById(userId);
+    if (!user) {
+      return { success: false, message: "User not found" };
+    }
+
+    const otpResult = otpService.verifyUserOTP(user, otp);
+    if (!otpResult.success) {
+      return otpResult;
+    }
+
+    user.isVerified = true;
+    otpService.clearOTP(user);
+    await user.save();
+
+    return { success: true, user, message: "Email verified successfully" };
+  } catch (error) {
+    console.error("Verify OTP error:", error);
+    return { success: false, message: "Server error during verification" };
   }
-
-  const otpResult = otpService.verifyUserOTP(user, otp);
-  if (!otpResult.success) {
-    return otpResult;
-  }
-
-  user.isVerified = true;
-  otpService.clearOTP(user);
-  await user.save();
-
-  return { success: true, user, message: "Email verified successfully" };
 };
 
 export const resendUserOTP = async (userId) => {
-  const user = await userService.findUserById(userId);
-  if (!user) {
-    return { success: false, message: "User not found" };
+  try {
+    const user = await userService.findUserById(userId);
+    if (!user) {
+      return { success: false, message: "User not found" };
+    }
+
+    if (user.isBlocked) {
+      return {
+        success: false,
+        message: "Your account has been blocked. Please contact support.",
+      };
+    }
+    const throttle = otpService.checkThrottle(user);
+    if (!throttle.allowed) {
+      return {
+        success: false,
+        message: throttle.reason,
+        secondsLeft: throttle.secondsLeft,
+      };
+    }
+
+    const otp = otpService.setOTP(user);
+    await user.save();
+
+    const emailResult = await emailService.sendOTPEmail(
+      user.email,
+      user.firstName,
+      otp,
+    );
+
+    if (!emailResult.success) {
+      return { success: false, message: "Failed to send OTP email" };
+    }
+
+    return { success: true, message: "OTP sent successfully" };
+  } catch (error) {
+    console.error("Resend OTP error:", error);
+    return { success: false, message: "Server error" };
   }
-
-  if (user.isBlocked) {
-    return {
-      success: false,
-      message: "Your account has been blocked. Please contact support.",
-    };
-  }
-
-  const otp = otpService.setOTP(user);
-  await user.save();
-
-  const emailResult = await emailService.sendOTPEmail(
-    user.email,
-    user.firstName,
-    otp,
-  );
-
-  if (!emailResult.success) {
-    return { success: false, message: "Failed to send OTP email" };
-  }
-
-  return { success: true, message: "OTP sent successfully" };
 };
 
 export const forgotPassword = async (email) => {
-  const user = await userService.findUserByEmail(email);
-  if (!user) {
-    return {
-      success: false,
-      message: "No account found with this email address",
-    };
+  try {
+    const user = await userService.findUserByEmail(email);
+    if (!user) {
+      return {
+        success: false,
+        message: "No account found with this email address",
+      };
+    }
+
+    if (user.isBlocked) {
+      return {
+        success: false,
+        message: "Your account has been blocked. Please contact support.",
+      };
+    }
+
+    const throttle = otpService.checkThrottle(user);
+    if (!throttle.allowed) {
+      return {
+        success: false,
+        message: throttle.reason,
+        secondsLeft: throttle.secondsLeft,
+      };
+    }
+
+    const otp = otpService.setOTP(user);
+    await user.save();
+
+    const emailResult = await emailService.sendPasswordResetOTP(
+      user.email,
+      user.firstName,
+      otp,
+    );
+
+    if (!emailResult.success) {
+      return { success: false, message: "Failed to send reset email" };
+    }
+
+    return { success: true, message: "Password reset OTP sent to your email" };
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    return { success: false, message: "Server error" };
   }
-
-  if (user.isBlocked) {
-    return {
-      success: false,
-      message: "Your account has been blocked. Please contact support.",
-    };
-  }
-
-  const otp = otpService.setOTP(user);
-  await user.save();
-
-  const emailResult = await emailService.sendPasswordResetOTP(
-    user.email,
-    user.firstName,
-    otp,
-  );
-
-  if (!emailResult.success) {
-    return { success: false, message: "Failed to send reset email" };
-  }
-
-  return { success: true, message: "Password reset OTP sent to your email" };
 };
 
 export const resetPassword = async (email, otp, newPassword) => {
-  const user = await userService.findUserByEmail(email);
-  if (!user) {
-    return { success: false, message: "User not found" };
+  try {
+    const user = await userService.findUserByEmail(email);
+    if (!user) {
+      return { success: false, message: "User not found" };
+    }
+
+    const otpResult = otpService.verifyUserOTP(user, otp);
+    if (!otpResult.success) {
+      return otpResult;
+    }
+
+    user.password = newPassword;
+    otpService.clearOTP(user);
+    await user.save();
+
+    return { success: true, message: "Password reset successfully" };
+  } catch (error) {
+    console.error("Reset password error:", error);
+    return { success: false, message: "Server error" };
   }
-
-  const otpResult = otpService.verifyUserOTP(user, otp);
-  if (!otpResult.success) {
-    return otpResult;
-  }
-
-  user.password = newPassword;
-  otpService.clearOTP(user);
-  await user.save();
-
-  return { success: true, message: "Password reset successfully" };
 };

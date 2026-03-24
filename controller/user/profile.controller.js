@@ -190,7 +190,7 @@ export const verifyEmailChange = async (req, res) => {
     if (!user || !user.emailChangeRequest)
       return errorResponse(res, "No email change request found");
 
-    const isValidOTP = otpService.verifyOTP(
+    const isValidOTP = otpService.verifyUserOTP(
       user.emailChangeRequest.otp.code,
       user.emailChangeRequest.otp.expiresAt,
       otp,

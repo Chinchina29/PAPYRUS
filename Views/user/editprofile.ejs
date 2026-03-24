@@ -571,16 +571,24 @@
                     method: 'POST',
                     body: formData
                 });
+             
                 const result = await response.json();
                 if (result.success) {
                     avatarPreview.src = result.data.user.profilePicture;
                     avatarInput.value = '';
                     Swal.fire({ title: 'Success!', text: 'Profile picture updated', icon: 'success', confirmButtonColor: '#5a4a3a' });
                 } else {
+                    
                     Swal.fire({ title: 'Error!', text: result.message, icon: 'error', confirmButtonColor: '#5a4a3a' });
                 }
             } catch (error) {
-                Swal.fire({ title: 'Error!', text: 'Failed to upload image', icon: 'error', confirmButtonColor: '#5a4a3a' });
+                
+                if(error.code==="LIMIT_FILE_SIZE"){
+                  Swal.fire({ title: 'Error!', text: 'File size Exceeded', icon: 'error', confirmButtonColor: '#5a4a3a' });  
+                }else{
+
+                    Swal.fire({ title: 'Error!', text: 'Failed to upload image', icon: 'error', confirmButtonColor: '#5a4a3a' });
+                }
             } finally {
                 uploadAvatarBtn.textContent = 'Upload';
                 uploadAvatarBtn.disabled = false;

@@ -1,0 +1,50 @@
+</div>
+      </div>
+    </div>
+
+    <script>
+      async function handleAdminLogout() {
+        const result = await Swal.fire({
+          title: "Log out?",
+          text: "Are you sure you want to end your admin session?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonText: "Yes, log out",
+          cancelButtonText: "Cancel",
+          confirmButtonColor: "#3a3a3a",
+          cancelButtonColor: "#6c757d",
+          reverseButtons: true,
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+          const res = await fetch("/admin/logout", {
+            method: "GET",
+            headers: { Accept: "application/json" },
+          });
+          const data = await res.json();
+
+          await Swal.fire({
+            icon: "success",
+            title: "Logged Out",
+            text: "Your admin session has ended.",
+            timer: 1500,
+            showConfirmButton: false,
+            timerProgressBar: true,
+          });
+          window.location.href = "/admin/signin";
+
+        } catch {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Could not log out. Please try again.",
+          });
+        }
+      }
+
+      function confirmLogout() { handleAdminLogout(); }
+    </script>
+  </body>
+</html>

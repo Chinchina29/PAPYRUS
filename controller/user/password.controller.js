@@ -16,6 +16,11 @@ export const forgotPassword = async (req, res) => {
       return successResponse(res, "If email exists, reset code has been sent");
     }
 
+    const throttle = otpService.checkThrottle(user);
+    if (!throttle.allowed) {
+      return res.status(429).json({ success: false, message: throttle.reason });
+    }
+
     const otp = otpService.setOTP(user);
     await user.save();
 
@@ -24,7 +29,6 @@ export const forgotPassword = async (req, res) => {
       user.firstName,
       otp,
     );
-
     if (!emailResult.success) {
       return errorResponse(res, "Failed to send reset code", 500);
     }
@@ -47,20 +51,15 @@ export const verifyResetOTP = async (req, res) => {
     const otpCode = `${otp1}${otp2}${otp3}${otp4}${otp5}${otp6}`;
 
     const email = req.session.resetEmail;
-    if (!email) {
-      return errorResponse(res, "Session expired. Please start over");
-    }
+    if (!email) return errorResponse(res, "Session expired. Please start over");
 
     const user = await userService.findUserByEmail(email);
-    if (!user) {
-      return errorResponse(res, "User not found", 404);
-    }
+    if (!user) return errorResponse(res, "User not found", 404);
 
     const result = otpService.verifyUserOTP(user, otpCode);
-    if (!result.success) {
-      return errorResponse(res, result.message);
-    }
+    if (!result.success) return errorResponse(res, result.message);
 
+    await user.save();
     req.session.resetVerified = true;
     return redirectResponse(
       res,
@@ -88,9 +87,7 @@ export const resetPassword = async (req, res) => {
     }
 
     const user = await userService.findUserByEmail(email);
-    if (!user) {
-      return errorResponse(res, "User not found", 404);
-    }
+    if (!user) return errorResponse(res, "User not found", 404);
 
     user.password = newPassword;
     otpService.clearOTP(user);
@@ -113,13 +110,14 @@ export const resetPassword = async (req, res) => {
 export const resendResetOTP = async (req, res) => {
   try {
     const email = req.session.resetEmail;
-    if (!email) {
-      return errorResponse(res, "Session expired. Please start over");
-    }
+    if (!email) return errorResponse(res, "Session expired. Please start over");
 
     const user = await userService.findUserByEmail(email);
-    if (!user) {
-      return errorResponse(res, "User not found", 404);
+    if (!user) return errorResponse(res, "User not found", 404);
+
+    const throttle = otpService.checkThrottle(user);
+    if (!throttle.allowed) {
+      return res.status(429).json({ success: false, message: throttle.reason });
     }
 
     const otp = otpService.setOTP(user);
@@ -130,10 +128,8 @@ export const resendResetOTP = async (req, res) => {
       user.firstName,
       otp,
     );
-
-    if (!emailResult.success) {
+    if (!emailResult.success)
       return errorResponse(res, "Failed to send OTP", 500);
-    }
 
     return successResponse(res, "New OTP sent to your email", {
       expiresIn: 600,
@@ -143,27 +139,23 @@ export const resendResetOTP = async (req, res) => {
     return errorResponse(res, "Server error", 500);
   }
 };
+
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     const userId = req.session.userId;
 
-    if (!userId) {
-      return errorResponse(res, "Please login first", 401);
-    }
+    if (!userId) return errorResponse(res, "Please login first", 401);
 
     const user = await userService.findUserById(userId);
-    if (!user) {
-      return errorResponse(res, "User not found", 404);
-    }
+    if (!user) return errorResponse(res, "User not found", 404);
 
     const isCurrentPasswordValid = await userService.comparePassword(
       currentPassword,
       user.password,
     );
-    if (!isCurrentPasswordValid) {
+    if (!isCurrentPasswordValid)
       return errorResponse(res, "Current password is incorrect");
-    }
 
     user.password = newPassword;
     await user.save();
