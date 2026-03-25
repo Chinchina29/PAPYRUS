@@ -130,6 +130,24 @@ export const preventUserFromAdminRoutes = (req, res, next) => {
     }
     return res.redirect("/home");
   }
+
+  const publicAdminRoutes = [
+    "/admin/signin",
+    "/admin/forgot-password",
+    "/admin/forgot-password/send",
+    "/admin/forgot-password/verify",
+    "/admin/forgot-password/resend",
+    "/admin/forgot-password/reset",
+  ];
+
+  const isPublicRoute = publicAdminRoutes.some(
+    (route) => req.path === route.replace("/admin", ""),
+  );
+
+  if (!isPublicRoute && !req.session.adminId) {
+    return res.redirect("/admin/signin");
+  }
+
   next();
 };
 export const noCache = (req, res, next) => {

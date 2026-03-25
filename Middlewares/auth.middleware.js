@@ -1,4 +1,5 @@
 import * as userService from "../services/user.service.js";
+import { adminSessionStore } from "../config/session.config.js";
 
 export const isAuthenticated = async (req, res, next) => {
   if (!req.session || !req.session.userId) {
@@ -42,6 +43,7 @@ export const isAuthenticated = async (req, res, next) => {
     return res.redirect("/login");
   }
 };
+
 export const isNotAuthenticated = (req, res, next) => {
   if (req.session && req.session.userId) {
     return res.redirect("/home");
@@ -55,6 +57,7 @@ export const setUserLocals = (req, res, next) => {
   res.locals.isLoggedIn = !!req.session?.userId;
   next();
 };
+
 export const requireUserRole = (req, res, next) => {
   if (!req.session || !req.session.userId) {
     if (req.xhr || req.headers.accept?.includes("application/json")) {
@@ -75,4 +78,49 @@ export const requireUserRole = (req, res, next) => {
   }
 
   next();
+};
+
+export const requireRole = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.session || !req.session.user) {
+      return res.redirect("/login");
+    }
+
+    const userRole = req.session.user.role;
+
+    if (!allowedRoles.includes(userRole)) {
+      return res.status(403).redirect("/unauthorized");
+    }
+
+    next();
+  };
+};
+
+export const preventLoginIfAdminActive = (req, res, next) => {
+  const adminSid = req.cookies?.["papyrus.admin.sid"];
+
+  if (!adminSid) return next();
+  const rawSid = adminSid.startsWith("s:")
+    ? decodeURIComponent(adminSid.slice(2).split(".")[0])
+    : adminSid;
+
+  adminSessionStore.get(rawSid, (err, adminSession) => {
+    if (err || !adminSession || !adminSession.adminId) {
+      return next();
+    }
+    const isAjax =
+      req.xhr ||
+      req.get("X-Requested-With") === "XMLHttpRequest" ||
+      req.headers.accept?.includes("application/json");
+
+    if (isAjax) {
+      return res.status(403).json({
+        success: false,
+        message: "An admin session is active. Please logout as admin first.",
+        redirectUrl: "/admin/dashboard",
+      });
+    }
+
+    return res.redirect("/admin/dashboard");
+  });
 };

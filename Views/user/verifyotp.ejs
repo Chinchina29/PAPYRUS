@@ -175,13 +175,11 @@
         const otpInputs = document.querySelectorAll(".otp-input");
         const resendBtn = document.getElementById("resendBtn");
         const timerElement = document.getElementById("timer");
-        let timeLeft = 60; // 1 minute resend cooldown
+        let timeLeft = 60;
         let timerInterval;
 
-        // Start timer on page load
         startTimer();
 
-        // OTP input handling
         otpInputs.forEach((input, index) => {
           input.addEventListener("input", (e) => {
             const value = e.target.value;
@@ -214,7 +212,7 @@
         });
 
         function startTimer() {
-          clearInterval(timerInterval); // prevent duplicate timers
+          clearInterval(timerInterval);
           updateTimerDisplay();
           resendBtn.disabled = true;
           resendBtn.style.opacity = "0.5";
@@ -245,10 +243,8 @@
           timerElement.style.color = "#28a745"; // green
         }
 
-        // Auto-focus first input
         otpInputs[0].focus();
 
-        // Form submission
         document
           .getElementById("otpForm")
           .addEventListener("submit", async (e) => {
@@ -323,7 +319,6 @@
             }
           });
 
-        // Resend OTP
         resendBtn.addEventListener("click", async () => {
           if (resendBtn.disabled) return;
 
@@ -342,7 +337,7 @@
             const data = await response.json();
 
             if (data.success) {
-              timeLeft = 60; // reset to 1 minute cooldown
+              timeLeft = 60;
               startTimer();
 
               otpInputs.forEach((input) => (input.value = ""));

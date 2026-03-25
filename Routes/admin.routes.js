@@ -7,7 +7,7 @@ import {
   preventUserFromAdminRoutes,
   noCache,
 } from "../Middlewares/admin.middleware.js";
-
+import { requireRole } from "../Middlewares/auth.middleware.js";
 const router = express.Router();
 
 router.use(noCache);

@@ -3,7 +3,10 @@ import * as authController from "../controller/user/auth.controller.js";
 import * as passwordController from "../controller/user/password.controller.js";
 import * as oauthController from "../controller/user/oauth.controller.js";
 import * as emailService from "../services/email.service.js";
-import { isNotAuthenticated } from "../Middlewares/auth.middleware.js";
+import {
+  isNotAuthenticated,
+  preventLoginIfAdminActive,
+} from "../Middlewares/auth.middleware.js";
 import {
   signupValidation,
   loginValidation,
@@ -11,15 +14,11 @@ import {
   validate,
 } from "../Middlewares/validation.middleware.js";
 import passport from "../config/passport.config.js";
+import { requireRole } from "../Middlewares/auth.middleware.js";
 
 const router = express.Router();
 
 router.get("/", (req, res) => {
-  //   if (req.session && req.session.userId) {
-  //     res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
-  //     res.set("Pragma", "no-cache");
-  //     res.set("Expires", "0");
-  //   }
   res.render("user/login");
 });
 
@@ -49,13 +48,21 @@ router.get("/signup/verify-otp", (req, res) => {
 router.post("/signup/verify-otp", authController.verifyOTP);
 router.post("/signup/resend-otp", authController.resendOTP);
 
-router.get("/login", isNotAuthenticated, (req, res) =>
-  res.render("user/login"),
+router.get(
+  "/login",
+  isNotAuthenticated,
+  preventLoginIfAdminActive,
+  (req, res) => res.render("user/login"),
 );
-router.get("/signin", isNotAuthenticated, (req, res) =>
-  res.render("user/login"),
+
+router.get(
+  "/signin",
+  isNotAuthenticated,
+  preventLoginIfAdminActive,
+  (req, res) => res.render("user/login"),
 );
-router.post("/login", authController.login);
+
+router.post("/login", preventLoginIfAdminActive, authController.login);
 
 router.get("/forgot-password", isNotAuthenticated, (req, res) =>
   res.render("user/forgotpassword"),

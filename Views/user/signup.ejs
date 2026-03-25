@@ -1,527 +1,662 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Papyrus - Create Account</title>
-    <link rel="stylesheet" href="/css/signup.css">
+    <link rel="stylesheet" href="/css/signup.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        .password-input-container {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-        
-        .password-input-container input {
-            width: 100%;
-            padding-right: 45px;
-        }
-        
-        .eye-btn {
-            position: absolute;
-            right: 12px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-            color: #666;
-            transition: color 0.2s ease;
-        }
-        
-        .eye-btn:hover {
-            color: #2d5016;
-        }
-        
-        .eye-icon {
-            width: 20px;
-            height: 20px;
-        }
+      .password-input-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .password-input-container input {
+        width: 100%;
+        padding-right: 45px;
+      }
+
+      .eye-btn {
+        position: absolute;
+        right: 12px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 5px;
+        color: #666;
+        transition: color 0.2s ease;
+      }
+
+      .eye-btn:hover {
+        color: #2d5016;
+      }
+
+      .eye-icon {
+        width: 20px;
+        height: 20px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="left-section">
-            <h3>Join Our Community</h3>
-            <h1>Start Your Reading Adventure</h1>
-            <p>Become part of a community that cherishes vintage books and sustainable reading. Create your account to buy, sell, and discover timeless literary treasures.</p>
-            
-            <div class="image-container">
-                <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&h=400&fit=crop" alt="Stack of vintage books">
-            </div>
+      <div class="left-section">
+        <h3>Join Our Community</h3>
+        <h1>Start Your Reading Adventure</h1>
+        <p>
+          Become part of a community that cherishes vintage books and
+          sustainable reading. Create your account to buy, sell, and discover
+          timeless literary treasures.
+        </p>
+
+        <div class="image-container">
+          <img
+            src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&h=400&fit=crop"
+            alt="Stack of vintage books"
+          />
+        </div>
+      </div>
+
+      <div class="right-section">
+        <div class="logo">
+          <svg
+            viewBox="0 0 100 100"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 72 L50 85 Q48 88 45 88 L15 88 Q10 88 10 83 Z"
+              fill="#2d5016"
+              stroke="#fff"
+              stroke-width="1.5"
+            />
+            <path
+              d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 72 L50 85 Q52 88 55 88 L85 88 Q90 88 90 83 Z"
+              fill="#2d5016"
+              stroke="#fff"
+              stroke-width="1.5"
+            />
+
+            <path d="M50 72 L45 50 L50 35 L55 50 Z" fill="#2d5016" />
+            <circle cx="50" cy="30" r="6" fill="#2d5016" />
+
+            <ellipse cx="50" cy="15" rx="4" ry="7" fill="#228B22" />
+            <ellipse cx="42" cy="22" rx="4" ry="6" fill="#228B22" />
+            <ellipse cx="58" cy="22" rx="4" ry="6" fill="#228B22" />
+            <ellipse cx="35" cy="28" rx="5" ry="7" fill="#228B22" />
+            <ellipse cx="65" cy="28" rx="5" ry="7" fill="#228B22" />
+            <ellipse cx="28" cy="35" rx="5" ry="8" fill="#228B22" />
+            <ellipse cx="72" cy="35" rx="5" ry="8" fill="#228B22" />
+            <ellipse cx="38" cy="38" rx="4" ry="6" fill="#228B22" />
+            <ellipse cx="62" cy="38" rx="4" ry="6" fill="#228B22" />
+            <ellipse cx="45" cy="25" rx="3" ry="5" fill="#228B22" />
+            <ellipse cx="55" cy="25" rx="3" ry="5" fill="#228B22" />
+            <ellipse cx="50" cy="32" rx="5" ry="7" fill="#228B22" />
+            <ellipse cx="32" cy="42" rx="4" ry="6" fill="#228B22" />
+            <ellipse cx="68" cy="42" rx="4" ry="6" fill="#228B22" />
+            <ellipse cx="25" cy="48" rx="3" ry="5" fill="#228B22" />
+            <ellipse cx="75" cy="48" rx="3" ry="5" fill="#228B22" />
+          </svg>
+          <h2>Papyrus</h2>
         </div>
 
-        <div class="right-section">
-            <div class="logo">
-                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 72 L50 85 Q48 88 45 88 L15 88 Q10 88 10 83 Z" fill="#2d5016" stroke="#fff" stroke-width="1.5"/>
-                    <path d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 72 L50 85 Q52 88 55 88 L85 88 Q90 88 90 83 Z" fill="#2d5016" stroke="#fff" stroke-width="1.5"/>
-                    
-                    <path d="M50 72 L45 50 L50 35 L55 50 Z" fill="#2d5016"/>
-                    <circle cx="50" cy="30" r="6" fill="#2d5016"/>
-                    
-                    <ellipse cx="50" cy="15" rx="4" ry="7" fill="#228B22"/>
-                    <ellipse cx="42" cy="22" rx="4" ry="6" fill="#228B22"/>
-                    <ellipse cx="58" cy="22" rx="4" ry="6" fill="#228B22"/>
-                    <ellipse cx="35" cy="28" rx="5" ry="7" fill="#228B22"/>
-                    <ellipse cx="65" cy="28" rx="5" ry="7" fill="#228B22"/>
-                    <ellipse cx="28" cy="35" rx="5" ry="8" fill="#228B22"/>
-                    <ellipse cx="72" cy="35" rx="5" ry="8" fill="#228B22"/>
-                    <ellipse cx="38" cy="38" rx="4" ry="6" fill="#228B22"/>
-                    <ellipse cx="62" cy="38" rx="4" ry="6" fill="#228B22"/>
-                    <ellipse cx="45" cy="25" rx="3" ry="5" fill="#228B22"/>
-                    <ellipse cx="55" cy="25" rx="3" ry="5" fill="#228B22"/>
-                    <ellipse cx="50" cy="32" rx="5" ry="7" fill="#228B22"/>
-                    <ellipse cx="32" cy="42" rx="4" ry="6" fill="#228B22"/>
-                    <ellipse cx="68" cy="42" rx="4" ry="6" fill="#228B22"/>
-                    <ellipse cx="25" cy="48" rx="3" ry="5" fill="#228B22"/>
-                    <ellipse cx="75" cy="48" rx="3" ry="5" fill="#228B22"/>
+        <h1 class="form-title">Create Account</h1>
+        <p class="form-subtitle">
+          Join thousands of book lovers in our community
+        </p>
+
+        <form action="/signup" method="POST" id="signupForm" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">First Name</label>
+              <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                placeholder="John"
+                maxlength="50"
+                novalidate
+              />
+            </div>
+            <div class="form-group">
+              <label for="lastName">Last Name</label>
+              <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                placeholder="Doe"
+                maxlength="50"
+                novalidate
+              />
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="email">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="your.email@example.com"
+              maxlength="100"
+              novalidate
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label for="password">Password</label>
+            <div class="password-input-container">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Create a strong password"
+                maxlength="128"
+                novalidate
+              />
+              <button
+                type="button"
+                class="eye-btn"
+                onclick="togglePassword('password')"
+              >
+                <svg
+                  id="eye-icon-password"
+                  class="eye-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
                 </svg>
-                <h2>Papyrus</h2>
+                <svg
+                  id="eye-off-icon-password"
+                  class="eye-icon eye-off"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  style="display: none"
+                >
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+                  ></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
             </div>
+          </div>
 
-            <h1 class="form-title">Create Account</h1>
-            <p class="form-subtitle">Join thousands of book lovers in our community</p>
+          <div class="form-group full-width">
+            <label for="confirmPassword">Confirm Password</label>
+            <div class="password-input-container">
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                placeholder="Re-enter your password"
+                maxlength="128"
+                novalidate
+              />
+              <button
+                type="button"
+                class="eye-btn"
+                onclick="togglePassword('confirmPassword')"
+              >
+                <svg
+                  id="eye-icon-confirmPassword"
+                  class="eye-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg
+                  id="eye-off-icon-confirmPassword"
+                  class="eye-icon eye-off"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  style="display: none"
+                >
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+                  ></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
 
-            <form action="/signup" method="POST" id="signupForm" novalidate>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="firstName">First Name</label>
-                        <input type="text" id="firstName" name="firstName" placeholder="John" maxlength="50" novalidate>
-                    </div>
-                    <div class="form-group">
-                        <label for="lastName">Last Name</label>
-                        <input type="text" id="lastName" name="lastName" placeholder="Doe" maxlength="50" novalidate>
-                    </div>
-                </div>
+          <button type="submit" class="submit-btn">Create Account</button>
+          <p
+            id="errorMessage"
+            style="
+              color: red;
+              text-align: center;
+              margin-top: 10px;
+              display: none;
+            "
+          ></p>
 
-                <div class="form-group full-width">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" name="email" placeholder="your.email@example.com" maxlength="100" novalidate>
-                </div>
+          <div class="divider">
+            <span>OR</span>
+          </div>
 
-                <div class="form-group full-width">
-                    <label for="password">Password</label>
-                    <div class="password-input-container">
-                        <input type="password" id="password" name="password" placeholder="Create a strong password" maxlength="128" novalidate>
-                        <button type="button" class="eye-btn" onclick="togglePassword('password')">
-                            <svg id="eye-icon-password" class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                            <svg id="eye-off-icon-password" class="eye-icon eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
-                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                                <line x1="1" y1="1" x2="23" y2="23"></line>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+          <button
+            type="button"
+            class="google-btn"
+            onclick="window.location.href = '/auth/google'"
+          >
+            <svg
+              class="google-icon"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                fill="#4285F4"
+              />
+              <path
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                fill="#34A853"
+              />
+              <path
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                fill="#FBBC05"
+              />
+              <path
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                fill="#EA4335"
+              />
+            </svg>
+            Sign up with Google
+          </button>
 
-                <div class="form-group full-width">
-                    <label for="confirmPassword">Confirm Password</label>
-                    <div class="password-input-container">
-                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter your password" maxlength="128" novalidate>
-                        <button type="button" class="eye-btn" onclick="togglePassword('confirmPassword')">
-                            <svg id="eye-icon-confirmPassword" class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                            <svg id="eye-off-icon-confirmPassword" class="eye-icon eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
-                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                                <line x1="1" y1="1" x2="23" y2="23"></line>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <button type="submit" class="submit-btn">Create Account</button>
-                <p id="errorMessage" style="color: red; text-align: center; margin-top: 10px; display: none;"></p>
-
-                <div class="divider">
-                    <span>OR</span>
-                </div>
-
-                <button type="button" class="google-btn" onclick="window.location.href='/auth/google'">
-                    <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                    </svg>
-                    Sign up with Google
-                </button>
-
-                <div class="signin-link">
-                    Already have an account? <a href="/signin">Sign In</a>
-                </div>
-            </form>
-        </div>
+          <div class="signin-link">
+            Already have an account? <a href="/signin">Sign In</a>
+          </div>
+        </form>
+      </div>
     </div>
 
     <script>
-        function togglePassword(fieldId) {
-            const passwordField = document.getElementById(fieldId);
-            const eyeIcon = document.getElementById(`eye-icon-${fieldId}`);
-            const eyeOffIcon = document.getElementById(`eye-off-icon-${fieldId}`);
-            
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-                eyeIcon.style.display = 'none';
-                eyeOffIcon.style.display = 'block';
+      function togglePassword(fieldId) {
+        const passwordField = document.getElementById(fieldId);
+        const eyeIcon = document.getElementById(`eye-icon-${fieldId}`);
+        const eyeOffIcon = document.getElementById(`eye-off-icon-${fieldId}`);
+
+        if (passwordField.type === "password") {
+          passwordField.type = "text";
+          eyeIcon.style.display = "none";
+          eyeOffIcon.style.display = "block";
+        } else {
+          passwordField.type = "password";
+          eyeIcon.style.display = "block";
+          eyeOffIcon.style.display = "none";
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("signupForm");
+        const firstName = document.getElementById("firstName");
+        const lastName = document.getElementById("lastName");
+        const email = document.getElementById("email");
+        const password = document.getElementById("password");
+        const confirmPassword = document.getElementById("confirmPassword");
+
+        firstName.addEventListener("blur", validateFirstName);
+        lastName.addEventListener("blur", validateLastName);
+        email.addEventListener("blur", validateEmail);
+        password.addEventListener("input", validatePassword);
+        confirmPassword.addEventListener("input", validateConfirmPassword);
+
+        function validateFirstName() {
+          const value = firstName.value.trim();
+          if (value.length < 2) {
+            showError(firstName, "First name must be at least 2 characters");
+            return false;
+          }
+          if (!/^[a-zA-Z\s]+$/.test(value)) {
+            showError(firstName, "First name can only contain letters");
+            return false;
+          }
+          showSuccess(firstName);
+          return true;
+        }
+
+        function validateLastName() {
+          const value = lastName.value.trim();
+          if (value.length < 2) {
+            showError(lastName, "Last name must be at least 2 characters");
+            return false;
+          }
+          if (!/^[a-zA-Z\s]+$/.test(value)) {
+            showError(lastName, "Last name can only contain letters");
+            return false;
+          }
+          showSuccess(lastName);
+          return true;
+        }
+
+        function validateEmail() {
+          const value = email.value.trim();
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(value)) {
+            showError(email, "Please enter a valid email address");
+            return false;
+          }
+          showSuccess(email);
+          return true;
+        }
+
+        function validatePassword() {
+          const value = password.value;
+          const requirements = {
+            length: value.length >= 8,
+            uppercase: /[A-Z]/.test(value),
+            lowercase: /[a-z]/.test(value),
+            number: /[0-9]/.test(value),
+            special: /[!@#$%^&*(),.?":{}|<>]/.test(value),
+          };
+
+          let message = "";
+          if (!requirements.length) message += "At least 8 characters, ";
+          if (!requirements.uppercase) message += "one uppercase letter, ";
+          if (!requirements.lowercase) message += "one lowercase letter, ";
+          if (!requirements.number) message += "one number, ";
+          if (!requirements.special) message += "one special character, ";
+
+          if (message) {
+            showError(
+              password,
+              "Password must contain: " + message.slice(0, -2),
+            );
+            return false;
+          }
+          showSuccess(password);
+          return true;
+        }
+
+        function validateConfirmPassword() {
+          if (confirmPassword.value !== password.value) {
+            showError(confirmPassword, "Passwords do not match");
+            return false;
+          }
+          if (confirmPassword.value.length === 0) {
+            showError(confirmPassword, "Please confirm your password");
+            return false;
+          }
+          showSuccess(confirmPassword);
+          return true;
+        }
+
+        function showError(input, message) {
+          const formGroup =
+            input.parentElement.parentElement || input.parentElement;
+          const error =
+            formGroup.querySelector(".error-message") ||
+            document.createElement("div");
+          error.className = "error-message";
+          error.textContent = message;
+          error.style.color = "#dc3545";
+          error.style.fontSize = "12px";
+          error.style.marginTop = "5px";
+
+          if (!formGroup.querySelector(".error-message")) {
+            formGroup.appendChild(error);
+          }
+          input.style.borderColor = "#dc3545";
+        }
+
+        function showSuccess(input) {
+          const formGroup =
+            input.parentElement.parentElement || input.parentElement;
+          const error = formGroup.querySelector(".error-message");
+          if (error) error.remove();
+          input.style.borderColor = "#28a745";
+        }
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const firstNameValue = firstName.value.trim();
+          const lastNameValue = lastName.value.trim();
+          const emailValue = email.value.trim();
+          const passwordValue = password.value;
+          const confirmPasswordValue = confirmPassword.value;
+
+          if (!firstNameValue) {
+            await Swal.fire({
+              title: "First Name Required",
+              text: "Please enter your first name",
+              icon: "error",
+              confirmButtonColor: "#2d5016",
+            });
+            firstName.focus();
+            return;
+          }
+
+          if (firstNameValue.length < 2) {
+            await Swal.fire({
+              title: "Invalid First Name",
+              text: "First name must be at least 2 characters long",
+              icon: "error",
+              confirmButtonColor: "#2d5016",
+            });
+            firstName.focus();
+            return;
+          }
+
+          if (!/^[a-zA-Z\s]+$/.test(firstNameValue)) {
+            await Swal.fire({
+              title: "Invalid First Name",
+              text: "First name can only contain letters and spaces",
+              icon: "error",
+              confirmButtonColor: "#2d5016",
+            });
+            firstName.focus();
+            return;
+          }
+
+          if (!lastNameValue) {
+            await Swal.fire({
+              title: "Last Name Required",
+              text: "Please enter your last name",
+              icon: "error",
+              confirmButtonColor: "#2d5016",
+            });
+            lastName.focus();
+            return;
+          }
+
+          if (lastNameValue.length < 2) {
+            await Swal.fire({
+              title: "Invalid Last Name",
+              text: "Last name must be at least 2 characters long",
+              icon: "error",
+              confirmButtonColor: "#2d5016",
+            });
+            lastName.focus();
+            return;
+          }
+
+          if (!/^[a-zA-Z\s]+$/.test(lastNameValue)) {
+            await Swal.fire({
+              title: "Invalid Last Name",
+              text: "Last name can only contain letters and spaces",
+              icon: "error",
+              confirmButtonColor: "#2d5016",
+            });
+            lastName.focus();
+            return;
+          }
+
+          if (!emailValue) {
+            await Swal.fire({
+              title: "Email Required",
+              text: "Please enter your email address",
+              icon: "error",
+              confirmButtonColor: "#2d5016",
+            });
+            email.focus();
+            return;
+          }
+
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(emailValue)) {
+            await Swal.fire({
+              title: "Invalid Email",
+              text: "Please enter a valid email address",
+              icon: "error",
+              confirmButtonColor: "#2d5016",
+            });
+            email.focus();
+            return;
+          }
+
+          if (!passwordValue) {
+            await Swal.fire({
+              title: "Password Required",
+              text: "Please create a password",
+              icon: "error",
+              confirmButtonColor: "#2d5016",
+            });
+            password.focus();
+            return;
+          }
+
+          if (passwordValue.length < 8) {
+            await Swal.fire({
+              title: "Password Too Short",
+              text: "Password must be at least 8 characters long",
+              icon: "error",
+              confirmButtonColor: "#2d5016",
+            });
+            password.focus();
+            return;
+          }
+
+          const requirements = {
+            uppercase: /[A-Z]/.test(passwordValue),
+            lowercase: /[a-z]/.test(passwordValue),
+            number: /[0-9]/.test(passwordValue),
+            special: /[!@#$%^&*(),.?":{}|<>]/.test(passwordValue),
+          };
+
+          if (
+            !requirements.uppercase ||
+            !requirements.lowercase ||
+            !requirements.number ||
+            !requirements.special
+          ) {
+            await Swal.fire({
+              title: "Weak Password",
+              text: "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+              icon: "error",
+              confirmButtonColor: "#2d5016",
+            });
+            password.focus();
+            return;
+          }
+
+          if (!confirmPasswordValue) {
+            await Swal.fire({
+              title: "Confirm Password Required",
+              text: "Please confirm your password",
+              icon: "error",
+              confirmButtonColor: "#2d5016",
+            });
+            confirmPassword.focus();
+            return;
+          }
+
+          if (confirmPasswordValue !== passwordValue) {
+            await Swal.fire({
+              title: "Passwords Don't Match",
+              text: "Please make sure both passwords are identical",
+              icon: "error",
+              confirmButtonColor: "#2d5016",
+            });
+            confirmPassword.focus();
+            return;
+          }
+
+          const errorMessage = document.getElementById("errorMessage");
+          const submitBtn = document.querySelector(".submit-btn");
+
+          const formData = {
+            firstName: firstNameValue,
+            lastName: lastNameValue,
+            email: emailValue,
+            password: passwordValue,
+            confirmPassword: confirmPasswordValue,
+          };
+
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Creating Account...";
+          errorMessage.style.display = "none";
+
+          try {
+            const response = await fetch("/signup", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            });
+
+            const result = await response.json();
+
+            if (result.success && result.redirectUrl) {
+              await Swal.fire({
+                title: "Account Created!",
+                text: result.message,
+                icon: "success",
+                confirmButtonText: "Continue",
+                confirmButtonColor: "#2d5016",
+                timer: 1500,
+                showConfirmButton: false,
+                timerProgressBar: true,
+              });
+              window.location.href = result.redirectUrl;
             } else {
-                passwordField.type = 'password';
-                eyeIcon.style.display = 'block';
-                eyeOffIcon.style.display = 'none';
+              await Swal.fire({
+                title: "Signup Failed",
+                text:
+                  result.message ||
+                  "Failed to create account. Please try again.",
+                icon: "error",
+                confirmButtonText: "Try Again",
+                confirmButtonColor: "#2d5016",
+              });
+              submitBtn.disabled = false;
+              submitBtn.textContent = "Create Account";
             }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('signupForm');
-            const firstName = document.getElementById('firstName');
-            const lastName = document.getElementById('lastName');
-            const email = document.getElementById('email');
-            const password = document.getElementById('password');
-            const confirmPassword = document.getElementById('confirmPassword');
-
-            // Real-time validation
-            firstName.addEventListener('blur', validateFirstName);
-            lastName.addEventListener('blur', validateLastName);
-            email.addEventListener('blur', validateEmail);
-            password.addEventListener('input', validatePassword);
-            confirmPassword.addEventListener('input', validateConfirmPassword);
-
-            function validateFirstName() {
-                const value = firstName.value.trim();
-                if (value.length < 2) {
-                    showError(firstName, 'First name must be at least 2 characters');
-                    return false;
-                }
-                if (!/^[a-zA-Z\s]+$/.test(value)) {
-                    showError(firstName, 'First name can only contain letters');
-                    return false;
-                }
-                showSuccess(firstName);
-                return true;
-            }
-
-            function validateLastName() {
-                const value = lastName.value.trim();
-                if (value.length < 2) {
-                    showError(lastName, 'Last name must be at least 2 characters');
-                    return false;
-                }
-                if (!/^[a-zA-Z\s]+$/.test(value)) {
-                    showError(lastName, 'Last name can only contain letters');
-                    return false;
-                }
-                showSuccess(lastName);
-                return true;
-            }
-
-            function validateEmail() {
-                const value = email.value.trim();
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(value)) {
-                    showError(email, 'Please enter a valid email address');
-                    return false;
-                }
-                showSuccess(email);
-                return true;
-            }
-
-            function validatePassword() {
-                const value = password.value;
-                const requirements = {
-                    length: value.length >= 8,
-                    uppercase: /[A-Z]/.test(value),
-                    lowercase: /[a-z]/.test(value),
-                    number: /[0-9]/.test(value),
-                    special: /[!@#$%^&*(),.?":{}|<>]/.test(value)
-                };
-
-                let message = '';
-                if (!requirements.length) message += 'At least 8 characters, ';
-                if (!requirements.uppercase) message += 'one uppercase letter, ';
-                if (!requirements.lowercase) message += 'one lowercase letter, ';
-                if (!requirements.number) message += 'one number, ';
-                if (!requirements.special) message += 'one special character, ';
-
-                if (message) {
-                    showError(password, 'Password must contain: ' + message.slice(0, -2));
-                    return false;
-                }
-                showSuccess(password);
-                return true;
-            }
-
-            function validateConfirmPassword() {
-                if (confirmPassword.value !== password.value) {
-                    showError(confirmPassword, 'Passwords do not match');
-                    return false;
-                }
-                if (confirmPassword.value.length === 0) {
-                    showError(confirmPassword, 'Please confirm your password');
-                    return false;
-                }
-                showSuccess(confirmPassword);
-                return true;
-            }
-
-            function showError(input, message) {
-                const formGroup = input.parentElement.parentElement || input.parentElement;
-                const error = formGroup.querySelector('.error-message') || document.createElement('div');
-                error.className = 'error-message';
-                error.textContent = message;
-                error.style.color = '#dc3545';
-                error.style.fontSize = '12px';
-                error.style.marginTop = '5px';
-                
-                if (!formGroup.querySelector('.error-message')) {
-                    formGroup.appendChild(error);
-                }
-                input.style.borderColor = '#dc3545';
-            }
-
-            function showSuccess(input) {
-                const formGroup = input.parentElement.parentElement || input.parentElement;
-                const error = formGroup.querySelector('.error-message');
-                if (error) error.remove();
-                input.style.borderColor = '#28a745';
-            }
-
-            // Form submission with validation
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const firstNameValue = firstName.value.trim();
-                const lastNameValue = lastName.value.trim();
-                const emailValue = email.value.trim();
-                const passwordValue = password.value;
-                const confirmPasswordValue = confirmPassword.value;
-
-                // Validate first name
-                if (!firstNameValue) {
-                    await Swal.fire({
-                        title: 'First Name Required',
-                        text: 'Please enter your first name',
-                        icon: 'error',
-                        confirmButtonColor: '#2d5016'
-                    });
-                    firstName.focus();
-                    return;
-                }
-
-                if (firstNameValue.length < 2) {
-                    await Swal.fire({
-                        title: 'Invalid First Name',
-                        text: 'First name must be at least 2 characters long',
-                        icon: 'error',
-                        confirmButtonColor: '#2d5016'
-                    });
-                    firstName.focus();
-                    return;
-                }
-
-                if (!/^[a-zA-Z\s]+$/.test(firstNameValue)) {
-                    await Swal.fire({
-                        title: 'Invalid First Name',
-                        text: 'First name can only contain letters and spaces',
-                        icon: 'error',
-                        confirmButtonColor: '#2d5016'
-                    });
-                    firstName.focus();
-                    return;
-                }
-
-                // Validate last name
-                if (!lastNameValue) {
-                    await Swal.fire({
-                        title: 'Last Name Required',
-                        text: 'Please enter your last name',
-                        icon: 'error',
-                        confirmButtonColor: '#2d5016'
-                    });
-                    lastName.focus();
-                    return;
-                }
-
-                if (lastNameValue.length < 2) {
-                    await Swal.fire({
-                        title: 'Invalid Last Name',
-                        text: 'Last name must be at least 2 characters long',
-                        icon: 'error',
-                        confirmButtonColor: '#2d5016'
-                    });
-                    lastName.focus();
-                    return;
-                }
-
-                if (!/^[a-zA-Z\s]+$/.test(lastNameValue)) {
-                    await Swal.fire({
-                        title: 'Invalid Last Name',
-                        text: 'Last name can only contain letters and spaces',
-                        icon: 'error',
-                        confirmButtonColor: '#2d5016'
-                    });
-                    lastName.focus();
-                    return;
-                }
-
-                // Validate email
-                if (!emailValue) {
-                    await Swal.fire({
-                        title: 'Email Required',
-                        text: 'Please enter your email address',
-                        icon: 'error',
-                        confirmButtonColor: '#2d5016'
-                    });
-                    email.focus();
-                    return;
-                }
-
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(emailValue)) {
-                    await Swal.fire({
-                        title: 'Invalid Email',
-                        text: 'Please enter a valid email address',
-                        icon: 'error',
-                        confirmButtonColor: '#2d5016'
-                    });
-                    email.focus();
-                    return;
-                }
-
-                // Validate password
-                if (!passwordValue) {
-                    await Swal.fire({
-                        title: 'Password Required',
-                        text: 'Please create a password',
-                        icon: 'error',
-                        confirmButtonColor: '#2d5016'
-                    });
-                    password.focus();
-                    return;
-                }
-
-                if (passwordValue.length < 8) {
-                    await Swal.fire({
-                        title: 'Password Too Short',
-                        text: 'Password must be at least 8 characters long',
-                        icon: 'error',
-                        confirmButtonColor: '#2d5016'
-                    });
-                    password.focus();
-                    return;
-                }
-
-                const requirements = {
-                    uppercase: /[A-Z]/.test(passwordValue),
-                    lowercase: /[a-z]/.test(passwordValue),
-                    number: /[0-9]/.test(passwordValue),
-                    special: /[!@#$%^&*(),.?":{}|<>]/.test(passwordValue)
-                };
-
-                if (!requirements.uppercase || !requirements.lowercase || !requirements.number || !requirements.special) {
-                    await Swal.fire({
-                        title: 'Weak Password',
-                        text: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
-                        icon: 'error',
-                        confirmButtonColor: '#2d5016'
-                    });
-                    password.focus();
-                    return;
-                }
-
-                // Validate confirm password
-                if (!confirmPasswordValue) {
-                    await Swal.fire({
-                        title: 'Confirm Password Required',
-                        text: 'Please confirm your password',
-                        icon: 'error',
-                        confirmButtonColor: '#2d5016'
-                    });
-                    confirmPassword.focus();
-                    return;
-                }
-
-                if (confirmPasswordValue !== passwordValue) {
-                    await Swal.fire({
-                        title: 'Passwords Don\'t Match',
-                        text: 'Please make sure both passwords are identical',
-                        icon: 'error',
-                        confirmButtonColor: '#2d5016'
-                    });
-                    confirmPassword.focus();
-                    return;
-                }
-
-                const errorMessage = document.getElementById('errorMessage');
-                const submitBtn = document.querySelector('.submit-btn');
-                
-                const formData = {
-                    firstName: firstNameValue,
-                    lastName: lastNameValue,
-                    email: emailValue,
-                    password: passwordValue,
-                    confirmPassword: confirmPasswordValue
-                };
-                
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Creating Account...';
-                errorMessage.style.display = 'none';
-                
-                try {
-                    const response = await fetch('/signup', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formData)
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success && result.redirectUrl) {
-                        await Swal.fire({
-                            title: 'Account Created!',
-                            text: result.message,
-                            icon: 'success',
-                            confirmButtonText: 'Continue',
-                            confirmButtonColor: '#2d5016',
-                            timer: 1500,
-                            showConfirmButton: false,
-                            timerProgressBar: true
-                        });
-                        window.location.href = result.redirectUrl;
-                    } else {
-                        await Swal.fire({
-                            title: 'Signup Failed',
-                            text: result.message || 'Failed to create account. Please try again.',
-                            icon: 'error',
-                            confirmButtonText: 'Try Again',
-                            confirmButtonColor: '#2d5016'
-                        });
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = 'Create Account';
-                    }
-                } catch (error) {
-                    await Swal.fire({
-                        title: 'Connection Error',
-                        text: 'Please check your internet connection and try again.',
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#2d5016'
-                    });
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Create Account';
-                }
+          } catch (error) {
+            await Swal.fire({
+              title: "Connection Error",
+              text: "Please check your internet connection and try again.",
+              icon: "error",
+              confirmButtonText: "OK",
+              confirmButtonColor: "#2d5016",
             });
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Create Account";
+          }
         });
-        
-        if (window.history && window.history.pushState) {
-            window.history.pushState(null, null, window.location.href);
-            window.addEventListener('popstate', function() {
-                window.history.pushState(null, null, window.location.href);
-            });
-        }
+      });
+
+      if (window.history && window.history.pushState) {
+        window.history.pushState(null, null, window.location.href);
+        window.addEventListener("popstate", function () {
+          window.history.pushState(null, null, window.location.href);
+        });
+      }
     </script>
-</body>
+  </body>
 </html>

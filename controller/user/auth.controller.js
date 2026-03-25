@@ -144,6 +144,6 @@ export const logout = (req, res) => {
       console.error("Logout error:", err);
     }
     res.clearCookie("papyrus.user.sid");
-    return res.json({ success: true, redirectUrl: "/login" });
+    return res.redirect("/login");
   });
 };

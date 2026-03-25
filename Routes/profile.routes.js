@@ -85,29 +85,6 @@ router.post(
   passwordController.changePassword,
 );
 
-// router.get('/addresses', isAuthenticated, addressController.showAddresses);
-
-// router.get('/addresses/list', isAuthenticated, addressController.getAddressesList);
-
-// router.get('/address/add', isAuthenticated, addressController.showAddAddress);
-
-// router.post('/address/add', isAuthenticated, addressValidation, validate, addressController.addAddress);
-
-// router.post('/addresses', isAuthenticated, addressValidation, validate, addressController.addAddress);
-
-// router.get('/address/edit/:id', isAuthenticated, addressController.showEditAddress);
-
-// router.post('/address/edit/:id', isAuthenticated, addressValidation, validate, addressController.updateAddress);
-
-// router.post('/addresses/:id', isAuthenticated, addressValidation, validate, addressController.updateAddress);
-
-// router.delete('/address/:id', isAuthenticated, addressController.deleteAddress);
-
-// router.delete('/addresses/:id', isAuthenticated, addressController.deleteAddress);
-
-// router.post('/address/set-default/:id', isAuthenticated, addressController.setDefaultAddress);
-
-// router.post('/addresses/:id/set-default', isAuthenticated, addressController.setDefaultAddress);
 router.get("/addresses", isAuthenticated, addressController.showAddresses);
 router.get(
   "/addresses/list",
