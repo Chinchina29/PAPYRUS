@@ -191,8 +191,8 @@
 
           <div class="form-options">
             <div class="checkbox-group">
-              <input type="checkbox" id="remember" name="remember" />
-              <label for="remember">Remember me</label>
+              <!-- <input type="checkbox" id="remember" name="remember" />
+              <label for="remember">Remember me</label> -->
             </div>
             <a href="/forgot-password" class="forgot-link">Forgot Password?</a>
           </div>
@@ -408,13 +408,14 @@
                 confirmButtonColor: "#2d5016",
                 timer: 1500,
                 showConfirmButton: false,
-                timerProgressBar: true
+                timerProgressBar: true,
               });
               window.location.href = result.redirectUrl;
             } else {
               await Swal.fire({
                 title: "Login Failed",
-                text: result.message || "Invalid credentials. Please try again.",
+                text:
+                  result.message || "Invalid credentials. Please try again.",
                 icon: "error",
                 confirmButtonText: "Try Again",
                 confirmButtonColor: "#2d5016",

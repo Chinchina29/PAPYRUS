@@ -16,6 +16,12 @@ import {
 import passport from "../config/passport.config.js";
 import { requireRole } from "../Middlewares/auth.middleware.js";
 
+import {
+  showSetPassword,
+  setGooglePassword,
+  skipSetPassword,
+} from "../controller/user/password.controller.js";
+
 const router = express.Router();
 
 router.get("/", (req, res) => {
@@ -107,6 +113,9 @@ router.get(
   passport.authenticate("google", { failureRedirect: "/login" }),
   oauthController.googleCallback,
 );
+router.get("/set-password", showSetPassword);
+router.post("/set-password", setGooglePassword);
+router.get("/set-password/skip", skipSetPassword);
 
 router.get("/logout", authController.logout);
 

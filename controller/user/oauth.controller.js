@@ -18,6 +18,21 @@ export const googleCallback = async (req, res) => {
       return res.redirect("/login?error=blocked");
     }
 
+    const isNewGoogleUser = !user.password;
+
+    if (isNewGoogleUser) {
+      req.session.tempGoogleUserId = user._id.toString();
+      req.session.tempGoogleEmail = user.email;
+      req.session.tempGoogleName = user.firstName;
+
+      req.session.save((err) => {
+        if (err) return res.redirect("/login?error=session");
+        return res.redirect("/set-password");
+      });
+
+      return;
+    }
+
     req.session.userId = user._id.toString();
     req.session.user = {
       id: user._id,

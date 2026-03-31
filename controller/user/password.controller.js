@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import * as userService from "../../services/user.service.js";
 import * as otpService from "../../services/otp.service.js";
 import * as emailService from "../../services/email.service.js";
@@ -164,5 +165,131 @@ export const changePassword = async (req, res) => {
   } catch (error) {
     console.error("Change password error:", error);
     return errorResponse(res, "Server error", 500);
+  }
+};
+export const showSetPassword = (req, res) => {
+  if (!req.session.tempGoogleUserId) {
+    return res.redirect("/login");
+  }
+
+  res.render("user/setpassword", {
+    email: req.session.tempGoogleEmail,
+    name: req.session.tempGoogleName,
+  });
+};
+
+export const setGooglePassword = async (req, res) => {
+  try {
+    if (!req.session.tempGoogleUserId) {
+      return res.status(400).json({
+        success: false,
+        message: "Session expired. Please login with Google again.",
+        redirectUrl: "/login",
+      });
+    }
+
+    const { password, confirmPassword } = req.body;
+
+    if (!password || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Both fields are required",
+      });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Passwords do not match",
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters",
+      });
+    }
+    const user = await userService.findUserById(req.session.tempGoogleUserId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found. Please login with Google again.",
+        redirectUrl: "/login",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    delete req.session.tempGoogleUserId;
+    delete req.session.tempGoogleEmail;
+    delete req.session.tempGoogleName;
+    req.session.userId = user._id.toString();
+    req.session.user = {
+      id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+    };
+    req.session.lastActivity = new Date();
+
+    req.session.save((err) => {
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          message: "Session error. Please try again.",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Password set successfully! Welcome to Papyrus!",
+        redirectUrl: "/home",
+      });
+    });
+  } catch (error) {
+    console.error("Set password error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong. Please try again.",
+    });
+  }
+};
+export const skipSetPassword = async (req, res) => {
+  try {
+    if (!req.session.tempGoogleUserId) {
+      return res.redirect("/login");
+    }
+
+    const user = await userService.findUserById(req.session.tempGoogleUserId);
+
+    if (!user) return res.redirect("/login");
+
+    delete req.session.tempGoogleUserId;
+    delete req.session.tempGoogleEmail;
+    delete req.session.tempGoogleName;
+
+    req.session.userId = user._id.toString();
+    req.session.user = {
+      id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+    };
+    req.session.lastActivity = new Date();
+
+    req.session.save((err) => {
+      if (err) return res.redirect("/login?error=session");
+      return res.redirect("/home");
+    });
+  } catch (error) {
+    console.error("Skip password error:", error);
+    return res.redirect("/login?error=oauth_failed");
   }
 };
