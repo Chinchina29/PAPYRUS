@@ -7,6 +7,7 @@ import connectDB from "./config/mongo.config.js";
 import passport from "./config/passport.config.js";
 import { setUserLocals } from "./Middlewares/auth.middleware.js";
 import { secureHeaders } from "./Middlewares/cache.middleware.js";
+
 import {
   userSessionStore,
   adminSessionStore,
@@ -32,9 +33,8 @@ if (missingEnvVars.length > 0) {
 
 const app = express();
 connectDB();
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
 const userSession = session({

@@ -4,6 +4,7 @@ import * as passwordController from "../controller/user/password.controller.js";
 import * as oauthController from "../controller/user/oauth.controller.js";
 import * as productController from "../controller/user/product.controller.js";
 import * as emailService from "../services/email.service.js";
+import * as sellerController from "../controller/user/seller.controller.js";
 import {
   isNotAuthenticated,
   preventLoginIfAdminActive,
@@ -23,6 +24,10 @@ import {
 } from "../controller/user/password.controller.js";
 
 const router = express.Router();
+const requireAuth = (req, res, next) => {
+  if (!req.session?.userId) return res.redirect("/login");
+  next();
+};
 
 router.get("/", (req, res) => {
   res.render("user/login");
@@ -167,5 +172,9 @@ if (process.env.NODE_ENV === "development") {
     }
   });
 }
+
+router.get("/sell", requireAuth, sellerController.getSellPage);
+router.post("/sell", requireAuth, sellerController.submitBook);
+router.get("/sell/my-listings", requireAuth, sellerController.getMyListings);
 
 export default router;

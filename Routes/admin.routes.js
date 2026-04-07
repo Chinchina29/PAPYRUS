@@ -11,6 +11,7 @@ import {
 } from "../Middlewares/admin.middleware.js";
 import { requireRole } from "../Middlewares/auth.middleware.js";
 const router = express.Router();
+import * as submissionController from "../controller/admin/submission.controller.js";
 
 router.use(noCache);
 
@@ -164,6 +165,24 @@ router.patch(
   blockUserFromAdmin,
   isAdmin,
   productController.toggleProduct,
+);
+router.get(
+  "/submissions",
+  blockUserFromAdmin,
+  isAdmin,
+  submissionController.getSubmissions,
+);
+router.get(
+  "/submissions/:id",
+  blockUserFromAdmin,
+  isAdmin,
+  submissionController.getSubmissionDetail,
+);
+router.patch(
+  "/submissions/:id/review",
+  blockUserFromAdmin,
+  isAdmin,
+  submissionController.reviewSubmission,
 );
 
 export default router;
