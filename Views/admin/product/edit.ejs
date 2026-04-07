@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Product - Papyrus Admin</title>
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #faf8f5; color: #3a3a3a;
+      display: flex; min-height: 100vh;
+    }
+    .main-content { margin-left: 280px; flex: 1; padding: 32px; }
+    .page-header {
+      display: flex; align-items: center; gap: 16px; margin-bottom: 28px;
+    }
+    .btn-back {
+      width: 36px; height: 36px; border: 1px solid #e8dcc8;
+      border-radius: 8px; background: white;
+      display: flex; align-items: center; justify-content: center;
+      color: #8b7355; text-decoration: none;
+    }
+    .btn-back:hover { background: #f5f1ed; }
+    .page-title h1 { font-size: 22px; font-weight: 600; }
+    .page-title p  { font-size: 13px; color: #8b7355; margin-top: 3px; }
+
+    .form-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    }
+    .form-card {
+      background: white; border-radius: 12px;
+      border: 1px solid #e8dcc8; padding: 28px;
+    }
+    .form-card.full { grid-column: 1 / -1; }
+    .card-title {
+      font-size: 15px; font-weight: 600; margin-bottom: 20px;
+      padding-bottom: 12px; border-bottom: 1px solid #e8dcc8;
+    }
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block; font-size: 13px; font-weight: 500;
+      margin-bottom: 7px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%; padding: 10px 14px;
+      border: 1.5px solid #e8dcc8; border-radius: 8px;
+      font-size: 14px; font-family: inherit;
+      background: #faf8f5; outline: none;
+      transition: border-color 0.2s; resize: vertical;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: #8b7355;
+      box-shadow: 0 0 0 3px rgba(139,115,85,0.10);
+      background: white;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .existing-images {
+      display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;
+    }
+    .existing-img-item {
+      position: relative; width: 100px; height: 100px;
+    }
+    .existing-img-item img {
+      width: 100%; height: 100%; object-fit: cover;
+      border-radius: 8px; border: 1px solid #e8dcc8;
+    }
+    .existing-img-item .remove-img {
+      position: absolute; top: -6px; right: -6px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #c0392b; color: white; border: none;
+      cursor: pointer; font-size: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .image-upload-area {
+      border: 2px dashed #e8dcc8; border-radius: 12px;
+      padding: 20px; text-align: center; cursor: pointer;
+      transition: border-color 0.2s; background: #faf8f5;
+    }
+    .image-upload-area:hover { border-color: #8b7355; }
+    .image-upload-area p { font-size: 14px; color: #8b7355; }
+
+    .image-previews {
+      display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px;
+    }
+    .image-preview-item {
+      position: relative; width: 100px; height: 100px;
+    }
+    .image-preview-item img {
+      width: 100%; height: 100%; object-fit: cover;
+      border-radius: 8px; border: 2px solid #8b7355;
+    }
+    .image-preview-item .remove-img {
+      position: absolute; top: -6px; right: -6px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #c0392b; color: white; border: none;
+      cursor: pointer; font-size: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .img-count { font-size: 12px; color: #8b7355; margin-top: 8px; }
+    .img-count.error   { color: #c0392b; }
+    .img-count.success { color: #2e7d32; }
+
+    .cropper-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7); z-index: 9999;
+      align-items: center; justify-content: center;
+    }
+    .cropper-modal-overlay.show { display: flex; }
+    .cropper-modal {
+      background: white; border-radius: 16px;
+      padding: 24px; width: 90%; max-width: 600px;
+    }
+    .cropper-modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+    .cropper-container-wrap {
+      width: 100%; height: 350px;
+      background: #f5f1ed; border-radius: 8px; overflow: hidden;
+    }
+    .cropper-actions {
+      display: flex; gap: 12px; margin-top: 16px; justify-content: flex-end;
+    }
+    .btn-crop {
+      padding: 10px 24px; background: #8b7355; color: white;
+      border: none; border-radius: 8px; font-size: 14px; cursor: pointer;
+    }
+    .btn-crop-cancel {
+      padding: 10px 24px; background: white; color: #5a4d42;
+      border: 1px solid #e8dcc8; border-radius: 8px;
+      font-size: 14px; cursor: pointer;
+    }
+
+    .toggle-row {
+      display: flex; align-items: center;
+      justify-content: space-between; padding: 14px 16px;
+      background: #faf8f5; border: 1.5px solid #e8dcc8; border-radius: 8px;
+    }
+    .toggle-label { font-size: 14px; }
+    .toggle-hint  { font-size: 12px; color: #8b7355; margin-top: 2px; }
+    .toggle-switch {
+      position: relative; width: 46px; height: 24px; cursor: pointer;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0;
+      background: #ccc; border-radius: 24px; transition: 0.3s;
+    }
+    .toggle-slider::before {
+      content: ""; position: absolute;
+      width: 18px; height: 18px; left: 3px; bottom: 3px;
+      background: white; border-radius: 50%; transition: 0.3s;
+    }
+    .toggle-switch input:checked + .toggle-slider { background: #8b7355; }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); }
+
+    .alert {
+      padding: 12px 16px; border-radius: 8px;
+      font-size: 13.5px; margin-bottom: 20px; display: none;
+    }
+    .alert-danger  { background: #fdf0ef; color: #c0392b; border: 1px solid #f5c6c2; }
+    .alert-success { background: #edfaf3; color: #1e7e4a; border: 1px solid #b7eacf; }
+
+    .form-actions { display: flex; gap: 12px; margin-top: 24px; }
+    .btn-submit {
+      padding: 11px 28px; background: #8b7355; color: white;
+      border: none; border-radius: 8px; font-size: 14px;
+      font-weight: 500; cursor: pointer;
+    }
+    .btn-submit:hover:not(:disabled) { background: #5a4a3a; }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-cancel {
+      padding: 11px 28px; background: white; color: #5a4d42;
+      border: 1px solid #e8dcc8; border-radius: 8px; font-size: 14px;
+      cursor: pointer; text-decoration: none;
+      display: flex; align-items: center;
+    }
+    .btn-cancel:hover { background: #f5f1ed; }
+    .required { color: #c0392b; }
+  </style>
+</head>
+<body>
+
+  <%- include('../../partials/admin-sidebar') %>
+
+  <div class="main-content">
+    <div class="page-header">
+      <a href="/admin/products" class="btn-back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </a>
+      <div class="page-title">
+        <h1>Edit Product</h1>
+        <p>Updating "<%= product.name %>"</p>
+      </div>
+    </div>
+
+    <div id="errorMsg"   class="alert alert-danger"></div>
+    <div id="successMsg" class="alert alert-success"></div>
+
+    <form id="editProductForm" novalidate>
+      <div class="form-grid">
+
+        <!-- Basic Info -->
+        <div class="form-card">
+          <div class="card-title">📖 Basic Information</div>
+
+          <div class="form-group">
+            <label>Book Title <span class="required">*</span></label>
+            <input type="text" id="name" name="name"
+              value="<%= product.name %>"/>
+          </div>
+
+          <div class="form-group">
+            <label>Author</label>
+            <input type="text" id="author" name="author"
+              value="<%= product.author || '' %>"/>
+          </div>
+
+          <div class="form-group">
+            <label>Category <span class="required">*</span></label>
+            <select id="category" name="category">
+              <option value="">Select category</option>
+              <% categories.forEach(cat => { %>
+                <option value="<%= cat._id %>"
+                  <%= product.category?._id?.toString() === cat._id.toString() ? 'selected' : '' %>>
+                  <%= cat.name %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="description" name="description"
+              rows="4"><%= product.description || '' %></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Visibility</label>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Listed on Store</div>
+                <div class="toggle-hint">Show this product to users</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="isListed"
+                  <%= product.isListed ? 'checked' : '' %>/>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <div class="card-title">💰 Pricing & Stock</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Selling Price (₹) <span class="required">*</span></label>
+              <input type="number" id="price" name="price"
+                value="<%= product.price %>" min="0"/>
+            </div>
+            <div class="form-group">
+              <label>Original Price (₹)</label>
+              <input type="number" id="originalPrice" name="originalPrice"
+                value="<%= product.originalPrice || '' %>" min="0"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Stock Quantity <span class="required">*</span></label>
+            <input type="number" id="stock" name="stock"
+              value="<%= product.stock %>" min="0"/>
+          </div>
+
+          <div class="card-title" style="margin-top:20px">📚 Book Details</div>
+
+          <div class="form-group">
+            <label>ISBN</label>
+            <input type="text" id="isbn" name="isbn"
+              value="<%= product.isbn || '' %>"/>
+          </div>
+
+          <div class="form-group">
+            <label>Publisher</label>
+            <input type="text" id="publisher" name="publisher"
+              value="<%= product.publisher || '' %>"/>
+          </div>
+        </div>
+
+        <div class="form-card full">
+          <div class="card-title">
+            🖼️ Product Images
+            <span style="font-weight:400; color:#8b7355; font-size:13px">
+              (minimum 3 required)
+            </span>
+          </div>
+          <p style="font-size:13px; color:#8b7355; margin-bottom:10px">
+            Current Images:
+          </p>
+          <div class="existing-images" id="existingImages">
+            <% product.images.forEach((img, i) => { %>
+              <div class="existing-img-item"
+                data-public-id="<%= img.publicId %>">
+                <img src="<%= img.url %>" alt="Product image <%= i+1 %>"/>
+                <button type="button" class="remove-img"
+                  onclick="removeExistingImage(this, '<%= img.publicId %>')">
+                  ✕
+                </button>
+              </div>
+            <% }) %>
+          </div>
+
+          <p style="font-size:13px; color:#8b7355; margin:16px 0 8px">
+            Add New Images:
+          </p>
+          <div class="image-upload-area"
+            onclick="document.getElementById('imageInput').click()">
+            <p>Click to upload more images</p>
+          </div>
+
+          <input type="file" id="imageInput" accept="image/*"
+            style="display:none" onchange="handleImageSelect(event)"/>
+
+          <div class="img-count" id="imgCount"></div>
+          <div class="image-previews" id="imagePreviews"></div>
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-submit" id="submitBtn">
+          Save Changes
+        </button>
+        <a href="/admin/products" class="btn-cancel">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="cropper-modal-overlay" id="cropperModal">
+    <div class="cropper-modal">
+      <h3>✂️ Crop Image</h3>
+      <div class="cropper-container-wrap">
+        <img id="cropperImage" src="" alt="Crop"/>
+      </div>
+      <div class="cropper-actions">
+        <button class="btn-crop-cancel" onclick="closeCropper()">Cancel</button>
+        <button class="btn-crop" onclick="cropAndSave()">Crop & Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let newImages      = [];  
+    let removedImages  = [];   
+    let currentCropper = null;
+
+    function getTotalImageCount() {
+      const existingCount = document.querySelectorAll(
+        "#existingImages .existing-img-item"
+      ).length;
+      return existingCount + newImages.length;
+    }
+
+    function updateImageCount() {
+      const total = getTotalImageCount();
+      const el    = document.getElementById("imgCount");
+      el.textContent = `Total: ${total} image${total !== 1 ? "s" : ""} (minimum 3 required)`;
+      el.className   = total >= 3 ? "img-count success" : "img-count error";
+    }
+
+    function removeExistingImage(btn, publicId) {
+      removedImages.push(publicId);
+      btn.closest(".existing-img-item").remove();
+      updateImageCount();
+    }
+
+    function handleImageSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      event.target.value = "";
+      const reader = new FileReader();
+      reader.onload = (e) => openCropper(e.target.result);
+      reader.readAsDataURL(file);
+    }
+
+    function openCropper(imageSrc) {
+      const modal      = document.getElementById("cropperModal");
+      const cropperImg = document.getElementById("cropperImage");
+      cropperImg.src   = imageSrc;
+      modal.classList.add("show");
+      if (currentCropper) currentCropper.destroy();
+      currentCropper = new Cropper(cropperImg, {
+        aspectRatio: 1, viewMode: 1, dragMode: "move",
+        autoCropArea: 0.8,
+      });
+    }
+
+    function closeCropper() {
+      document.getElementById("cropperModal").classList.remove("show");
+      if (currentCropper) { currentCropper.destroy(); currentCropper = null; }
+    }
+
+    function cropAndSave() {
+      if (!currentCropper) return;
+      const canvas = currentCropper.getCroppedCanvas({
+        width: 800, height: 800, fillColor: "#fff",
+      });
+      const base64 = canvas.toDataURL("image/jpeg", 0.85);
+      newImages.push(base64);
+      addNewImagePreview(base64, newImages.length - 1);
+      updateImageCount();
+      closeCropper();
+    }
+
+    function addNewImagePreview(base64, index) {
+      const previews = document.getElementById("imagePreviews");
+      const item     = document.createElement("div");
+      item.className = "image-preview-item";
+      item.innerHTML = `
+        <img src="${base64}" alt="New image"/>
+        <button type="button" class="remove-img"
+          onclick="removeNewImage(${index})">✕</button>
+      `;
+      previews.appendChild(item);
+    }
+
+    function removeNewImage(index) {
+      newImages.splice(index, 1);
+      const previews = document.getElementById("imagePreviews");
+      previews.innerHTML = "";
+      newImages.forEach((img, i) => addNewImagePreview(img, i));
+      updateImageCount();
+    }
+
+    updateImageCount();
+    document.getElementById("editProductForm")
+      .addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const name          = document.getElementById("name").value.trim();
+        const author        = document.getElementById("author").value.trim();
+        const category      = document.getElementById("category").value;
+        const description   = document.getElementById("description").value.trim();
+        const price         = document.getElementById("price").value;
+        const originalPrice = document.getElementById("originalPrice").value;
+        const stock         = document.getElementById("stock").value;
+        const isbn          = document.getElementById("isbn").value.trim();
+        const publisher     = document.getElementById("publisher").value.trim();
+        const isListed      = document.getElementById("isListed").checked;
+
+        const errorMsg   = document.getElementById("errorMsg");
+        const successMsg = document.getElementById("successMsg");
+        const submitBtn  = document.getElementById("submitBtn");
+
+        errorMsg.style.display  = "none";
+        successMsg.style.display = "none";
+
+        if (!name) {
+          errorMsg.textContent   = "Book title is required";
+          errorMsg.style.display = "block"; return;
+        }
+        if (!category) {
+          errorMsg.textContent   = "Please select a category";
+          errorMsg.style.display = "block"; return;
+        }
+        if (!price) {
+          errorMsg.textContent   = "Price is required";
+          errorMsg.style.display = "block"; return;
+        }
+        if (getTotalImageCount() < 3) {
+          errorMsg.textContent   = "Minimum 3 images are required";
+          errorMsg.style.display = "block"; return;
+        }
+
+        submitBtn.disabled    = true;
+        submitBtn.textContent = "Saving...";
+
+        try {
+          const res  = await fetch("/admin/products/edit/<%= product._id %>", {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name, author, category, description,
+              price, originalPrice, stock,
+              isbn, publisher, isListed,
+              newImages,
+              removedImages,
+            }),
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            successMsg.textContent   = data.message;
+            successMsg.style.display = "block";
+            setTimeout(() => window.location.href = data.redirectUrl, 1500);
+          } else {
+            errorMsg.textContent   = data.message;
+            errorMsg.style.display = "block";
+            submitBtn.disabled     = false;
+            submitBtn.textContent  = "Save Changes";
+          }
+        } catch(err) {
+          errorMsg.textContent   = "Something went wrong. Try again.";
+          errorMsg.style.display = "block";
+          submitBtn.disabled     = false;
+          submitBtn.textContent  = "Save Changes";
+        }
+      });
+  </script>
+</body>
+</html>

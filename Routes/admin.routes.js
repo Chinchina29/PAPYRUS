@@ -1,5 +1,7 @@
 import express from "express";
 import * as adminController from "../controller/admin/admin.controller.js";
+import * as categoryController from "../controller/admin/category.controller.js";
+import * as productController from "../controller/admin/product.controller.js";
 import {
   isAdmin,
   isAdminNotAuthenticated,
@@ -65,6 +67,103 @@ router.post(
   blockUserFromAdmin,
   isAdmin,
   adminController.blockUnblockUser,
+);
+router.get(
+  "/categories",
+  blockUserFromAdmin,
+  isAdmin,
+  categoryController.getCategories,
+);
+
+router.get(
+  "/categories/add",
+  blockUserFromAdmin,
+  isAdmin,
+  categoryController.getAddCategory,
+);
+
+router.post(
+  "/categories/add",
+  blockUserFromAdmin,
+  isAdmin,
+  categoryController.addCategory,
+);
+
+router.get(
+  "/categories/edit/:id",
+  blockUserFromAdmin,
+  isAdmin,
+  categoryController.getEditCategory,
+);
+
+router.post(
+  "/categories/edit/:id",
+  blockUserFromAdmin,
+  isAdmin,
+  categoryController.editCategory,
+);
+
+router.delete(
+  "/categories/delete/:id",
+  blockUserFromAdmin,
+  isAdmin,
+  categoryController.deleteCategory,
+);
+
+router.patch(
+  "/categories/toggle/:id",
+  blockUserFromAdmin,
+  isAdmin,
+  categoryController.toggleCategory,
+);
+
+router.get(
+  "/products",
+  blockUserFromAdmin,
+  isAdmin,
+  productController.getProducts,
+);
+
+router.get(
+  "/products/add",
+  blockUserFromAdmin,
+  isAdmin,
+  productController.getAddProduct,
+);
+
+router.post(
+  "/products/add",
+  blockUserFromAdmin,
+  isAdmin,
+  productController.addProduct,
+);
+
+router.get(
+  "/products/edit/:id",
+  blockUserFromAdmin,
+  isAdmin,
+  productController.getEditProduct,
+);
+
+router.post(
+  "/products/edit/:id",
+  blockUserFromAdmin,
+  isAdmin,
+  productController.editProduct,
+);
+
+router.delete(
+  "/products/delete/:id",
+  blockUserFromAdmin,
+  isAdmin,
+  productController.deleteProduct,
+);
+
+router.patch(
+  "/products/toggle/:id",
+  blockUserFromAdmin,
+  isAdmin,
+  productController.toggleProduct,
 );
 
 export default router;

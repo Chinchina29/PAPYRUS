@@ -17,9 +17,10 @@
   </div>
 
   <nav class="sidebar-nav">
+    <!-- Overview -->
     <a
       href="/admin/dashboard"
-      class="nav-item <%= currentPage === 'dashboard' ? 'active' : '' %>"
+      class="nav-item <%= locals.currentPage_name === 'dashboard' ? 'active' : '' %>"
     >
       <svg
         viewBox="0 0 24 24"
@@ -35,7 +36,11 @@
       <span>Overview</span>
     </a>
 
-    <a href="#" class="nav-item">
+    <!-- Inventory -->
+    <a
+      href="#"
+      class="nav-item <%= locals.currentPage_name === 'inventory' ? 'active' : '' %>"
+    >
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -51,7 +56,11 @@
       <span>Inventory Management</span>
     </a>
 
-    <a href="#" class="nav-item">
+    <!-- Book Listings -->
+    <a
+      href="#"
+      class="nav-item <%= locals.currentPage_name === 'books' ? 'active' : '' %>"
+    >
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -66,7 +75,10 @@
       <span>Book Listings</span>
     </a>
 
-    <a href="#" class="nav-item">
+    <a
+      href="/admin/categories"
+      class="nav-item <%= locals.currentPage_name === 'categories' ? 'active' : '' %>"
+    >
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -81,7 +93,10 @@
       <span>Category Management</span>
     </a>
 
-    <a href="#" class="nav-item">
+    <a
+      href="#"
+      class="nav-item <%= locals.currentPage_name === 'orders' ? 'active' : '' %>"
+    >
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -99,7 +114,7 @@
 
     <a
       href="/admin/users"
-      class="nav-item <%= currentPage === 'users' ? 'active' : '' %>"
+      class="nav-item <%= locals.currentPage_name === 'users' ? 'active' : '' %>"
     >
       <svg
         viewBox="0 0 24 24"
@@ -115,7 +130,10 @@
       <span>User Management</span>
     </a>
 
-    <a href="#" class="nav-item">
+    <a
+      href="#"
+      class="nav-item <%= locals.currentPage_name === 'wallet' ? 'active' : '' %>"
+    >
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -129,7 +147,10 @@
       <span>Wallet</span>
     </a>
 
-    <a href="#" class="nav-item">
+    <a
+      href="#"
+      class="nav-item <%= locals.currentPage_name === 'reports' ? 'active' : '' %>"
+    >
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -143,7 +164,10 @@
       <span>Sales Reports</span>
     </a>
 
-    <a href="#" class="nav-item">
+    <a
+      href="#"
+      class="nav-item <%= locals.currentPage_name === 'coupons' ? 'active' : '' %>"
+    >
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -192,14 +216,15 @@
 
   <div class="user-profile">
     <div class="user-avatar">
-      <span
-        ><%= user?.firstName?.charAt(0) || 'A' %><%= user?.lastName?.charAt(0)
-        || 'D' %></span
-      >
+      <span>
+        <%= locals.user?.firstName?.charAt(0) || 'A' %> <%=
+        locals.user?.lastName?.charAt(0) || 'D' %>
+      </span>
     </div>
     <div class="user-info">
       <div class="user-name">
-        <%= user?.firstName || 'Admin' %> <%= user?.lastName || 'User' %>
+        <%= locals.user?.firstName || 'Admin' %> <%= locals.user?.lastName ||
+        'User' %>
       </div>
       <div class="user-role">Admin Access</div>
     </div>
@@ -278,11 +303,13 @@
     background: #e8dcc8;
     color: #3a3a3a;
   }
+
   .nav-item.active {
     background: #e8dcc8;
     color: #3a3a3a;
     border-left-color: #8b7355;
   }
+
   .nav-item svg {
     width: 18px;
     height: 18px;
@@ -323,6 +350,7 @@
     flex: 1;
     min-width: 0;
   }
+
   .user-name {
     font-size: 13px;
     font-weight: 600;
@@ -331,60 +359,30 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
   .user-role {
     font-size: 11px;
     color: #5a4d42;
   }
-
-  .logout-icon-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    background: #8b7355;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-  }
-  .logout-icon-btn:hover {
-    background: #5a4a3a;
-  }
-  .logout-icon-btn svg {
-    width: 16px;
-    height: 16px;
-  }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const logoutLink = document.querySelector('.nav-item.logout');
-  if (logoutLink) {
-    logoutLink.addEventListener('click', async function(e) {
+  document.addEventListener("DOMContentLoaded", function () {
+    const logoutLink = document.querySelector(".nav-item.logout");
+    if (!logoutLink) return;
+
+    logoutLink.addEventListener("click", async function (e) {
       e.preventDefault();
-      
       try {
-        const response = await fetch('/admin/logout', {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json'
-          }
+        const response = await fetch("/admin/logout", {
+          method: "GET",
+          headers: { Accept: "application/json" },
         });
-        
         const result = await response.json();
-        
-        if (result.success) {
-          window.location.href = result.redirectUrl || '/admin/signin';
-        } else {
-          window.location.href = '/admin/signin';
-        }
+        window.location.href = result.redirectUrl || "/admin/signin";
       } catch (error) {
-        window.location.href = '/admin/logout';
+        window.location.href = "/admin/logout";
       }
     });
-  }
-});
+  });
 </script>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Category - Papyrus Admin</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #faf8f5;
+        color: #3a3a3a;
+        display: flex;
+        min-height: 100vh;
+      }
+      .main-content {
+        margin-left: 280px;
+        flex: 1;
+        padding: 32px;
+      }
+
+      .page-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+      .btn-back {
+        width: 36px;
+        height: 36px;
+        border: 1px solid #e8dcc8;
+        border-radius: 8px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #8b7355;
+        text-decoration: none;
+      }
+      .btn-back:hover {
+        background: #f5f1ed;
+      }
+      .page-title h1 {
+        font-size: 22px;
+        font-weight: 600;
+      }
+      .page-title p {
+        font-size: 13px;
+        color: #8b7355;
+        margin-top: 3px;
+      }
+
+      .form-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e8dcc8;
+        padding: 32px;
+        max-width: 560px;
+      }
+      .form-group {
+        margin-bottom: 22px;
+      }
+      .form-group label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 8px;
+      }
+      .form-group input,
+      .form-group textarea {
+        width: 100%;
+        padding: 11px 14px;
+        border: 1.5px solid #e8dcc8;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: inherit;
+        background: #faf8f5;
+        outline: none;
+        transition: border-color 0.2s;
+        resize: vertical;
+      }
+      .form-group input:focus,
+      .form-group textarea:focus {
+        border-color: #8b7355;
+        box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
+        background: white;
+      }
+      .field-error {
+        font-size: 12px;
+        color: #c0392b;
+        margin-top: 5px;
+        display: none;
+      }
+      .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 13.5px;
+        margin-bottom: 20px;
+        display: none;
+      }
+      .alert-danger {
+        background: #fdf0ef;
+        color: #c0392b;
+        border: 1px solid #f5c6c2;
+      }
+      .alert-success {
+        background: #edfaf3;
+        color: #1e7e4a;
+        border: 1px solid #b7eacf;
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .btn-submit {
+        padding: 11px 28px;
+        background: #8b7355;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      .btn-submit:hover:not(:disabled) {
+        background: #5a4a3a;
+      }
+      .btn-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .btn-cancel {
+        padding: 11px 28px;
+        background: white;
+        color: #5a4d42;
+        border: 1px solid #e8dcc8;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+      }
+      .btn-cancel:hover {
+        background: #f5f1ed;
+      }
+    </style>
+  </head>
+  <body>
+    <%- include('../../partials/admin-sidebar') %>
+
+    <div class="main-content">
+      <div class="page-header">
+        <a href="/admin/categories" class="btn-back">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </a>
+        <div class="page-title">
+          <h1>Add Category</h1>
+          <p>Create a new book category</p>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div id="errorMsg" class="alert alert-danger"></div>
+        <div id="successMsg" class="alert alert-success"></div>
+
+        <form id="addCategoryForm" novalidate>
+          <div class="form-group">
+            <label for="name">
+              Category Name <span style="color: #c0392b">*</span>
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="e.g. Science Fiction"
+              maxlength="50"
+            />
+            <div class="field-error" id="nameError"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="description">
+              Description
+              <span style="color: #8b7355; font-weight: 400">(optional)</span>
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              rows="4"
+              placeholder="Brief description..."
+            ></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-submit" id="submitBtn">
+              Add Category
+            </button>
+            <a href="/admin/categories" class="btn-cancel">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("addCategoryForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault(); // stop normal form submit
+
+          const name = document.getElementById("name").value.trim();
+          const description = document
+            .getElementById("description")
+            .value.trim();
+          const errorMsg = document.getElementById("errorMsg");
+          const successMsg = document.getElementById("successMsg");
+          const nameError = document.getElementById("nameError");
+          const submitBtn = document.getElementById("submitBtn");
+
+          // Reset all messages
+          errorMsg.style.display = "none";
+          successMsg.style.display = "none";
+          nameError.style.display = "none";
+
+          // Frontend validation
+          if (!name) {
+            nameError.textContent = "Category name is required";
+            nameError.style.display = "block";
+            return;
+          }
+
+          // Disable button to prevent double submit
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Adding...";
+
+          try {
+            // Send JSON to POST /admin/categories/add
+            const res = await fetch("/admin/categories/add", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name, description }),
+            });
+            const data = await res.json();
+
+            if (data.success) {
+              successMsg.textContent = data.message;
+              successMsg.style.display = "block";
+              // Redirect after short delay
+              setTimeout(() => (window.location.href = data.redirectUrl), 1200);
+            } else {
+              errorMsg.textContent = data.message;
+              errorMsg.style.display = "block";
+              submitBtn.disabled = false;
+              submitBtn.textContent = "Add Category";
+            }
+          } catch (err) {
+            errorMsg.textContent = "Something went wrong. Try again.";
+            errorMsg.style.display = "block";
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Add Category";
+          }
+        });
+    </script>
+  </body>
+</html>

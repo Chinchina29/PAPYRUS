@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shop - Papyrus</title>
+  <link rel="stylesheet" href="/css/home.css">
+  <style>
+    .shop-wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .shop-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .shop-top h1 { font-size: 28px; font-weight: 600; color: #2d1f14; }
+    .shop-top p  { font-size: 14px; color: #7A5C3E; margin-top: 4px; }
+
+    .filters-bar {
+      background: white;
+      border: 1px solid #e8dcc8;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: flex-end;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .filter-group label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #7A5C3E;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .search-wrap { position: relative; }
+    .search-wrap input {
+      padding: 9px 36px 9px 14px;
+      border: 1.5px solid #e8dcc8;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #faf8f5;
+      outline: none;
+      width: 240px;
+      color: #3a3a3a;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .search-wrap input:focus { border-color: #7A5C3E; background: white; }
+    .search-clear {
+      position: absolute; right: 10px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none;
+      cursor: pointer; color: #7A5C3E; font-size: 14px;
+      display: none;
+    }
+
+    .filter-select, .price-input {
+      padding: 9px 14px;
+      border: 1.5px solid #e8dcc8;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #faf8f5;
+      outline: none;
+      color: #3a3a3a;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .filter-select:focus, .price-input:focus { border-color: #7A5C3E; background: white; }
+    .filter-select { min-width: 160px; }
+    .price-input   { width: 100px; }
+
+    .btn-apply {
+      padding: 9px 22px;
+      background: #7A5C3E;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Segoe UI', sans-serif;
+      transition: background 0.2s;
+    }
+    .btn-apply:hover { background: #5a4a3a; }
+
+    .btn-clear-all {
+      padding: 9px 18px;
+      background: white;
+      color: #7A5C3E;
+      border: 1.5px solid #e8dcc8;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: 'Segoe UI', sans-serif;
+      transition: background 0.2s;
+    }
+    .btn-clear-all:hover { background: #f5f1ed; }
+
+    .results-bar {
+      font-size: 13px;
+      color: #7A5C3E;
+      margin-bottom: 20px;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .book-card-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .book-card-shop {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #e8dcc8;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .book-card-shop:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(90,74,58,0.12);
+    }
+
+    .book-img-wrap {
+      width: 100%;
+      height: 220px;
+      overflow: hidden;
+      background: #f5f1ed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .book-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .book-card-shop:hover .book-img-wrap img { transform: scale(1.05); }
+    .no-img-placeholder { font-size: 52px; }
+
+    .out-of-stock-overlay {
+      position: absolute;
+      top: 10px; left: 10px;
+      background: rgba(192,57,43,0.9);
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .discount-overlay {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: #2d5016;
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .book-info { padding: 14px; }
+
+    .book-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2d1f14;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+    .book-author {
+      font-size: 12px;
+      color: #7A5C3E;
+      margin-bottom: 6px;
+    }
+    .book-category-tag {
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 8px;
+      background: #f5f1ed;
+      color: #7A5C3E;
+      border-radius: 20px;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+    .book-price-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .price-now {
+      font-size: 16px;
+      font-weight: 700;
+      color: #2d1f14;
+    }
+    .price-was {
+      font-size: 12px;
+      color: #7A5C3E;
+      text-decoration: line-through;
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 80px 20px;
+      color: #7A5C3E;
+    }
+    .empty-state svg {
+      width: 48px; height: 48px;
+      margin-bottom: 16px; opacity: 0.4;
+    }
+    .empty-state p { font-size: 16px; }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding-bottom: 32px;
+    }
+    .page-btn {
+      width: 36px; height: 36px;
+      border: 1px solid #e8dcc8;
+      background: white;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #5a4d42;
+      text-decoration: none;
+      transition: all 0.2s;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .page-btn:hover  { background: #f5f1ed; }
+    .page-btn.active { background: #7A5C3E; color: white; border-color: #7A5C3E; }
+    .page-btn.disabled { opacity: 0.4; pointer-events: none; }
+  </style>
+</head>
+<body>
+
+  <%- include('../partials/header') %>
+
+  <div class="shop-wrapper">
+
+    <div class="shop-top">
+      <div>
+        <h1>Shop Books</h1>
+        <p><%= total %> books available</p>
+      </div>
+    </div>
+
+    <form method="GET" action="/shop" id="filterForm">
+      <div class="filters-bar">
+
+        <div class="filter-group">
+          <label>Search</label>
+          <div class="search-wrap">
+            <input
+              type="text"
+              name="search"
+              id="searchInput"
+              placeholder="Title or author..."
+              value="<%= search %>"
+            />
+            <button type="button" class="search-clear" id="clearSearch">✕</button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Category</label>
+          <select name="category" class="filter-select">
+            <option value="">All Categories</option>
+            <% categories.forEach(cat => { %>
+              <option value="<%= cat._id %>"
+                <%= category === cat._id.toString() ? 'selected' : '' %>>
+                <%= cat.name %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Sort By</label>
+          <select name="sort" class="filter-select">
+            <option value="newest"     <%= sort === 'newest'     ? 'selected' : '' %>>Newest First</option>
+            <option value="price-low"  <%= sort === 'price-low'  ? 'selected' : '' %>>Price: Low to High</option>
+            <option value="price-high" <%= sort === 'price-high' ? 'selected' : '' %>>Price: High to Low</option>
+            <option value="a-z"        <%= sort === 'a-z'        ? 'selected' : '' %>>A - Z</option>
+            <option value="z-a"        <%= sort === 'z-a'        ? 'selected' : '' %>>Z - A</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Min Price (₹)</label>
+          <input type="number" name="minPrice" class="price-input"
+            placeholder="0" value="<%= minPrice %>" min="0"/>
+        </div>
+
+        <div class="filter-group">
+          <label>Max Price (₹)</label>
+          <input type="number" name="maxPrice" class="price-input"
+            placeholder="Any" value="<%= maxPrice %>" min="0"/>
+        </div>
+
+        <div class="filter-group" style="flex-direction: row; gap: 8px; align-items: flex-end;">
+          <button type="submit" class="btn-apply">Apply</button>
+          <button type="button" class="btn-clear-all" id="clearAll">Clear</button>
+        </div>
+
+      </div>
+    </form>
+
+    <div class="results-bar">
+      Showing <%= products.length %> of <%= total %> books
+      <% if (search) { %> for "<strong><%= search %></strong>"<% } %>
+    </div>
+
+    <div class="products-grid">
+      <% if (products.length === 0) { %>
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <p>No books found. Try adjusting your search or filters.</p>
+        </div>
+      <% } else { %>
+        <% products.forEach(product => { %>
+          <a href="/shop/<%= product._id %>" class="book-card-link">
+            <div class="book-card-shop">
+              <div class="book-img-wrap">
+                <% if (product.images && product.images.length > 0) { %>
+                  <img src="<%= product.images[0].url %>" alt="<%= product.name %>"/>
+                <% } else { %>
+                  <div class="no-img-placeholder">📚</div>
+                <% } %>
+                <% if (product.stock === 0) { %>
+                  <span class="out-of-stock-overlay">Out of Stock</span>
+                <% } %>
+                <% if (product.originalPrice && product.originalPrice > product.price) { %>
+                  <span class="discount-overlay">
+                    <%= Math.round((product.originalPrice - product.price) / product.originalPrice * 100) %>% off
+                  </span>
+                <% } %>
+              </div>
+              <div class="book-info">
+                <div class="book-title"><%= product.name %></div>
+                <% if (product.author) { %>
+                  <div class="book-author">by <%= product.author %></div>
+                <% } %>
+                <span class="book-category-tag"><%= product.category?.name %></span>
+                <div class="book-price-row">
+                  <span class="price-now">₹<%= product.price %></span>
+                  <% if (product.originalPrice && product.originalPrice > product.price) { %>
+                    <span class="price-was">₹<%= product.originalPrice %></span>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          </a>
+        <% }) %>
+      <% } %>
+    </div>
+
+    <% if (totalPages > 1) { %>
+    <div class="pagination">
+      <a href="?page=<%= currentPage-1 %>&search=<%= search %>&sort=<%= sort %>&category=<%= category %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>"
+        class="page-btn <%= currentPage === 1 ? 'disabled' : '' %>">‹</a>
+
+      <% for (let i = 1; i <= totalPages; i++) { %>
+        <a href="?page=<%= i %>&search=<%= search %>&sort=<%= sort %>&category=<%= category %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>"
+          class="page-btn <%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+      <% } %>
+
+      <a href="?page=<%= currentPage+1 %>&search=<%= search %>&sort=<%= sort %>&category=<%= category %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>"
+        class="page-btn <%= currentPage === totalPages ? 'disabled' : '' %>">›</a>
+    </div>
+    <% } %>
+
+  </div>
+
+  <script>
+    const searchInput = document.getElementById("searchInput");
+    const clearSearch = document.getElementById("clearSearch");
+    const clearAll    = document.getElementById("clearAll");
+
+    clearSearch.style.display = searchInput.value ? "block" : "none";
+
+    searchInput.addEventListener("input", function() {
+      clearSearch.style.display = this.value ? "block" : "none";
+    });
+
+    clearSearch.addEventListener("click", function() {
+      searchInput.value = "";
+      clearSearch.style.display = "none";
+    });
+
+    clearAll.addEventListener("click", function() {
+      window.location.href = "/shop";
+    });
+  </script>
+</body>
+</html>

@@ -1,24 +1,25 @@
 import * as userService from "../../services/user.service.js";
 import * as otpService from "../../services/otp.service.js";
 import * as emailService from "../../services/email.service.js";
-import { errorResponse } from "../../helper/response.helper.js";
 
 export const signin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Email and password are required" });
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required",
+      });
     }
 
     const user = await userService.findUserByEmail(email);
 
     if (!user || user.role !== "admin") {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid admin credentials" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid admin credentials",
+      });
     }
 
     if (user.isBlocked) {
@@ -30,11 +31,11 @@ export const signin = async (req, res) => {
 
     const isMatch = await userService.comparePassword(password, user.password);
     if (!isMatch) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid admin credentials" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid admin credentials",
+      });
     }
-
     req.session.adminId = user._id.toString();
     req.session.adminUser = {
       id: user._id,
@@ -48,9 +49,10 @@ export const signin = async (req, res) => {
     req.session.save((err) => {
       if (err) {
         console.error("Admin session save error:", err);
-        return res
-          .status(500)
-          .json({ success: false, message: "Session error" });
+        return res.status(500).json({
+          success: false,
+          message: "Session error",
+        });
       }
       return res.json({
         success: true,
@@ -60,7 +62,10 @@ export const signin = async (req, res) => {
     });
   } catch (error) {
     console.error("Admin signin error:", error);
-    return res.status(500).json({ success: false, message: "Server error" });
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };
 
@@ -71,6 +76,7 @@ export const dashboard = async (req, res) => {
 
     res.render("admin/dashboard", {
       user: req.session.adminUser || req.adminUser,
+      currentPage_name: "dashboard",
       stats: {
         totalUsers: stats.totalUsers || 0,
         activeUsers: stats.activeUsers || 0,
@@ -120,6 +126,7 @@ export const getUserManagement = async (req, res) => {
 
     res.render("admin/usermanagement", {
       user: req.session.adminUser,
+      currentPage_name: "users",
       users: result.users,
       currentPage: result.page,
       totalPages: result.totalPages,
@@ -129,24 +136,28 @@ export const getUserManagement = async (req, res) => {
     });
   } catch (error) {
     console.error("Get users error:", error);
-    res.status(500).send("Server error");
+    res.status(500).render("error/500", { error: "Failed to load users" });
   }
 };
 
 export const blockUnblockUser = async (req, res) => {
   try {
     const { userId } = req.body;
+
     if (!userId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "User ID is required" });
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
     }
 
     const user = await userService.toggleBlockUser(userId);
+
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
     return res.json({
@@ -157,35 +168,43 @@ export const blockUnblockUser = async (req, res) => {
       data: { isBlocked: user.isBlocked },
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, message: "Server error: " + error.message });
+    return res.status(500).json({
+      success: false,
+      message: "Server error: " + error.message,
+    });
   }
 };
 
 export const getUserDetail = async (req, res) => {
   try {
     const { userId } = req.params;
+
     if (!userId) {
-      return res
-        .status(400)
-        .render("error/404", { message: "User ID is required" });
+      return res.status(400).render("error/404", {
+        message: "User ID is required",
+      });
     }
 
     const user = await userService.getUserById(userId);
+
     if (!user) {
-      return res.status(404).render("error/404", { message: "User not found" });
+      return res.status(404).render("error/404", {
+        message: "User not found",
+      });
     }
 
-    res.render("admin/userdetail", { adminUser: req.session.adminUser, user });
+    res.render("admin/userdetail", {
+      adminUser: req.session.adminUser,
+      currentPage_name: "users",
+      user,
+    });
   } catch (error) {
     console.error("Get user detail error:", error);
-    res
-      .status(500)
-      .render("error/500", { error: "Failed to load user details" });
+    res.status(500).render("error/500", {
+      error: "Failed to load user details",
+    });
   }
 };
-
 export const logout = (req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
   res.set("Pragma", "no-cache");
@@ -203,10 +222,7 @@ export const logout = (req, res) => {
 
   req.session.destroy((err) => {
     res.clearCookie("papyrus.admin.sid");
-
-    if (err) {
-      console.error("Admin logout error:", err);
-    }
+    if (err) console.error("Admin logout error:", err);
 
     if (isAjax) {
       return res.json({ success: true, redirectUrl: "/admin/signin" });
@@ -220,9 +236,10 @@ export const forgotPassword = async (req, res) => {
     const { email } = req.body;
 
     if (!email) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Email is required" });
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
     }
 
     const user = await userService.findUserByEmail(email);
@@ -236,7 +253,7 @@ export const forgotPassword = async (req, res) => {
 
     const throttle = otpService.checkThrottle(user);
     if (!throttle.allowed) {
-      const statusCode = throttle.type === "lockout" ? 423 : 429; // 423 = Locked, 429 = Too Many Requests
+      const statusCode = throttle.type === "lockout" ? 423 : 429;
       return res.status(statusCode).json({
         success: false,
         message: throttle.reason,
@@ -254,6 +271,7 @@ export const forgotPassword = async (req, res) => {
       user.firstName,
       otp,
     );
+
     if (!emailResult.success) {
       return res.status(500).json({
         success: false,
@@ -289,15 +307,15 @@ export const verifyForgotOTP = async (req, res) => {
 
     const user = await userService.findUserByEmail(email);
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found." });
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
     }
 
     const result = otpService.verifyUserOTP(user, otpCode);
     if (!result.success) {
       await user.save();
-
       const statusCode =
         result.type === "lockout" || result.type === "locked" ? 423 : 400;
       return res.status(statusCode).json({
@@ -321,7 +339,6 @@ export const verifyForgotOTP = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 export const resendForgotOTP = async (req, res) => {
   try {
     const email = req.session.adminResetEmail;
@@ -334,14 +351,18 @@ export const resendForgotOTP = async (req, res) => {
 
     const user = await userService.findUserByEmail(email);
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found." });
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
     }
 
     const throttle = otpService.checkThrottle(user);
     if (!throttle.allowed) {
-      return res.status(429).json({ success: false, message: throttle.reason });
+      return res.status(429).json({
+        success: false,
+        message: throttle.reason,
+      });
     }
 
     const otp = otpService.setOTP(user);
@@ -352,10 +373,12 @@ export const resendForgotOTP = async (req, res) => {
       user.firstName,
       otp,
     );
+
     if (!emailResult.success) {
-      return res
-        .status(500)
-        .json({ success: false, message: "Failed to resend OTP." });
+      return res.status(500).json({
+        success: false,
+        message: "Failed to resend OTP.",
+      });
     }
 
     return res.json({
@@ -372,7 +395,6 @@ export const resendForgotOTP = async (req, res) => {
 export const resetPassword = async (req, res) => {
   try {
     const { newPassword, confirmPassword } = req.body;
-
     const email = req.session.adminResetEmail;
     const verified = req.session.adminResetVerified;
 
@@ -391,16 +413,18 @@ export const resetPassword = async (req, res) => {
     }
 
     if (newPassword !== confirmPassword) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Passwords do not match." });
+      return res.status(400).json({
+        success: false,
+        message: "Passwords do not match.",
+      });
     }
 
     const user = await userService.findUserByEmail(email);
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found." });
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
     }
 
     user.password = newPassword;

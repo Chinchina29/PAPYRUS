@@ -6,6 +6,8 @@ import { deleteImage } from "../../config/cloudinary.config.js";
 import {
   successResponse,
   errorResponse,
+  getInitials,
+  getAvatarColor,
 } from "../../helper/response.helper.js";
 
 export const showProfile = async (req, res) => {
@@ -22,10 +24,11 @@ export const showProfile = async (req, res) => {
     res.render("user/profile", {
       user,
       addresses: addresses || [],
+      initials: getInitials(user.firstName, user.lastName),
+      avatarColor: getAvatarColor(user.firstName),
     });
   } catch (error) {
-    console.error("Show profile error:", error);
-    res.redirect("/login");
+    res.status(500).send("Server Error");
   }
 };
 
@@ -38,10 +41,13 @@ export const showEditProfile = async (req, res) => {
       return res.redirect("/login");
     }
 
-    res.render("user/editprofile", { user });
+    res.render("user/editprofile", {
+      user,
+      initials: getInitials(user.firstName, user.lastName),
+      avatarColor: getAvatarColor(user.firstName),
+    });
   } catch (error) {
-    console.error("Show edit profile error:", error);
-    res.redirect("/login");
+    res.status(500).send("Server Error");
   }
 };
 
@@ -128,7 +134,6 @@ export const updateProfile = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Update profile error:", error);
     return res
       .status(500)
       .json({ success: false, message: "Server error: " + error.message });
@@ -166,7 +171,6 @@ export const requestEmailChange = async (req, res) => {
     };
 
     await user.save();
-
     await emailService.sendEmailChangeOTP(newEmail, user.firstName, otp);
 
     return successResponse(
@@ -174,7 +178,6 @@ export const requestEmailChange = async (req, res) => {
       "OTP sent to new email address. Please verify to complete email change.",
     );
   } catch (error) {
-    console.error("Request email change error:", error);
     return errorResponse(res, "Server error", 500);
   }
 };
@@ -203,11 +206,12 @@ export const verifyEmailChange = async (req, res) => {
     user.emailChangeRequest = undefined;
     await user.save();
 
-    req.session.user.email = newEmail;
+    if (req.session.user) {
+      req.session.user.email = newEmail;
+    }
 
     return successResponse(res, "Email changed successfully", { newEmail });
   } catch (error) {
-    console.error("Verify email change error:", error);
     return errorResponse(res, "Server error", 500);
   }
 };
@@ -222,7 +226,6 @@ export const cancelEmailChange = async (req, res) => {
     }
     return successResponse(res, "Email change request cancelled");
   } catch (error) {
-    console.error("Cancel email change error:", error);
     return errorResponse(res, "Server error", 500);
   }
 };
@@ -246,7 +249,7 @@ export const removeProfilePicture = async (req, res) => {
       const fullPublicId = `papyrus/profile-pictures/${publicId}`;
       await deleteImage(fullPublicId);
     } catch (error) {
-      console.error("Error deleting profile picture from Cloudinary:", error);
+      console.error(error);
     }
 
     await userService.updateUser(userId, { profilePicture: null });
@@ -255,7 +258,6 @@ export const removeProfilePicture = async (req, res) => {
       user: { profilePicture: null },
     });
   } catch (error) {
-    console.error("Remove profile picture error:", error);
     return errorResponse(res, "Server error", 500);
   }
 };
@@ -279,7 +281,6 @@ export const changePassword = async (req, res) => {
 
     return successResponse(res, "Password changed successfully");
   } catch (error) {
-    console.error("Change password error:", error);
     return errorResponse(res, "Server error", 500);
   }
 };
@@ -302,7 +303,6 @@ export const resendEmailOTP = async (req, res) => {
     };
 
     await user.save();
-
     await emailService.sendEmailChangeOTP(
       user.emailChangeRequest.newEmail,
       user.firstName,
@@ -311,10 +311,10 @@ export const resendEmailOTP = async (req, res) => {
 
     return successResponse(res, "OTP resent successfully");
   } catch (error) {
-    console.error("Resend email OTP error:", error);
     return errorResponse(res, "Server error", 500);
   }
 };
+
 export const uploadAvatar = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -332,7 +332,7 @@ export const uploadAvatar = async (req, res) => {
         const publicId = `papyrus/profile-pictures/${urlParts[urlParts.length - 1].split(".")[0]}`;
         await deleteImage(publicId);
       } catch (err) {
-        console.error("Error deleting old avatar:", err);
+        console.error(err);
       }
     }
 
@@ -342,7 +342,6 @@ export const uploadAvatar = async (req, res) => {
       user: { profilePicture: req.file.path },
     });
   } catch (error) {
-    console.error("Upload avatar error:", error);
     return errorResponse(res, "Server error", 500);
   }
 };

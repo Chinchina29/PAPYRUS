@@ -2,6 +2,7 @@ import express from "express";
 import * as authController from "../controller/user/auth.controller.js";
 import * as passwordController from "../controller/user/password.controller.js";
 import * as oauthController from "../controller/user/oauth.controller.js";
+import * as productController from "../controller/user/product.controller.js";
 import * as emailService from "../services/email.service.js";
 import {
   isNotAuthenticated,
@@ -15,7 +16,6 @@ import {
 } from "../Middlewares/validation.middleware.js";
 import passport from "../config/passport.config.js";
 import { requireRole } from "../Middlewares/auth.middleware.js";
-
 import {
   showSetPassword,
   setGooglePassword,
@@ -113,11 +113,15 @@ router.get(
   passport.authenticate("google", { failureRedirect: "/login" }),
   oauthController.googleCallback,
 );
+
 router.get("/set-password", showSetPassword);
 router.post("/set-password", setGooglePassword);
 router.get("/set-password/skip", skipSetPassword);
 
 router.get("/logout", authController.logout);
+
+router.get("/shop", productController.getShop);
+router.get("/shop/:id", productController.getProductDetail);
 
 if (process.env.NODE_ENV === "development") {
   router.get("/test-email/:email", async (req, res) => {
