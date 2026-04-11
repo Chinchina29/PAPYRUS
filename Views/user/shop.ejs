@@ -135,10 +135,45 @@
       border: 1px solid #e8dcc8;
       overflow: hidden;
       transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
     }
     .book-card-shop:hover {
       transform: translateY(-4px);
       box-shadow: 0 8px 24px rgba(90,74,58,0.12);
+    }
+
+    .book-actions {
+      padding: 12px 14px;
+      border-top: 1px solid #f0f0f0;
+      margin-top: auto;
+    }
+
+    .add-to-cart-btn {
+      width: 100%;
+      padding: 8px 12px;
+      background: #7A5C3E;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .add-to-cart-btn:hover {
+      background: #5a4a3a;
+    }
+
+    .add-to-cart-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
     }
 
     .book-img-wrap {
@@ -307,9 +342,22 @@
         </div>
 
         <div class="filter-group">
+          <label>Condition</label>
+          <select name="condition" class="filter-select">
+            <option value="">All Conditions</option>
+            <option value="new" <%= condition === 'new' ? 'selected' : '' %>>New</option>
+            <option value="like-new" <%= condition === 'like-new' ? 'selected' : '' %>>Like New</option>
+            <option value="good" <%= condition === 'good' ? 'selected' : '' %>>Good</option>
+            <option value="fair" <%= condition === 'fair' ? 'selected' : '' %>>Fair</option>
+            <option value="poor" <%= condition === 'poor' ? 'selected' : '' %>>Poor</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
           <label>Sort By</label>
           <select name="sort" class="filter-select">
             <option value="newest"     <%= sort === 'newest'     ? 'selected' : '' %>>Newest First</option>
+            <option value="popular"    <%= sort === 'popular'    ? 'selected' : '' %>>Most Popular</option>
             <option value="price-low"  <%= sort === 'price-low'  ? 'selected' : '' %>>Price: Low to High</option>
             <option value="price-high" <%= sort === 'price-high' ? 'selected' : '' %>>Price: High to Low</option>
             <option value="a-z"        <%= sort === 'a-z'        ? 'selected' : '' %>>A - Z</option>
@@ -353,11 +401,11 @@
         </div>
       <% } else { %>
         <% products.forEach(product => { %>
-          <a href="/shop/<%= product._id %>" class="book-card-link">
-            <div class="book-card-shop">
+          <div class="book-card-shop">
+            <a href="/shop/<%= product._id %>" class="book-card-link">
               <div class="book-img-wrap">
                 <% if (product.images && product.images.length > 0) { %>
-                  <img src="<%= product.images[0].url %>" alt="<%= product.name %>"/>
+                  <img src="<%= product.images[0].url %>" alt="<%= product.title %>"/>
                 <% } else { %>
                   <div class="no-img-placeholder">📚</div>
                 <% } %>
@@ -371,7 +419,7 @@
                 <% } %>
               </div>
               <div class="book-info">
-                <div class="book-title"><%= product.name %></div>
+                <div class="book-title"><%= product.title %></div>
                 <% if (product.author) { %>
                   <div class="book-author">by <%= product.author %></div>
                 <% } %>
@@ -383,23 +431,39 @@
                   <% } %>
                 </div>
               </div>
+            </a>
+            <div class="book-actions">
+              <% if (product.stock > 0) { %>
+                <button class="add-to-cart-btn" onclick="addToCart('<%= product._id %>', event)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="m1 1 4 4 2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                  </svg>
+                  Add to Cart
+                </button>
+              <% } else { %>
+                <button class="add-to-cart-btn" disabled>
+                  Out of Stock
+                </button>
+              <% } %>
             </div>
-          </a>
+          </div>
         <% }) %>
       <% } %>
     </div>
 
     <% if (totalPages > 1) { %>
     <div class="pagination">
-      <a href="?page=<%= currentPage-1 %>&search=<%= search %>&sort=<%= sort %>&category=<%= category %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>"
+      <a href="?page=<%= currentPage-1 %>&search=<%= search %>&sort=<%= sort %>&category=<%= category %>&condition=<%= condition %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>"
         class="page-btn <%= currentPage === 1 ? 'disabled' : '' %>">‹</a>
 
       <% for (let i = 1; i <= totalPages; i++) { %>
-        <a href="?page=<%= i %>&search=<%= search %>&sort=<%= sort %>&category=<%= category %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>"
+        <a href="?page=<%= i %>&search=<%= search %>&sort=<%= sort %>&category=<%= category %>&condition=<%= condition %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>"
           class="page-btn <%= i === currentPage ? 'active' : '' %>"><%= i %></a>
       <% } %>
 
-      <a href="?page=<%= currentPage+1 %>&search=<%= search %>&sort=<%= sort %>&category=<%= category %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>"
+      <a href="?page=<%= currentPage+1 %>&search=<%= search %>&sort=<%= sort %>&category=<%= category %>&condition=<%= condition %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>"
         class="page-btn <%= currentPage === totalPages ? 'disabled' : '' %>">›</a>
     </div>
     <% } %>
@@ -407,23 +471,150 @@
   </div>
 
   <script>
+    function debounce(func, delay) {
+      let timeoutId;
+      return function (...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+      };
+    }
+
     const searchInput = document.getElementById("searchInput");
     const clearSearch = document.getElementById("clearSearch");
     const clearAll    = document.getElementById("clearAll");
+    const filterForm  = document.getElementById("filterForm");
 
     clearSearch.style.display = searchInput.value ? "block" : "none";
 
+    const debouncedSearch = debounce(function() {
+      filterForm.submit();
+    }, 800);
+
     searchInput.addEventListener("input", function() {
       clearSearch.style.display = this.value ? "block" : "none";
+      if (this.value.length >= 2 || this.value.length === 0) {
+        debouncedSearch();
+      }
     });
 
     clearSearch.addEventListener("click", function() {
       searchInput.value = "";
       clearSearch.style.display = "none";
+      filterForm.submit();
     });
 
     clearAll.addEventListener("click", function() {
       window.location.href = "/shop";
+    });
+
+    const throttledAddToCart = debounce(async function(productId, event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      try {
+        const response = await fetch('/cart/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            productId: productId,
+            quantity: 1
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showNotification('Item added to cart successfully!', 'success');
+          updateCartCount();
+        } else {
+          if (response.status === 401) {
+            window.location.href = '/login';
+          } else {
+            showNotification(data.message || 'Failed to add item to cart', 'error');
+          }
+        }
+      } catch (error) {
+        console.error('Add to cart error:', error);
+        showNotification('Something went wrong. Please try again.', 'error');
+      }
+    }, 1000);
+
+    function addToCart(productId, event) {
+      throttledAddToCart(productId, event);
+    }
+
+    async function updateCartCount() {
+      try {
+        const response = await fetch('/cart/count');
+        const data = await response.json();
+        
+        if (data.success) {
+          const cartCountElement = document.querySelector('.cart-count');
+          if (cartCountElement) {
+            cartCountElement.textContent = data.count;
+            cartCountElement.style.display = data.count > 0 ? 'flex' : 'none';
+          }
+        }
+      } catch (error) {
+        // Silently fail for cart count
+      }
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.innerHTML = `
+        <div class="notification-content">
+          <span>${message}</span>
+          <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: inherit; font-size: 18px; cursor: pointer; margin-left: 10px;">&times;</button>
+        </div>
+      `;
+      
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        max-width: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s ease-out;
+      `;
+      
+      if (type === 'success') {
+        notification.style.backgroundColor = '#4caf50';
+      } else if (type === 'error') {
+        notification.style.backgroundColor = '#f44336';
+      } else {
+        notification.style.backgroundColor = '#2196f3';
+      }
+      
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+      `;
+      document.head.appendChild(style);
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.remove();
+        }
+      }, 3000);
+    }
+
+    // Update cart count on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      updateCartCount();
     });
   </script>
 </body>

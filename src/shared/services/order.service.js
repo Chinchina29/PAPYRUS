@@ -1,0 +1,147 @@
+import Order from "../models/Order.js";
+
+export const createOrder = async (data) => {
+  const order = new Order(data);
+  return await order.save();
+};
+
+export const getAllOrders = async ({ search = "", page = 1, limit = 10, status = "" }) => {
+  const query = {
+    ...(search && {
+      $or: [
+        { orderId: { $regex: search, $options: "i" } },
+        { "shippingAddress.fullName": { $regex: search, $options: "i" } },
+      ],
+    }),
+    ...(status && { orderStatus: status }),
+  };
+
+  const skip = (page - 1) * limit;
+
+  const [orders, total] = await Promise.all([
+    Order.find(query)
+      .populate("user", "firstName lastName email")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Order.countDocuments(query),
+  ]);
+
+  return {
+    orders,
+    total,
+    totalPages: Math.ceil(total / limit),
+    currentPage: page,
+  };
+};
+
+export const getOrderById = async (id) => {
+  return await Order.findById(id)
+    .populate("user", "firstName lastName email phone")
+    .populate("items.product", "title images");
+};
+
+export const getOrderByOrderId = async (orderId) => {
+  return await Order.findOne({ orderId })
+    .populate("user", "firstName lastName email phone")
+    .populate("items.product", "title images");
+};
+
+export const getUserOrders = async (userId, { page = 1, limit = 10 }) => {
+  const skip = (page - 1) * limit;
+
+  const [orders, total] = await Promise.all([
+    Order.find({ user: userId })
+      .populate("items.product", "title images")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Order.countDocuments({ user: userId }),
+  ]);
+
+  return {
+    orders,
+    total,
+    totalPages: Math.ceil(total / limit),
+    currentPage: page,
+  };
+};
+
+export const updateOrderStatus = async (id, status) => {
+  const order = await Order.findById(id);
+
+  if (!order) {
+    throw new Error("Order not found");
+  }
+
+  order.orderStatus = status;
+
+  if (status === "Shipped" && !order.shippedAt) {
+    order.shippedAt = new Date();
+  }
+
+  if (status === "Delivered" && !order.deliveredAt) {
+    order.deliveredAt = new Date();
+    order.paymentStatus = "Paid";
+  }
+
+  if (status === "Cancelled" && !order.cancelledAt) {
+    order.cancelledAt = new Date();
+  }
+
+  return await order.save();
+};
+
+export const updatePaymentStatus = async (id, status) => {
+  return await Order.findByIdAndUpdate(
+    id,
+    { paymentStatus: status },
+    { returnDocument: "after" }
+  );
+};
+
+export const cancelOrder = async (id, reason) => {
+  const order = await Order.findById(id);
+
+  if (!order) {
+    throw new Error("Order not found");
+  }
+
+  if (order.orderStatus === "Delivered") {
+    throw new Error("Cannot cancel delivered order");
+  }
+
+  if (order.orderStatus === "Cancelled") {
+    throw new Error("Order is already cancelled");
+  }
+
+  order.orderStatus = "Cancelled";
+  order.cancelledAt = new Date();
+  order.cancellationReason = reason;
+
+  return await order.save();
+};
+
+export const getOrderStats = async () => {
+  const stats = await Order.aggregate([
+    {
+      $group: {
+        _id: "$orderStatus",
+        count: { $sum: 1 },
+        totalAmount: { $sum: "$totalAmount" },
+      },
+    },
+  ]);
+
+  const totalOrders = await Order.countDocuments();
+  const totalRevenue = await Order.aggregate([
+    { $match: { paymentStatus: "Paid" } },
+    { $group: { _id: null, total: { $sum: "$totalAmount" } } },
+  ]);
+
+  return {
+    stats,
+    totalOrders,
+    totalRevenue: totalRevenue[0]?.total || 0,
+  };
+};

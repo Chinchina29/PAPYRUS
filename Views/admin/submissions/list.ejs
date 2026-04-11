@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inventory Management - Papyrus Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f5f1ed; color: #3a3a3a; display: flex; min-height: 100vh; }
+    .main-content { margin-left: 280px; flex: 1; padding: 32px; }
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+    .search-box { flex: 1; max-width: 480px; position: relative; }
+    .search-box input { width: 100%; padding: 10px 16px 10px 40px; border: 1.5px solid #e8dcc8; border-radius: 8px; font-size: 14px; background: white; outline: none; font-family: inherit; }
+    .search-box input:focus { border-color: #8b7355; }
+    .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #9a8a78; }
+    .top-bar-right { display: flex; align-items: center; gap: 16px; }
+    .filter-group { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #6b5a48; }
+    .filter-select { padding: 9px 14px; border: 1.5px solid #e8dcc8; border-radius: 8px; font-size: 13.5px; background: white; outline: none; font-family: inherit; color: #3a3a3a; min-width: 140px; }
+    .filter-select:focus { border-color: #8b7355; }
+    .page-header { margin-bottom: 24px; text-align: center; }
+    .page-header h1 { font-size: 26px; font-weight: 600; color: #3a3a3a; }
+    .page-header p { font-size: 13.5px; color: #8b7355; margin-top: 4px; }
+    .table-card { background: white; border-radius: 12px; border: 1px solid #e8dcc8; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: #faf8f5; }
+    th { padding: 14px 20px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: #9a8a78; font-weight: 600; border-bottom: 1px solid #e8dcc8; }
+    td { padding: 14px 20px; border-bottom: 1px solid #f5f1ed; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fdf9f6; }
+    .book-thumb { display: flex; align-items: center; gap: 12px; }
+    .thumb-img { width: 40px; height: 52px; border-radius: 4px; border: 1px solid #e8dcc8; background: #f5f1ed; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; overflow: hidden; }
+    .thumb-img img { width: 100%; height: 100%; object-fit: cover; }
+    .book-name { font-size: 14px; font-weight: 600; color: #3a3a3a; }
+    .book-edition { font-size: 12px; color: #9a8a78; margin-top: 2px; }
+    .seller-name { font-size: 13.5px; color: #5a4d42; }
+    .category-tag { font-size: 13px; color: #7a6a58; }
+    .price { font-size: 14px; font-weight: 600; color: #3a3a3a; }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+    .status-badge.pending { background: #fff3e0; color: #e65100; }
+    .status-badge.approved { background: #edfaf3; color: #2e7d32; }
+    .status-badge.rejected { background: #fdf0ef; color: #c0392b; }
+    .actions { display: flex; align-items: center; gap: 8px; }
+    .btn-approve { padding: 6px 14px; background: #2e7d32; color: white; border: none; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.2s; }
+    .btn-approve:hover { background: #1b5e20; }
+    .btn-reject { padding: 6px 14px; background: white; color: #c0392b; border: 1.5px solid #c0392b; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+    .btn-reject:hover { background: #fdf0ef; }
+    .btn-view { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border: 1px solid #e8dcc8; border-radius: 6px; background: white; color: #8b7355; cursor: pointer; text-decoration: none; transition: background 0.2s; }
+    .btn-view:hover { background: #f5f1ed; }
+    .btn-view svg { width: 14px; height: 14px; }
+    .pagination-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-top: 1px solid #e8dcc8; font-size: 13px; color: #8b7355; }
+    .page-btns { display: flex; gap: 6px; }
+    .page-btn { padding: 6px 12px; border: 1px solid #e8dcc8; border-radius: 6px; background: white; font-size: 13px; cursor: pointer; color: #5a4d42; font-family: inherit; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; }
+    .page-btn:hover { background: #f5f1ed; }
+    .page-btn.active { background: #8b7355; color: white; border-color: #8b7355; }
+    .page-btn.disabled { opacity: 0.4; pointer-events: none; }
+    .empty-state { text-align: center; padding: 60px 20px; color: #9a8a78; }
+    .empty-state p { font-size: 15px; }
+  </style>
+</head>
+<body>
+  <%- include('../../partials/admin-sidebar') %>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Search by book title or seller name..." value="<%= search || '' %>"/>
+      </div>
+      <div class="top-bar-right">
+        <div class="filter-group">
+          Status:
+          <select class="filter-select" id="statusFilter">
+            <option value="all" <%= (!status || status === 'all') ? 'selected' : '' %>>All</option>
+            <option value="pending" <%= status === 'pending' ? 'selected' : '' %>>Pending</option>
+            <option value="approved" <%= status === 'approved' ? 'selected' : '' %>>Approved</option>
+            <option value="rejected" <%= status === 'rejected' ? 'selected' : '' %>>Rejected</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1>Inventory Management</h1>
+      <p>Review and manage book selling requests from curators.</p>
+    </div>
+
+    <div class="table-card">
+      <% if (submissions && submissions.length > 0) { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Book Title</th>
+            <th>Seller Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="submissionsBody">
+          <% submissions.forEach(sub => { %>
+          <tr id="row-<%= sub._id %>">
+            <td>
+              <div class="book-thumb">
+                <div class="thumb-img">
+                  <% if (sub.images && sub.images.length > 0) { %>
+                    <img src="<%= typeof sub.images[0] === 'string' ? sub.images[0] : sub.images[0].url %>" alt="<%= sub.title %>"/>
+                  <% } else { %>
+                    📚
+                  <% } %>
+                </div>
+                <div>
+                  <div class="book-name"><%= sub.title %></div>
+                  <div class="book-edition"><%= sub.condition || 'Good condition' %></div>
+                </div>
+              </div>
+            </td>
+            <td class="seller-name">
+              <%= sub.submittedBy?.firstName || 'Unknown' %> <%= sub.submittedBy?.lastName || '' %>
+            </td>
+            <td class="category-tag"><%= sub.category?.name || 'Uncategorized' %></td>
+            <td class="price">₹<%= sub.price?.toFixed(2) %></td>
+            <td>
+              <div class="actions">
+                <% if (sub.status === 'pending') { %>
+                  <button class="btn-approve" onclick="reviewSubmission('<%= sub._id %>', 'approved')">APPROVE</button>
+                  <button class="btn-reject" onclick="reviewSubmission('<%= sub._id %>', 'rejected')">REJECT</button>
+                <% } else { %>
+                  <span class="status-badge <%= sub.status %>"><%= sub.status %></span>
+                <% } %>
+                <a href="/admin/submissions/<%= sub._id %>" class="btn-view">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </a>
+              </div>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% } else { %>
+        <div class="empty-state"><p>No submissions found.</p></div>
+      <% } %>
+
+      <div class="pagination-row">
+        <span>Page <%= currentPage %> of <%= totalPages %></span>
+        <div class="page-btns">
+          <a href="?page=<%= currentPage-1 %>&search=<%= search||'' %>&status=<%= status||'all' %>"
+            class="page-btn <%= currentPage === 1 ? 'disabled' : '' %>">‹ Previous</a>
+          <% for(let i = 1; i <= totalPages; i++) { %>
+            <a href="?page=<%= i %>&search=<%= search||'' %>&status=<%= status||'all' %>"
+              class="page-btn <%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+          <% } %>
+          <a href="?page=<%= currentPage+1 %>&search=<%= search||'' %>&status=<%= status||'all' %>"
+            class="page-btn <%= currentPage === totalPages ? 'disabled' : '' %>">Next ›</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('searchInput').addEventListener('input', function() {
+      const q = this.value.toLowerCase();
+      document.querySelectorAll('#submissionsBody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+
+    document.getElementById('statusFilter').addEventListener('change', function() {
+      const params = new URLSearchParams(window.location.search);
+      params.set('status', this.value);
+      params.set('page', '1');
+      window.location.search = params.toString();
+    });
+
+    async function reviewSubmission(id, action) {
+      let adminNote = '';
+      if (action === 'rejected') {
+        const { value, isConfirmed } = await Swal.fire({
+          title: 'Reject Submission',
+          input: 'textarea',
+          inputLabel: 'Reason for rejection (optional)',
+          inputPlaceholder: 'e.g. Images are blurry, price too high...',
+          showCancelButton: true,
+          confirmButtonText: 'Reject',
+          confirmButtonColor: '#c0392b',
+        });
+        if (!isConfirmed) return;
+        adminNote = value || '';
+      } else {
+        const result = await Swal.fire({
+          title: 'Approve this submission?',
+          text: 'This will add the book to the public inventory.',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, Approve',
+          confirmButtonColor: '#2e7d32',
+        });
+        if (!result.isConfirmed) return;
+      }
+
+      try {
+        const res = await fetch(`/admin/submissions/${id}/review`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, adminNote }),
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          await Swal.fire({
+            icon: 'success',
+            title: action === 'approved' ? 'Approved!' : 'Rejected',
+            text: data.message,
+            timer: 1500,
+            showConfirmButton: false,
+          });
+          const row = document.getElementById(`row-${id}`);
+          if (row) {
+            const actionsCell = row.querySelector('.actions');
+            actionsCell.innerHTML = `<span class="status-badge ${action}">${action}</span>
+              <a href="/admin/submissions/${id}" class="btn-view">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </a>`;
+          }
+        } else {
+          Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+        }
+      } catch(err) {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Something went wrong.' });
+      }
+    }
+  </script>
+</body>
+</html>

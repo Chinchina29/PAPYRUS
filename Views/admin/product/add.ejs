@@ -220,6 +220,18 @@
           </div>
 
           <div class="form-group">
+            <label>Condition <span class="required">*</span></label>
+            <select id="condition" name="condition">
+              <option value="">Select condition</option>
+              <option value="new">New</option>
+              <option value="like-new">Like New</option>
+              <option value="good">Good</option>
+              <option value="fair">Fair</option>
+              <option value="poor">Poor</option>
+            </select>
+          </div>
+
+          <div class="form-group">
             <label>Description</label>
             <textarea id="description" name="description"
               rows="4" placeholder="Brief description of the book..."></textarea>
@@ -426,6 +438,7 @@
         const name          = document.getElementById("name").value.trim();
         const author        = document.getElementById("author").value.trim();
         const category      = document.getElementById("category").value;
+        const condition     = document.getElementById("condition").value;
         const description   = document.getElementById("description").value.trim();
         const price         = document.getElementById("price").value;
         const originalPrice = document.getElementById("originalPrice").value;
@@ -450,6 +463,11 @@
           errorMsg.style.display = "block";
           return;
         }
+        if (!condition) {
+          errorMsg.textContent   = "Please select a condition";
+          errorMsg.style.display = "block";
+          return;
+        }
         if (!price) {
           errorMsg.textContent   = "Price is required";
           errorMsg.style.display = "block";
@@ -469,7 +487,7 @@
             method:  "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              name, author, category, description,
+              name, author, category, condition, description,
               price, originalPrice, stock,
               isbn, publisher,
               images: croppedImages, 

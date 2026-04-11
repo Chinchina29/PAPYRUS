@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Order Management - Papyrus Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #d4c4b0;
+      color: #2d2d2d;
+      line-height: 1.5;
+    }
+
+    .admin-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .main-content {
+      margin-left: 240px;
+      flex: 1;
+      padding: 32px;
+      min-height: 100vh;
+    }
+
+    .content-wrapper {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .page-header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: #2d2d2d;
+    }
+
+    .filter-btn {
+      padding: 10px 20px;
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .search-bar {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .search-input {
+      width: 100%;
+      max-width: 400px;
+      padding: 10px 16px 10px 40px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%236b7280" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>') no-repeat 12px center;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #8b6f47;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .table thead {
+      background: #f9fafb;
+    }
+
+    .table th {
+      padding: 12px 24px;
+      text-align: left;
+      font-weight: 600;
+      color: #6b7280;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .table td {
+      padding: 16px 24px;
+      border-bottom: 1px solid #f3f4f6;
+      color: #374151;
+    }
+
+    .table tbody tr:hover {
+      background: #f9fafb;
+    }
+
+    .order-id {
+      font-weight: 600;
+      color: #2d2d2d;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-shipped {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .status-processing {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-delivered {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-cancelled {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .status-pending {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .action-btn {
+      width: 32px;
+      height: 32px;
+      border: 1px solid #e5e7eb;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background: #f3f4f6;
+      border-color: #8b6f47;
+    }
+
+    .action-btn svg {
+      width: 16px;
+      height: 16px;
+      color: #6b7280;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .pagination-info {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .pagination-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .page-btn {
+      min-width: 34px;
+      height: 34px;
+      padding: 0 10px;
+      border: 1px solid #d1d5db;
+      background: white;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #374151;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .page-btn:hover {
+      background: #f3f4f6;
+    }
+
+    .page-btn.active {
+      background: #2d2d2d;
+      color: white;
+      border-color: #2d2d2d;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6b7280;
+    }
+
+    .empty-state svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+      opacity: 0.4;
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        margin-left: 0;
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <%- include('../partials/admin-sidebar', { currentPage_name: 'orders' }) %>
+    
+    <div class="main-content">
+      <div class="content-wrapper">
+        <div class="page-header">
+          <h1>Order Management</h1>
+          <select class="filter-btn" onchange="filterByStatus(this.value)">
+            <option value="">All Statuses</option>
+            <option value="Pending" <%= status === 'Pending' ? 'selected' : '' %>>Pending</option>
+            <option value="Processing" <%= status === 'Processing' ? 'selected' : '' %>>Processing</option>
+            <option value="Shipped" <%= status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+            <option value="Delivered" <%= status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+            <option value="Cancelled" <%= status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <div class="search-bar">
+            <form method="GET" action="/admin/orders" id="searchForm">
+              <input type="hidden" name="status" value="<%= status %>">
+              <input 
+                type="text" 
+                name="search" 
+                class="search-input" 
+                placeholder="Search by Order ID or Customer..."
+                value="<%= search %>"
+              />
+            </form>
+          </div>
+
+          <% if (orders.length === 0) { %>
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <p>No orders found<% if (search) { %> for "<%= search %>"<% } %></p>
+            </div>
+          <% } else { %>
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer Name</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Payment Method</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% orders.forEach(order => { %>
+                  <tr>
+                    <td><span class="order-id"><%= order.orderId %></span></td>
+                    <td><%= order.shippingAddress && order.shippingAddress.fullName ? order.shippingAddress.fullName : (order.user ? order.user.firstName + ' ' + order.user.lastName : 'N/A') %></td>
+                    <td><%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></td>
+                    <td><strong>$<%= order.totalAmount.toFixed(2) %></strong></td>
+                    <td><%= order.paymentMethod %></td>
+                    <td>
+                      <span class="status-badge status-<%= order.orderStatus.toLowerCase() %>">
+                        <%= order.orderStatus %>
+                      </span>
+                    </td>
+                    <td>
+                      <button class="action-btn" onclick="viewOrder('<%= order._id %>')" title="View Details">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="pagination">
+              <div class="pagination-info">Showing <%= ((currentPage - 1) * 10) + 1 %>-<%= Math.min(currentPage * 10, total) %> of <%= total %> recent orders</div>
+              <div class="pagination-btns">
+                <% if (currentPage > 1) { %>
+                  <a href="?page=1&search=<%= search %>&status=<%= status %>" class="page-btn">‹</a>
+                <% } %>
+                
+                <% for (let i = 1; i <= Math.min(totalPages, 3); i++) { %>
+                  <a href="?page=<%= i %>&search=<%= search %>&status=<%= status %>" class="page-btn <%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+                <% } %>
+                
+                <% if (totalPages > 3) { %>
+                  <span class="page-btn">...</span>
+                  <a href="?page=<%= totalPages %>&search=<%= search %>&status=<%= status %>" class="page-btn <%= totalPages === currentPage ? 'active' : '' %>"><%= totalPages %></a>
+                <% } %>
+                
+                <% if (currentPage < totalPages) { %>
+                  <a href="?page=<%= totalPages %>&search=<%= search %>&status=<%= status %>" class="page-btn">›</a>
+                <% } %>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function filterByStatus(status) {
+      const search = new URLSearchParams(window.location.search).get('search') || '';
+      window.location.href = `/admin/orders?status=${status}&search=${search}`;
+    }
+
+    function viewOrder(orderId) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Order Details',
+        text: 'Order detail page is not yet implemented. Please provide Figma design for the order detail view.',
+        confirmButtonColor: '#8b6f47'
+      });
+    }
+
+    const searchInput = document.querySelector('.search-input');
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        document.getElementById('searchForm').submit();
+      }, 500);
+    });
+  </script>
+</body>
+</html>

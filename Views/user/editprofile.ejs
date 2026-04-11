@@ -193,11 +193,11 @@
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="firstName">First Name</label>
-                                    <input type="text" id="firstName" name="firstName" value="<%= user.firstName %>">
+                                    <input type="text" id="firstName" name="firstName" value="<%= user.firstName %>" maxlength="50">
                                 </div>
                                 <div class="form-group">
                                     <label for="lastName">Last Name</label>
-                                    <input type="text" id="lastName" name="lastName" value="<%= user.lastName %>">
+                                    <input type="text" id="lastName" name="lastName" value="<%= user.lastName %>" maxlength="50">
                                 </div>
                             </div>
 
@@ -205,7 +205,7 @@
                                 <label for="email">Email Address</label>
                                 <div style="display:flex; gap:10px; align-items:center;">
                                     <input type="email" id="email" value="<%= user.email %>" disabled
-                                        style="background:#f9f7f4; color:#999; flex:1;">
+                                        style="background:#f9f7f4; color:#999; flex:1;" maxlength="100">
                                     <button type="button" id="changeEmailBtn" class="btn-secondary"
                                         style="padding:8px 16px; font-size:12px; white-space:nowrap;">CHANGE EMAIL</button>
                                 </div>
@@ -215,7 +215,7 @@
                                 <div class="form-group">
                                     <label for="phone">Phone Number</label>
                                     <input type="tel" id="phone" name="phone"
-                                        value="<%= user.phone || '' %>" placeholder="Enter phone number">
+                                        value="<%= user.phone || '' %>" placeholder="Enter phone number" maxlength="15">
                                 </div>
                                 <div class="form-group">
                                     <label for="dateOfBirth">Date of Birth</label>
@@ -272,7 +272,7 @@
 
                             <div class="form-group">
                                 <label for="bio">Bio / About Me</label>
-                                <textarea id="bio" name="bio"
+                                <textarea id="bio" name="bio" maxlength="500"
                                     placeholder="Tell us about yourself..."><%= user.bio || '' %></textarea>
                             </div>
 
@@ -360,7 +360,7 @@
                 <p style="margin-bottom:15px; color:#666; font-size:14px;">Enter your new email address. We'll send a verification code to confirm the change.</p>
                 <div style="margin-bottom:20px;">
                     <label style="display:block; margin-bottom:5px; color:#5a4a3a; font-weight:500;">New Email Address</label>
-                    <input type="email" id="newEmail" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; font-size:14px;">
+                    <input type="email" id="newEmail" maxlength="100" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; font-size:14px;">
                 </div>
                 <div style="display:flex; gap:10px;">
                     <button id="sendEmailOTP" style="flex:1; background:#5a4a3a; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">Send Verification Code</button>
@@ -704,7 +704,15 @@
             emailTimeLeft--;
         }
 
-        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        function debounce(func, delay) {
+            let timeoutId;
+            return function (...args) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        const debouncedSubmitProfile = debounce(async function(e) {
             e.preventDefault();
             const formData = new FormData(e.target);
             const data     = {};
@@ -735,7 +743,9 @@
                 submitBtn.textContent = originalText;
                 submitBtn.disabled    = false;
             }
-        });
+        }, 1000);
+
+        document.getElementById('profileForm').addEventListener('submit', debouncedSubmitProfile);
 
         function validateForm(data) {
             clearErrors();

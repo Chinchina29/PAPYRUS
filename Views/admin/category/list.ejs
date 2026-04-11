@@ -1,427 +1,469 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Category Management - Papyrus Admin</title>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Management - Papyrus Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8f6f3;
+            color: #2d2d2d;
+            line-height: 1.5;
+        }
 
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #faf8f5;
-      color: #3a3a3a;
-      display: flex;
-      min-height: 100vh;
-    }
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
 
-    .main-content {
-      margin-left: 280px;
-      flex: 1;
-      padding: 32px;
-      min-height: 100vh;
-    }
+        .main-content {
+            margin-left: 240px;
+            flex: 1;
+            padding: 32px;
+            min-height: 100vh;
+        }
 
-    .page-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 28px;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
+        .content-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-    .page-title h1 { font-size: 24px; font-weight: 600; }
-    .page-title p  { font-size: 13px; color: #8b7355; margin-top: 4px; }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
 
-    .btn-add {
-      display: flex; align-items: center; gap: 8px;
-      padding: 10px 20px;
-      background: #8b7355; color: white;
-      border: none; border-radius: 8px;
-      font-size: 14px; font-weight: 500;
-      cursor: pointer; text-decoration: none;
-      transition: background 0.2s;
-    }
-    .btn-add:hover { background: #5a4a3a; }
+        .header-left h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2d2d2d;
+            margin-bottom: 4px;
+        }
 
-    .search-bar {
-      display: flex; align-items: center;
-      gap: 10px; margin-bottom: 20px;
-    }
-    .search-wrap { position: relative; flex: 1; max-width: 400px; }
-    .search-wrap input {
-      width: 100%;
-      padding: 10px 40px 10px 16px;
-      border: 1.5px solid #e8dcc8; border-radius: 8px;
-      font-size: 14px; background: white; outline: none;
-      transition: border-color 0.2s;
-    }
-    .search-wrap input:focus { border-color: #8b7355; }
+        .header-subtitle {
+            color: #6b7280;
+            font-size: 14px;
+        }
 
-    .search-clear {
-      position: absolute; right: 10px; top: 50%;
-      transform: translateY(-50%);
-      background: none; border: none;
-      cursor: pointer; color: #8b7355;
-      font-size: 16px;
-    }
+        .page-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
 
-    .btn-search {
-      padding: 10px 20px;
-      background: #8b7355; color: white;
-      border: none; border-radius: 8px;
-      font-size: 14px; cursor: pointer;
-    }
-    .btn-search:hover { background: #5a4a3a; }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    .table-card {
-      background: white; border-radius: 12px;
-      border: 1px solid #e8dcc8; overflow: hidden;
-    }
+        .btn-primary {
+            background: #8b6f47;
+            color: white;
+        }
 
-    .table-info {
-      padding: 16px 20px;
-      border-bottom: 1px solid #e8dcc8;
-      font-size: 13px; color: #8b7355;
-    }
+        .btn-primary:hover {
+            background: #6b5a48;
+            color: white;
+            text-decoration: none;
+        }
 
-    table { width: 100%; border-collapse: collapse; }
-    thead { background: #f5f1ed; }
+        .btn-secondary {
+            background: white;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+        }
 
-    th {
-      padding: 14px 16px; text-align: left;
-      font-size: 12px; font-weight: 600;
-      color: #5a4d42; text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-bottom: 1px solid #e8dcc8;
-    }
+        .btn-secondary:hover {
+            background: #f9fafb;
+            color: #374151;
+            text-decoration: none;
+        }
 
-    td {
-      padding: 14px 16px; font-size: 14px;
-      border-bottom: 1px solid #f0ebe3;
-      vertical-align: middle;
-    }
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
 
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #faf8f5; }
+        .btn-danger:hover {
+            background: #b91c1c;
+            color: white;
+            text-decoration: none;
+        }
 
-    .category-name { font-weight: 500; }
-    .category-desc {
-      color: #8b7355; font-size: 13px;
-      max-width: 220px;
-      white-space: nowrap; overflow: hidden;
-      text-overflow: ellipsis;
-    }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 24px;
+        }
 
-    .badge {
-      display: inline-flex; align-items: center;
-      padding: 4px 10px; border-radius: 20px;
-      font-size: 12px; font-weight: 500;
-    }
-    .badge-listed   { background: #e8f5e9; color: #2e7d32; }
-    .badge-unlisted { background: #fff3e0; color: #e65100; }
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            background: white;
+            transition: border-color 0.2s;
+        }
 
-    .actions { display: flex; gap: 8px; align-items: center; }
+        .form-control:focus {
+            outline: none;
+            border-color: #8b6f47;
+            box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1);
+        }
 
-    .btn-icon {
-      width: 34px; height: 34px;
-      border-radius: 8px; border: 1px solid #e8dcc8;
-      background: white; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s; text-decoration: none;
-    }
-    .btn-icon svg { width: 16px; height: 16px; }
-    .btn-icon.edit   { color: #8b7355; }
-    .btn-icon.delete { color: #c0392b; }
-    .btn-icon.delete:hover { background: #fdf0ef; border-color: #f5c6c2; }
-    .btn-icon.edit:hover   { background: #f5f1ed; }
+        .table-responsive {
+            overflow-x: auto;
+            margin: -24px;
+            margin-top: 0;
+        }
 
-    .toggle-switch {
-      position: relative; width: 42px; height: 22px; cursor: pointer;
-    }
-    .toggle-switch input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider {
-      position: absolute; inset: 0;
-      background: #ccc; border-radius: 22px; transition: 0.3s;
-    }
-    .toggle-slider::before {
-      content: ""; position: absolute;
-      width: 16px; height: 16px;
-      left: 3px; bottom: 3px;
-      background: white; border-radius: 50%; transition: 0.3s;
-    }
-    .toggle-switch input:checked + .toggle-slider { background: #8b7355; }
-    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
 
-    .pagination {
-      display: flex; align-items: center;
-      justify-content: space-between;
-      padding: 16px 20px;
-      border-top: 1px solid #e8dcc8;
-      flex-wrap: wrap; gap: 12px;
-    }
-    .pagination-info { font-size: 13px; color: #8b7355; }
-    .pagination-btns { display: flex; gap: 6px; }
-    .page-btn {
-      width: 34px; height: 34px;
-      border: 1px solid #e8dcc8; background: white;
-      border-radius: 8px; font-size: 13px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      color: #5a4d42; text-decoration: none; transition: all 0.2s;
-    }
-    .page-btn:hover  { background: #f5f1ed; }
-    .page-btn.active { background: #8b7355; color: white; border-color: #8b7355; }
-    .page-btn.disabled { opacity: 0.4; pointer-events: none; }
+        .table th,
+        .table td {
+            padding: 12px 24px;
+            text-align: left;
+            border-bottom: 1px solid #f3f4f6;
+        }
 
-    .empty-state {
-      text-align: center; padding: 60px 20px; color: #8b7355;
-    }
-    .empty-state svg {
-      width: 48px; height: 48px;
-      margin-bottom: 16px; opacity: 0.4;
-    }
-  </style>
+        .table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+
+        .pagination a,
+        .pagination span {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .pagination a:hover {
+            background: #f3f4f6;
+            text-decoration: none;
+        }
+
+        .pagination .active {
+            background: #8b6f47;
+            color: white;
+            border-color: #8b6f47;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
-
-  <%- include('../../partials/admin-sidebar') %>
-
-  <div class="main-content">
-
-    <div class="page-header">
-      <div class="page-title">
-        <h1>Category Management</h1>
-        <p>Manage your book categories — <%= total %> total</p>
-      </div>
-      <a href="/admin/categories/add" class="btn-add">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2.5">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Add Category
-      </a>
-    </div>
-
-    <form method="GET" action="/admin/categories" id="searchForm">
-      <div class="search-bar">
-        <div class="search-wrap">
-          <input
-            type="text"
-            name="search"
-            id="searchInput"
-            placeholder="Search categories..."
-            value="<%= search %>"
-          />
-          <button type="button" class="search-clear" id="clearBtn">✕</button>
-        </div>
-        <button type="submit" class="btn-search">Search</button>
-      </div>
-    </form>
-
-    <div class="table-card">
-      <div class="table-info">
-        Showing <%= categories.length %> of <%= total %> categories
-        <% if (search) { %>
-          — Results for "<strong><%= search %></strong>"
-        <% } %>
-      </div>
-
-      <% if (categories.length === 0) { %>
-        <div class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="1.5">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <p>No categories found
-            <% if (search) { %> for "<%= search %>"<% } %>
-          </p>
-        </div>
-
-      <% } else { %>
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Name</th>
-              <th>Description</th>
-              <th>Status</th>
-              <th>Listed</th>
-              <th>Created</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% categories.forEach((cat, index) => { %>
-            <tr data-id="<%= cat._id %>">
-
-              <td><%= (currentPage - 1) * 10 + index + 1 %></td>
-
-              <td class="category-name"><%= cat.name %></td>
-
-              <td class="category-desc"><%= cat.description || '—' %></td>
-
-              <td>
-                <span class="badge <%= cat.isListed ? 'badge-listed' : 'badge-unlisted' %>">
-                  <%= cat.isListed ? '● Listed' : '● Unlisted' %>
-                </span>
-              </td>
-
-              <td>
-                <label class="toggle-switch">
-                  <input
-                    type="checkbox"
-                    <% if (cat.isListed) { %> checked <% } %>
-                    onchange="toggleCategory('<%= cat._id %>', this)"
-                  />
-                  <span class="toggle-slider"></span>
-                </label>
-              </td>
-
-              <td><%= new Date(cat.createdAt).toLocaleDateString('en-IN') %></td>
-
-              <td>
-                <div class="actions">
-                  <a href="/admin/categories/edit/<%= cat._id %>"
-                    class="btn-icon edit" title="Edit">
-                    <svg viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="2">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                  </a>
-
-                  <button
-                    class="btn-icon delete"
-                    title="Delete"
-                    onclick="deleteCategory('<%= cat._id %>', '<%= cat.name %>')">
-                    <svg viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="2">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                      <path d="M10 11v6M14 11v6"/>
-                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                    </svg>
-                  </button>
+    <div class="admin-layout">
+        <%- include('../../partials/admin-sidebar', { currentPage_name: 'categories' }) %>
+        
+        <div class="main-content">
+            <div class="content-wrapper">
+                <div class="admin-header">
+                    <div class="header-left">
+                        <h1>Category Management</h1>
+                        <p class="header-subtitle">Manage your book categories — <%= total %> total</p>
+                    </div>
                 </div>
-              </td>
-            </tr>
-            <% }) %>
-          </tbody>
-        </table>
 
-        <% if (totalPages > 1) { %>
-        <div class="pagination">
-          <div class="pagination-info">
-            Page <%= currentPage %> of <%= totalPages %>
-          </div>
-          <div class="pagination-btns">
+                <div class="page-actions">
+                    <a href="/admin/categories/add" class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Add Category
+                    </a>
+                </div>
 
-            <a href="?page=<%= currentPage - 1 %>&search=<%= search %>"
-              class="page-btn <%= currentPage === 1 ? 'disabled' : '' %>">‹</a>
+                <div class="card">
+                    <form method="GET" action="/admin/categories" style="display: flex; align-items: center; gap: 10px; margin-bottom: 0;">
+                        <div style="position: relative; flex: 1; max-width: 400px;">
+                            <input type="text" name="search" id="searchInput" class="form-control" placeholder="Search categories..." value="<%= search %>"/>
+                            <button type="button" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #8b6f47; font-size: 16px; display: <%= search ? 'block' : 'none' %>;" id="clearBtn">✕</button>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </form>
+                </div>
 
-            <% for (let i = 1; i <= totalPages; i++) { %>
-              <a href="?page=<%= i %>&search=<%= search %>"
-                class="page-btn <%= i === currentPage ? 'active' : '' %>">
-                <%= i %>
-              </a>
-            <% } %>
+                <div class="card">
+                    <div style="padding: 16px 20px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #6b7280;">
+                        Showing <%= categories.length %> of <%= total %> categories
+                        <% if (search) { %>
+                            — Results for "<strong><%= search %></strong>"
+                        <% } %>
+                    </div>
 
-            <a href="?page=<%= currentPage + 1 %>&search=<%= search %>"
-              class="page-btn <%= currentPage === totalPages ? 'disabled' : '' %>">›</a>
-          </div>
+                    <% if (categories.length === 0) { %>
+                        <div style="text-align: center; padding: 60px 20px; color: #6b7280;">
+                            <svg style="width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.4;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="11" cy="11" r="8"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            <p>No categories found<% if (search) { %> for "<%= search %>"<% } %></p>
+                        </div>
+                    <% } else { %>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Category</th>
+                                        <th>Subcategories</th>
+                                        <th>Description</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% categories.forEach((cat, index) => { %>
+                                    <tr data-id="<%= cat._id %>">
+                                        <td><%= (currentPage - 1) * 10 + index + 1 %></td>
+                                        <td>
+                                            <% if (cat.isSubcategory) { %>
+                                                <span style="color: #8b6f47; margin-right: 8px;">└─</span>
+                                            <% } %>
+                                            <span style="font-weight: 500;"><%= cat.name %></span>
+                                            <% if (cat.parentCategory) { %>
+                                                <div style="font-size: 11px; color: #8b6f47; margin-top: 2px;">
+                                                    under: <%= cat.parentCategory.name %>
+                                                </div>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <% if (cat.subcategories && cat.subcategories.length > 0) { %>
+                                                <div style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 200px;">
+                                                    <% cat.subcategories.forEach(sub => { %>
+                                                        <span style="display: inline-block; padding: 2px 8px; background: #f3f4f6; color: #374151; border-radius: 20px; font-size: 11px; font-weight: 500;">
+                                                            <%= typeof sub === 'object' ? sub.name : sub %>
+                                                        </span>
+                                                    <% }); %>
+                                                </div>
+                                            <% } else { %>
+                                                <span style="color:#9ca3af;font-size:13px;">—</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <span style="color: #6b7280; font-size: 13px; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">
+                                                <%= cat.description || '—' %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge <%= cat.isListed ? 'status-active' : 'status-inactive' %>">
+                                                <%= cat.isListed ? 'Listed' : 'Unlisted' %>
+                                            </span>
+                                        </td>
+                                        <td><%= new Date(cat.createdAt).toLocaleDateString('en-IN') %></td>
+                                        <td>
+                                            <div style="display: flex; gap: 8px; align-items: center;">
+                                                <label style="position: relative; width: 42px; height: 22px; cursor: pointer;">
+                                                    <input type="checkbox" <%= cat.isListed ? 'checked' : '' %> 
+                                                           style="opacity: 0; width: 0; height: 0;"
+                                                           onchange="toggleCategory('<%= cat._id %>', this)"/>
+                                                    <span style="position: absolute; inset: 0; background: <%= cat.isListed ? '#059669' : '#d1d5db' %>; border-radius: 22px; transition: 0.3s;">
+                                                        <span style="position: absolute; width: 16px; height: 16px; left: <%= cat.isListed ? '23px' : '3px' %>; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s;"></span>
+                                                    </span>
+                                                </label>
+                                                <a href="/admin/categories/edit/<%= cat._id %>" class="btn btn-secondary" style="padding: 6px 8px; font-size: 12px;" title="Edit">
+                                                    <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                                    </svg>
+                                                </a>
+                                                <button class="btn btn-danger" style="padding: 6px 8px; font-size: 12px;" title="Delete" onclick="deleteCategory('<%= cat._id %>', '<%= cat.name %>')">
+                                                    <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <polyline points="3 6 5 6 21 6"/>
+                                                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                                        <path d="M10 11v6M14 11v6"/>
+                                                        <path d="M9 6V4a1 1 0 0 1 1 1h4a1 1 0 0 1 1 1v2"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <% if (totalPages > 1) { %>
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-top: 1px solid #f3f4f6;">
+                            <div style="font-size: 13px; color: #6b7280;">Page <%= currentPage %> of <%= totalPages %></div>
+                            <div class="pagination">
+                                <% if (currentPage > 1) { %>
+                                    <a href="?page=<%= currentPage-1 %>&search=<%= search %>">‹</a>
+                                <% } else { %>
+                                    <span style="opacity: 0.4; pointer-events: none;">‹</span>
+                                <% } %>
+                                <% for (let i = 1; i <= totalPages; i++) { %>
+                                    <a href="?page=<%= i %>&search=<%= search %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+                                <% } %>
+                                <% if (currentPage < totalPages) { %>
+                                    <a href="?page=<%= currentPage+1 %>&search=<%= search %>">›</a>
+                                <% } else { %>
+                                    <span style="opacity: 0.4; pointer-events: none;">›</span>
+                                <% } %>
+                            </div>
+                        </div>
+                        <% } %>
+                    <% } %>
+                </div>
+            </div>
         </div>
-        <% } %>
-      <% } %>
     </div>
-  </div>
 
-  <script>
-    const searchInput = document.getElementById("searchInput");
-    const clearBtn    = document.getElementById("clearBtn");
-
-    clearBtn.style.display = searchInput.value ? "block" : "none";
-
-    searchInput.addEventListener("input", function() {
-      clearBtn.style.display = this.value ? "block" : "none";
-    });
-
-    clearBtn.addEventListener("click", function() {
-      searchInput.value      = "";
-      clearBtn.style.display = "none";
-      window.location.href   = "/admin/categories";
-    });
-
-    async function toggleCategory(id, checkbox) {
-      try {
-        const res  = await fetch(`/admin/categories/toggle/${id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('clearBtn');
+        
+        searchInput.addEventListener('input', function() { 
+            clearBtn.style.display = this.value ? 'block' : 'none'; 
         });
-        const data = await res.json();
-
-        if (data.success) {
-          const row   = checkbox.closest("tr");
-          const badge = row.querySelector(".badge");
-          if (data.isListed) {
-            badge.className   = "badge badge-listed";
-            badge.textContent = "● Listed";
-          } else {
-            badge.className   = "badge badge-unlisted";
-            badge.textContent = "● Unlisted";
-          }
-          Swal.fire({
-            toast: true, position: "top-end",
-            icon: "success", title: data.message,
-            showConfirmButton: false, timer: 2000,
-          });
-        } else {
-          checkbox.checked = !checkbox.checked;
-          Swal.fire("Error", data.message, "error");
-        }
-      } catch(err) {
-        checkbox.checked = !checkbox.checked;
-        Swal.fire("Error", "Something went wrong", "error");
-      }
-    }
-
-    async function deleteCategory(id, name) {
-      const result = await Swal.fire({
-        title: `Delete "${name}"?`,
-        text: "This category will be hidden from the store.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#c0392b",
-        cancelButtonColor: "#8b7355",
-        confirmButtonText: "Yes, delete it",
-        cancelButtonText: "Cancel",
-      });
-
-      if (!result.isConfirmed) return;
-
-      try {
-        const res  = await fetch(`/admin/categories/delete/${id}`, {
-          method: "DELETE",
+        
+        clearBtn.addEventListener('click', function() { 
+            searchInput.value = ''; 
+            clearBtn.style.display = 'none'; 
+            window.location.href = '/admin/categories'; 
         });
-        const data = await res.json();
 
-        if (data.success) {
-          document.querySelector(`tr[data-id="${id}"]`).remove();
-          Swal.fire({
-            toast: true, position: "top-end",
-            icon: "success", title: "Category deleted",
-            showConfirmButton: false, timer: 2000,
-          });
-        } else {
-          Swal.fire("Error", data.message, "error");
+        async function toggleCategory(id, checkbox) {
+            try {
+                const res = await fetch(`/admin/categories/toggle/${id}`, { 
+                    method: 'PATCH', 
+                    headers: { 'Content-Type': 'application/json' } 
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    const row = checkbox.closest('tr');
+                    const badge = row.querySelector('.status-badge');
+                    const slider = checkbox.nextElementSibling;
+                    const knob = slider.firstElementChild;
+                    
+                    badge.className = `status-badge ${data.isListed ? 'status-active' : 'status-inactive'}`;
+                    badge.textContent = data.isListed ? 'Listed' : 'Unlisted';
+                    slider.style.background = data.isListed ? '#059669' : '#d1d5db';
+                    knob.style.left = data.isListed ? '23px' : '3px';
+                    
+                    Swal.fire({ 
+                        toast: true, 
+                        position: 'top-end', 
+                        icon: 'success', 
+                        title: data.message, 
+                        showConfirmButton: false, 
+                        timer: 2000 
+                    });
+                } else {
+                    checkbox.checked = !checkbox.checked;
+                    Swal.fire('Error', data.message, 'error');
+                }
+            } catch(err) { 
+                checkbox.checked = !checkbox.checked; 
+                Swal.fire('Error', 'Something went wrong', 'error'); 
+            }
         }
-      } catch(err) {
-        Swal.fire("Error", "Something went wrong", "error");
-      }
-    }
-  </script>
+
+        async function deleteCategory(id, name) {
+            const result = await Swal.fire({ 
+                title: `Delete "${name}"?`, 
+                text: 'This category will be hidden from the store.', 
+                icon: 'warning', 
+                showCancelButton: true, 
+                confirmButtonColor: '#dc2626', 
+                cancelButtonColor: '#8b6f47', 
+                confirmButtonText: 'Yes, delete it' 
+            });
+            
+            if (!result.isConfirmed) return;
+            
+            try {
+                const res = await fetch(`/admin/categories/delete/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                
+                if (data.success) {
+                    document.querySelector(`tr[data-id="${id}"]`).remove();
+                    Swal.fire({ 
+                        toast: true, 
+                        position: 'top-end', 
+                        icon: 'success', 
+                        title: 'Category deleted', 
+                        showConfirmButton: false, 
+                        timer: 2000 
+                    });
+                } else { 
+                    Swal.fire('Error', data.message, 'error'); 
+                }
+            } catch(err) { 
+                Swal.fire('Error', 'Something went wrong', 'error'); 
+            }
+        }
+    </script>
 </body>
 </html>

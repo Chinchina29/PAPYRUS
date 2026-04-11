@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coupon Management - Papyrus Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #d4c4b0;
+            color: #2d2d2d;
+            line-height: 1.5;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            flex: 1;
+            padding: 32px;
+            min-height: 100vh;
+        }
+
+        .content-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2d2d2d;
+        }
+
+        .create-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #3d5a3d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .create-btn:hover {
+            background: #2d4a2d;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .search-bar {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px 16px 10px 40px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%236b7280" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>') no-repeat 12px center;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3d5a3d;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .table thead {
+            background: #f9fafb;
+        }
+
+        .table th {
+            padding: 12px 24px;
+            text-align: left;
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table td {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #374151;
+        }
+
+        .table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .coupon-code {
+            font-weight: 600;
+            color: #2d2d2d;
+            font-family: 'Courier New', monospace;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-expired {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .usage-count {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #f3f4f6;
+            border-color: #3d5a3d;
+        }
+
+        .action-btn svg {
+            width: 16px;
+            height: 16px;
+            color: #6b7280;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .pagination-info {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .pagination-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .page-btn {
+            width: 34px;
+            height: 34px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #374151;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .page-btn.active {
+            background: #3d5a3d;
+            color: white;
+            border-color: #3d5a3d;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+            opacity: 0.4;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <%- include('../partials/admin-sidebar', { currentPage_name: 'coupons' }) %>
+        
+        <div class="main-content">
+            <div class="content-wrapper">
+                <div class="page-header">
+                    <h1>Coupon Management</h1>
+                    <button class="create-btn" onclick="createCoupon()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Create New Coupon
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="search-bar">
+                        <form method="GET" action="/admin/coupons" id="searchForm">
+                            <input 
+                                type="text" 
+                                name="search" 
+                                class="search-input" 
+                                placeholder="Search for coupons..."
+                                value="<%= search %>"
+                            />
+                        </form>
+                    </div>
+
+                    <% if (coupons.length === 0) { %>
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="11" cy="11" r="8"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            <p>No coupons found<% if (search) { %> for "<%= search %>"<% } %></p>
+                        </div>
+                    <% } else { %>
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Coupon Code</th>
+                                        <th>Discount Type</th>
+                                        <th>Value</th>
+                                        <th>Expiry Date</th>
+                                        <th>Usage Count</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% coupons.forEach(coupon => { %>
+                                        <% const isExpired = new Date(coupon.validUntil) < new Date(); %>
+                                        <tr>
+                                            <td><span class="coupon-code"><%= coupon.code %></span></td>
+                                            <td><%= coupon.discountType === 'percentage' ? 'Percentage' : 'Fixed Amount' %></td>
+                                            <td><%= coupon.discountType === 'percentage' ? coupon.discountValue + '%' : '$' + coupon.discountValue.toFixed(2) %></td>
+                                            <td>
+                                                <%= new Date(coupon.validUntil).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                                                <% if (isExpired) { %>
+                                                    <span style="color: #dc2626; font-size: 12px;">(Expired)</span>
+                                                <% } %>
+                                            </td>
+                                            <td class="usage-count">
+                                                <%= coupon.usageCount %><% if (coupon.usageLimit) { %> / <%= coupon.usageLimit %><% } else { %> / ∞<% } %>
+                                            </td>
+                                            <td>
+                                                <span class="status-badge <%= isExpired ? 'status-expired' : (coupon.isActive ? 'status-active' : 'status-expired') %>">
+                                                    <%= isExpired ? 'EXPIRED' : (coupon.isActive ? 'ACTIVE' : 'EXPIRED') %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="actions">
+                                                    <button class="action-btn" onclick="editCoupon('<%= coupon._id %>')" title="Edit">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                        </svg>
+                                                    </button>
+                                                    <button class="action-btn" onclick="deleteCoupon('<%= coupon._id %>', '<%= coupon.code %>')" title="Delete">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <% if (totalPages > 1) { %>
+                            <div class="pagination">
+                                <div class="pagination-info">Showing <%= ((currentPage - 1) * 10) + 1 %>-<%= Math.min(currentPage * 10, total) %> of <%= total %> coupons</div>
+                                <div class="pagination-btns">
+                                    <% for (let i = 1; i <= totalPages; i++) { %>
+                                        <a href="?page=<%= i %>&search=<%= search %>" class="page-btn <%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+                                    <% } %>
+                                </div>
+                            </div>
+                        <% } %>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function createCoupon() {
+            Swal.fire({
+                title: 'Create New Coupon',
+                html: `
+                    <form id="couponForm" style="text-align: left;">
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Coupon Code *</label>
+                            <input type="text" id="code" name="code" required 
+                                style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;"
+                                placeholder="e.g., SUMMER2024" maxlength="20">
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Description</label>
+                            <textarea id="description" name="description" rows="2"
+                                style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;"
+                                placeholder="Brief description of the coupon" maxlength="200"></textarea>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Discount Type *</label>
+                                <select id="discountType" name="discountType" required
+                                    style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                                    <option value="percentage">Percentage</option>
+                                    <option value="fixed">Fixed Amount</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Discount Value *</label>
+                                <input type="number" id="discountValue" name="discountValue" required min="0" step="0.01"
+                                    style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;"
+                                    placeholder="e.g., 20">
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Min Purchase Amount</label>
+                                <input type="number" id="minPurchaseAmount" name="minPurchaseAmount" min="0" step="0.01"
+                                    style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;"
+                                    placeholder="0">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Max Discount Amount</label>
+                                <input type="number" id="maxDiscountAmount" name="maxDiscountAmount" min="0" step="0.01"
+                                    style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;"
+                                    placeholder="Optional">
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Usage Limit</label>
+                                <input type="number" id="usageLimit" name="usageLimit" min="1"
+                                    style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;"
+                                    placeholder="Unlimited">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Per User Limit</label>
+                                <input type="number" id="perUserLimit" name="perUserLimit" min="1" value="1"
+                                    style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Valid From *</label>
+                                <input type="date" id="validFrom" name="validFrom" required
+                                    style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Valid Until *</label>
+                                <input type="date" id="validUntil" name="validUntil" required
+                                    style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                            </div>
+                        </div>
+                    </form>
+                `,
+                width: 600,
+                showCancelButton: true,
+                confirmButtonText: 'Create Coupon',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#3d5a3d',
+                cancelButtonColor: '#6b7280',
+                preConfirm: () => {
+                    const code = document.getElementById('code').value.trim();
+                    const description = document.getElementById('description').value.trim();
+                    const discountType = document.getElementById('discountType').value;
+                    const discountValue = document.getElementById('discountValue').value;
+                    const minPurchaseAmount = document.getElementById('minPurchaseAmount').value;
+                    const maxDiscountAmount = document.getElementById('maxDiscountAmount').value;
+                    const usageLimit = document.getElementById('usageLimit').value;
+                    const perUserLimit = document.getElementById('perUserLimit').value;
+                    const validFrom = document.getElementById('validFrom').value;
+                    const validUntil = document.getElementById('validUntil').value;
+
+                    if (!code || !discountValue || !validFrom || !validUntil) {
+                        Swal.showValidationMessage('Please fill in all required fields');
+                        return false;
+                    }
+
+                    if (new Date(validFrom) >= new Date(validUntil)) {
+                        Swal.showValidationMessage('Valid Until date must be after Valid From date');
+                        return false;
+                    }
+
+                    return {
+                        code,
+                        description,
+                        discountType,
+                        discountValue,
+                        minPurchaseAmount,
+                        maxDiscountAmount,
+                        usageLimit,
+                        perUserLimit,
+                        validFrom,
+                        validUntil
+                    };
+                }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch('/admin/coupons/add', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(result.value)
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            await Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: data.message,
+                                confirmButtonColor: '#3d5a3d'
+                            });
+                            window.location.reload();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'Failed to create coupon',
+                                confirmButtonColor: '#3d5a3d'
+                            });
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Something went wrong. Please try again.',
+                            confirmButtonColor: '#3d5a3d'
+                        });
+                    }
+                }
+            });
+
+            // Set default dates
+            setTimeout(() => {
+                const today = new Date().toISOString().split('T')[0];
+                const nextMonth = new Date();
+                nextMonth.setMonth(nextMonth.getMonth() + 1);
+                const nextMonthStr = nextMonth.toISOString().split('T')[0];
+                
+                document.getElementById('validFrom').value = today;
+                document.getElementById('validUntil').value = nextMonthStr;
+            }, 100);
+        }
+
+        function editCoupon(id) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Edit Coupon',
+                text: 'Coupon edit functionality will be implemented soon.',
+                confirmButtonColor: '#3d5a3d'
+            });
+        }
+
+        async function deleteCoupon(id, code) {
+            const result = await Swal.fire({
+                title: 'Delete Coupon?',
+                text: `Are you sure you want to delete coupon "${code}"? This action cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, delete it',
+                cancelButtonText: 'Cancel'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const response = await fetch(`/admin/coupons/delete/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: data.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    window.location.reload();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to delete coupon',
+                        confirmButtonColor: '#3d5a3d'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Something went wrong. Please try again.',
+                    confirmButtonColor: '#3d5a3d'
+                });
+            }
+        }
+
+        // Auto-submit search on input
+        const searchInput = document.querySelector('.search-input');
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                document.getElementById('searchForm').submit();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

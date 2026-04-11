@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Papyrus</title>
+    <title>Dashboard Overview - Papyrus Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8f9fa;
-            color: #3a3a3a;
-            line-height: 1.6;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8f6f3;
+            color: #2d2d2d;
+            line-height: 1.5;
         }
 
         .admin-layout {
@@ -24,131 +23,122 @@
         }
 
         .main-content {
+            margin-left: 240px;
             flex: 1;
-            margin-left: 280px;
-            background: #f8f9fa;
+            padding: 32px;
+            min-height: 100vh;
         }
 
-        .top-header {
-            background: white;
-            border-bottom: 1px solid #e8dcc8;
-            padding: 16px 32px;
+        .content-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .admin-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            margin-bottom: 32px;
         }
 
-        .search-bar {
-            flex: 1;
-            max-width: 400px;
+        .header-left h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2d2d2d;
+            margin-bottom: 4px;
         }
 
-        .search-input {
-            width: 100%;
-            padding: 10px 16px;
-            border: 1px solid #e8dcc8;
-            border-radius: 8px;
+        .header-subtitle {
+            color: #6b7280;
             font-size: 14px;
-            background: #f5f1ed;
         }
 
-        .header-actions {
+        .header-right {
             display: flex;
             align-items: center;
             gap: 16px;
         }
 
-        .notification-btn {
-            width: 40px;
-            height: 40px;
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            width: 320px;
+            padding: 10px 16px 10px 40px;
+            border: 1px solid #d1d5db;
             border-radius: 8px;
-            border: 1px solid #e8dcc8;
+            font-size: 14px;
             background: white;
+            outline: none;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            color: #9ca3af;
+        }
+
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #8b6f47;
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            color: #5a4d42;
-        }
-
-        .admin-info {
-            text-align: right;
-        }
-
-        .admin-panel-text {
+            font-weight: 600;
             font-size: 12px;
-            color: #5a4d42;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .admin-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: #3a3a3a;
-        }
-
-        .dashboard-content {
-            padding: 32px;
-        }
-
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 32px;
-        }
-
-        .page-title h1 {
-            font-size: 28px;
-            font-weight: 600;
-            color: #3a3a3a;
-            margin-bottom: 4px;
-        }
-
-        .page-title p {
-            color: #5a4d42;
-            font-size: 14px;
         }
 
         .page-actions {
             display: flex;
             gap: 12px;
+            margin-bottom: 24px;
         }
 
-        .filter-btn, .export-btn {
-            padding: 10px 16px;
+        .btn {
+            padding: 10px 20px;
+            border: none;
             border-radius: 8px;
-            border: 1px solid #e8dcc8;
-            background: white;
-            color: #5a4d42;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
-            display: flex;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
-            transition: all 0.2s ease;
         }
 
-        .export-btn {
-            background: #8b7355;
+        .btn-primary {
+            background: #8b6f47;
             color: white;
-            border-color: #8b7355;
         }
 
-        .filter-btn:hover, .export-btn:hover {
-            background: #5a4a3a;
-            color: white;
-            border-color: #5a4a3a;
+        .btn-primary:hover {
+            background: #6b5a48;
         }
 
-        .filter-btn svg, .export-btn svg {
-            width: 16px;
-            height: 16px;
+        .btn-secondary {
+            background: white;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #f9fafb;
         }
 
         .stats-grid {
@@ -162,7 +152,7 @@
             background: white;
             border-radius: 12px;
             padding: 24px;
-            border: 1px solid #e8dcc8;
+            border: 1px solid #e5e7eb;
             display: flex;
             align-items: center;
             gap: 16px;
@@ -176,7 +166,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #8b7355;
+            color: #8b6f47;
         }
 
         .stat-icon svg {
@@ -191,13 +181,13 @@
         .stat-value {
             font-size: 24px;
             font-weight: 700;
-            color: #3a3a3a;
+            color: #2d2d2d;
             margin-bottom: 4px;
         }
 
         .stat-label {
             font-size: 14px;
-            color: #5a4d42;
+            color: #6b7280;
             margin-bottom: 8px;
         }
 
@@ -210,281 +200,99 @@
         }
 
         .stat-change.positive {
-            background: #d4edda;
-            color: #155724;
+            background: #d1fae5;
+            color: #065f46;
         }
 
         .stat-change.neutral {
-            background: #f8f9fa;
-            color: #6c757d;
+            background: #f3f4f6;
+            color: #6b7280;
         }
 
-        .charts-section {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 24px;
-            margin-bottom: 32px;
-        }
-
-        .revenue-chart, .categories-chart {
+        .card {
             background: white;
             border-radius: 12px;
             padding: 24px;
-            border: 1px solid #e8dcc8;
-        }
-
-        .chart-header {
+            border: 1px solid #e5e7eb;
             margin-bottom: 24px;
         }
 
-        .chart-header h3 {
-            font-size: 18px;
-            font-weight: 600;
-            color: #3a3a3a;
-            margin-bottom: 4px;
-        }
-
-        .chart-header p {
-            font-size: 14px;
-            color: #5a4d42;
-        }
-
-        .chart-container {
-            height: 300px;
-            position: relative;
-        }
-
-        .donut-chart {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            background: conic-gradient(#8b7355 0deg 162deg, #a68b5b 162deg 270deg, #c4a373 270deg 360deg);
-            position: relative;
-            margin: 0 auto 24px;
-        }
-
-        .donut-chart::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 120px;
-            height: 120px;
-            background: white;
-            border-radius: 50%;
-        }
-
-        .donut-center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 1;
-        }
-
-        .donut-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #3a3a3a;
-        }
-
-        .donut-label {
-            font-size: 14px;
-            color: #5a4d42;
-        }
-
-        .chart-legend {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .legend-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 2px;
-        }
-
-        .legend-text {
-            flex: 1;
-            font-size: 14px;
-            color: #5a4d42;
-        }
-
-        .legend-percent {
-            font-size: 14px;
-            font-weight: 600;
-            color: #3a3a3a;
-        }
-
-        .recent-activity {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            border: 1px solid #e8dcc8;
-        }
-
-        .activity-header {
+        .card-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 24px;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f3f4f6;
         }
 
-        .activity-header h3 {
+        .card-title {
             font-size: 18px;
             font-weight: 600;
-            color: #3a3a3a;
-            margin-bottom: 4px;
+            color: #2d2d2d;
+            margin: 0;
         }
 
-        .activity-header p {
+        .table-responsive {
+            overflow-x: auto;
+            margin: -24px;
+            margin-top: 0;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 14px;
-            color: #5a4d42;
         }
 
-        .view-all-btn {
-            padding: 8px 16px;
-            border-radius: 6px;
-            border: 1px solid #e8dcc8;
-            background: white;
-            color: #5a4d42;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        .table th,
+        .table td {
+            padding: 12px 24px;
+            text-align: left;
+            border-bottom: 1px solid #f3f4f6;
         }
 
-        .view-all-btn:hover {
-            background: #f5f1ed;
-        }
-
-        .activity-table {
-            border: 1px solid #e8dcc8;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .table-header {
-            display: grid;
-            grid-template-columns: 120px 2fr 1fr 120px 120px 140px;
-            background: #f5f1ed;
-            border-bottom: 1px solid #e8dcc8;
-        }
-
-        .header-cell {
-            padding: 16px;
-            font-size: 12px;
+        .table th {
+            background: #f9fafb;
             font-weight: 600;
-            color: #5a4d42;
+            color: #374151;
+            font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .table-row {
-            display: grid;
-            grid-template-columns: 120px 2fr 1fr 120px 120px 140px;
-            border-bottom: 1px solid #e8dcc8;
-            align-items: center;
-        }
-
-        .table-row:last-child {
-            border-bottom: none;
-        }
-
-        .table-cell {
-            padding: 16px;
-            font-size: 14px;
-            color: #3a3a3a;
-        }
-
-        .reference {
-            font-weight: 600;
-            color: #8b7355;
-        }
-
-        .book-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .book-cover {
-            width: 40px;
-            height: 50px;
-            background: #8b7355;
-            border-radius: 4px;
-            flex-shrink: 0;
-        }
-
-        .book-title {
-            font-weight: 600;
-            color: #3a3a3a;
-            margin-bottom: 2px;
-        }
-
-        .book-subtitle {
-            font-size: 12px;
-            color: #5a4d42;
+        .table tbody tr:hover {
+            background: #f9fafb;
         }
 
         .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .status-badge.pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-badge.shipped {
-            background: #d1ecf1;
-            color: #0c5460;
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
         }
 
         @media (max-width: 1200px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
-            
-            .charts-section {
-                grid-template-columns: 1fr;
-            }
         }
 
         @media (max-width: 768px) {
             .main-content {
                 margin-left: 0;
+                padding: 16px;
             }
             
             .stats-grid {
                 grid-template-columns: 1fr;
-            }
-            
-            .page-header {
-                flex-direction: column;
-                gap: 16px;
-            }
-            
-            .table-header, .table-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .header-cell, .table-cell {
-                padding: 8px 16px;
             }
         }
     </style>
@@ -492,67 +300,59 @@
 <body>
     <div class="admin-layout">
         <%- include('../partials/admin-sidebar', { currentPage_name: 'dashboard' }) %>
-
+        
         <div class="main-content">
-            <div class="top-header">
-                <div class="search-bar">
-                    <input type="text" class="search-input" placeholder="Search for books, authors...">
-                </div>
-                
-                <div class="header-actions">
-                    <button class="notification-btn">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
-                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                        </svg>
-                    </button>
-                    
-                    <div class="admin-info">
-                        <div class="admin-panel-text">Admin Panel</div>
-                        <div class="admin-name"><%= user?.firstName || 'Admin' %> <%= user?.lastName || 'User' %></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="dashboard-content">
-                <div class="page-header">
-                    <div class="page-title">
+            <div class="content-wrapper">
+                <div class="admin-header">
+                    <div class="header-left">
                         <h1>Dashboard Overview</h1>
-                        <p>Welcome back. Here's what's happening in the library today.</p>
+                        <p class="header-subtitle">Welcome back. Here's what's happening in the library today.</p>
                     </div>
-                    
-                    <div class="page-actions">
-                        <button class="filter-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M8 6h13"/>
-                                <path d="M6 12h9"/>
-                                <path d="M4 18h7"/>
+                    <div class="header-right">
+                        <div class="search-box">
+                            <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
-                            Last 30 Days
-                        </button>
-                        <button class="export-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="7,10 12,15 17,10"/>
-                                <line x1="12" y1="15" x2="12" y2="3"/>
-                            </svg>
-                            Export Report
-                        </button>
+                            <input type="text" placeholder="Search for books, authors...">
+                        </div>
+                        <div class="admin-profile">
+                            <span style="font-size: 12px; color: #6b7280;">Admin Panel</span>
+                            <div class="admin-avatar">
+                                <%= user && user.firstName ? user.firstName.charAt(0).toUpperCase() : 'A' %>
+                            </div>
+                            <span style="font-size: 12px; color: #059669;">Online</span>
+                        </div>
                     </div>
+                </div>
+
+                <div class="page-actions">
+                    <button class="btn btn-secondary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                            <path d="M8 6h13"/>
+                            <path d="M6 12h9"/>
+                            <path d="M4 18h7"/>
+                        </svg>
+                        Last 30 Days
+                    </button>
+                    <button class="btn btn-primary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7,10 12,15 17,10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Export Report
+                    </button>
                 </div>
 
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                <circle cx="8.5" cy="7" r="4"/>
-                                <line x1="20" y1="8" x2="20" y2="14"/>
-                                <line x1="23" y1="11" x2="17" y2="11"/>
+                                <path d="M12 2v20m8-10H4"/>
                             </svg>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value">$<%= stats.revenue.toLocaleString() %></div>
+                            <div class="stat-value">₹<%= stats.revenue.toLocaleString() %></div>
                             <div class="stat-label">Total Sales</div>
                             <div class="stat-change positive">+<%= stats.revenueGrowth %>%</div>
                         </div>
@@ -602,98 +402,103 @@
                     </div>
                 </div>
 
-                <div class="charts-section">
-                    <div class="revenue-chart">
-                        <div class="chart-header">
-                            <h3>Revenue Growth</h3>
-                            <p>Monthly revenue performance</p>
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 32px;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Revenue Growth</h3>
+                            <p style="color: #6b7280; font-size: 14px; margin: 0;">Monthly revenue performance</p>
                         </div>
-                        <div class="chart-container">
+                        <div style="height: 300px; position: relative;">
                             <canvas id="revenueChart"></canvas>
                         </div>
                     </div>
 
-                    <div class="categories-chart">
-                        <div class="chart-header">
-                            <h3>Categories</h3>
-                            <p>Stock distribution</p>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Categories</h3>
+                            <p style="color: #6b7280; font-size: 14px; margin: 0;">Stock distribution</p>
                         </div>
-                        <div class="chart-container">
-                            <div class="donut-chart">
-                                <div class="donut-center">
-                                    <div class="donut-value">1.2k</div>
-                                    <div class="donut-label">Books</div>
+                        <div style="text-align: center;">
+                            <div style="width: 200px; height: 200px; border-radius: 50%; background: conic-gradient(#8b6f47 0deg 162deg, #a68b5b 162deg 270deg, #c4a373 270deg 360deg); position: relative; margin: 0 auto 24px;">
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120px; height: 120px; background: white; border-radius: 50%;"></div>
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 1;">
+                                    <div style="font-size: 24px; font-weight: 700; color: #2d2d2d;">1.2k</div>
+                                    <div style="font-size: 14px; color: #6b7280;">Books</div>
                                 </div>
                             </div>
-                            <div class="chart-legend">
-                                <div class="legend-item">
-                                    <span class="legend-color" style="background: #8b7355;"></span>
-                                    <span class="legend-text">Classic Literature</span>
-                                    <span class="legend-percent">45%</span>
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="width: 12px; height: 12px; border-radius: 2px; background: #8b6f47;"></span>
+                                    <span style="flex: 1; font-size: 14px; color: #6b7280;">Classic Literature</span>
+                                    <span style="font-size: 14px; font-weight: 600; color: #2d2d2d;">45%</span>
                                 </div>
-                                <div class="legend-item">
-                                    <span class="legend-color" style="background: #a68b5b;"></span>
-                                    <span class="legend-text">Historical</span>
-                                    <span class="legend-percent">30%</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="width: 12px; height: 12px; border-radius: 2px; background: #a68b5b;"></span>
+                                    <span style="flex: 1; font-size: 14px; color: #6b7280;">Historical</span>
+                                    <span style="font-size: 14px; font-weight: 600; color: #2d2d2d;">30%</span>
                                 </div>
-                                <div class="legend-item">
-                                    <span class="legend-color" style="background: #c4a373;"></span>
-                                    <span class="legend-text">Other</span>
-                                    <span class="legend-percent">25%</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="width: 12px; height: 12px; border-radius: 2px; background: #c4a373;"></span>
+                                    <span style="flex: 1; font-size: 14px; color: #6b7280;">Other</span>
+                                    <span style="font-size: 14px; font-weight: 600; color: #2d2d2d;">25%</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="recent-activity">
-                    <div class="activity-header">
+                <div class="card">
+                    <div class="card-header">
                         <div>
-                            <h3>Recent Listings & Transactions</h3>
-                            <p>Activity awaiting your approval and recent orders</p>
+                            <h3 class="card-title">Recent Listings & Transactions</h3>
+                            <p style="color: #6b7280; font-size: 14px; margin: 0;">Activity awaiting your approval and recent orders</p>
                         </div>
-                        <button class="view-all-btn">View All Activity</button>
+                        <a href="/admin/submissions" class="btn btn-secondary">View All Activity</a>
                     </div>
 
-                    <div class="activity-table">
-                        <div class="table-header">
-                            <div class="header-cell">Reference</div>
-                            <div class="header-cell">Item/Book Title</div>
-                            <div class="header-cell">Curator/Buyer</div>
-                            <div class="header-cell">Amount</div>
-                            <div class="header-cell">Date</div>
-                            <div class="header-cell">Status</div>
-                        </div>
-
-                        <% recentOrders.forEach(order => { %>
-                        <div class="table-row">
-                            <div class="table-cell">
-                                <div class="reference">RP-8825</div>
-                            </div>
-                            <div class="table-cell">
-                                <div class="book-info">
-                                    <div class="book-cover"></div>
-                                    <div class="book-details">
-                                        <div class="book-title"><%= order.title %></div>
-                                        <div class="book-subtitle">First Edition Hardcover</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="table-cell"><%= order.customer %></div>
-                            <div class="table-cell">$<%= order.price %>.00</div>
-                            <div class="table-cell">Oct 26, 2023</div>
-                            <div class="table-cell">
-                                <span class="status-badge pending">Pending Approval</span>
-                            </div>
-                        </div>
-                        <% }); %>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Reference</th>
+                                    <th>Item/Book Title</th>
+                                    <th>Curator/Buyer</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% recentOrders.forEach(order => { %>
+                                <tr>
+                                    <td>
+                                        <span style="font-weight: 600; color: #8b6f47;">RP-8825</span>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <div style="width: 40px; height: 50px; background: #8b6f47; border-radius: 4px; flex-shrink: 0;"></div>
+                                            <div>
+                                                <div style="font-weight: 600; color: #2d2d2d; margin-bottom: 2px;"><%= order.title %></div>
+                                                <div style="font-size: 12px; color: #6b7280;">First Edition Hardcover</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><%= order.customer %></td>
+                                    <td>₹<%= order.price %></td>
+                                    <td>Oct 26, 2023</td>
+                                    <td>
+                                        <span class="status-badge status-pending">Pending Approval</span>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const ctx = document.getElementById('revenueChart').getContext('2d');
         new Chart(ctx, {
@@ -702,7 +507,7 @@
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
                 datasets: [{
                     data: [3200, 4100, 3800, 5200, 6100, 5800],
-                    backgroundColor: '#8b7355',
+                    backgroundColor: '#8b6f47',
                     borderRadius: 4,
                     borderSkipped: false,
                 }]
@@ -719,10 +524,10 @@
                     y: {
                         beginAtZero: true,
                         grid: {
-                            color: '#e8dcc8'
+                            color: '#e5e7eb'
                         },
                         ticks: {
-                            color: '#5a4d42'
+                            color: '#6b7280'
                         }
                     },
                     x: {
@@ -730,7 +535,7 @@
                             display: false
                         },
                         ticks: {
-                            color: '#5a4d42'
+                            color: '#6b7280'
                         }
                     }
                 }
