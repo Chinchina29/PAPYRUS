@@ -22,6 +22,43 @@ export const getOrCreateCart = async (userId) => {
     if (!cart) {
       cart = new Cart({ user: userId, items: [] });
       await cart.save();
+    } else {
+      // Filter out items that are deleted, unlisted, or out of stock
+      let needsUpdate = false;
+      const validItems = cart.items.filter(item => {
+        if (!item.product || item.product.isDeleted || !item.product.isListed) {
+          needsUpdate = true;
+          return false;
+        }
+        
+        // Update quantity if it exceeds available stock
+        if (item.product.stock === 0) {
+          needsUpdate = true;
+          return false;
+        }
+        
+        if (item.quantity > item.product.stock) {
+          item.quantity = item.product.stock;
+          needsUpdate = true;
+        }
+        
+        return true;
+      });
+
+      if (needsUpdate) {
+        cart.items = validItems;
+        await cart.save();
+        
+        // Reload cart with updated items
+        cart = await Cart.findById(cart._id).populate({
+          path: 'items.product',
+          select: 'title author price images stock condition isListed isDeleted',
+          populate: {
+            path: 'category',
+            select: 'name'
+          }
+        });
+      }
     }
 
     return cart;

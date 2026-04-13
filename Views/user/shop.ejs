@@ -473,6 +473,7 @@
 
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
     function debounce(func, delay) {
       let timeoutId;
@@ -529,18 +530,59 @@
         const data = await response.json();
 
         if (data.success) {
-          showNotification('Item added to cart successfully!', 'success');
+          Swal.fire({
+            icon: 'success',
+            title: 'Added to Cart!',
+            text: 'Item added to cart successfully',
+            timer: 2000,
+            showConfirmButton: false,
+            timerProgressBar: true
+          });
           updateCartCount();
         } else {
           if (response.status === 401) {
-            window.location.href = '/login';
+            Swal.fire({
+              icon: 'warning',
+              title: 'Login Required',
+              text: 'Please login to add items to your cart',
+              confirmButtonColor: '#7A5C3E',
+              confirmButtonText: 'Go to Login'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                window.location.href = '/login';
+              }
+            });
+          } else if (data.message && (data.message.toLowerCase().includes('out of stock') || data.message.toLowerCase().includes('stock') && data.message.includes('0'))) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Out of Stock',
+              text: 'Sorry, this product is currently out of stock',
+              confirmButtonColor: '#7A5C3E'
+            });
+          } else if (data.message && data.message.toLowerCase().includes('insufficient stock')) {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Insufficient Stock',
+              text: data.message,
+              confirmButtonColor: '#7A5C3E'
+            });
           } else {
-            showNotification(data.message || 'Failed to add item to cart', 'error');
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message || 'Failed to add item to cart',
+              confirmButtonColor: '#7A5C3E'
+            });
           }
         }
       } catch (error) {
         console.error('Add to cart error:', error);
-        showNotification('Something went wrong. Please try again.', 'error');
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Something went wrong. Please try again.',
+          confirmButtonColor: '#7A5C3E'
+        });
       }
     }, 1000);
 
