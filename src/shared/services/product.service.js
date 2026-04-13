@@ -1,11 +1,11 @@
-import Product from "../Model/product.js";
+import Product from "../models/Product.js";
 
-export const getAllProducts = async ({ search = "", page = 1, limit = 10 }) => {
+export const getAllProducts = async ({ search = "", page = 1, limit = 10, showDeleted = false }) => {
   const query = {
-    isDeleted: false,
+    ...(showDeleted ? {} : { isDeleted: false }),
     ...(search && {
       $or: [
-        { name: { $regex: search, $options: "i" } },
+        { title: { $regex: search, $options: "i" } },
         { author: { $regex: search, $options: "i" } },
       ],
     }),
@@ -16,6 +16,7 @@ export const getAllProducts = async ({ search = "", page = 1, limit = 10 }) => {
   const [products, total] = await Promise.all([
     Product.find(query)
       .populate("category", "name")
+      .populate("seller", "firstName lastName email")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit),
@@ -29,15 +30,17 @@ export const getAllProducts = async ({ search = "", page = 1, limit = 10 }) => {
     currentPage: page,
   };
 };
+
 export const getProductById = async (id) => {
-  return await Product.findOne({ _id: id, isDeleted: false }).populate(
-    "category",
-    "name",
-  );
+  return await Product.findOne({ _id: id, isDeleted: false })
+    .populate("category", "name")
+    .populate("subcategory", "name")
+    .populate("seller", "firstName lastName email");
 };
-export const productNameExists = async (name, excludeId = null) => {
+
+export const productTitleExists = async (title, excludeId = null) => {
   const query = {
-    name: { $regex: `^${name}$`, $options: "i" },
+    title: { $regex: `^${title}$`, $options: "i" },
     isDeleted: false,
   };
   if (excludeId) query._id = { $ne: excludeId };
@@ -50,22 +53,24 @@ export const createProduct = async (data) => {
 };
 
 export const updateProduct = async (id, data) => {
-  return await Product.findByIdAndUpdate(id, data, { new: true });
+  return await Product.findByIdAndUpdate(id, data, { returnDocument: 'after' });
 };
 
 export const softDeleteProduct = async (id) => {
   return await Product.findByIdAndUpdate(
     id,
     { isDeleted: true },
-    { new: true },
+    { returnDocument: 'after' },
   );
 };
+
 export const toggleProductListed = async (id) => {
   const product = await Product.findById(id);
   if (!product) return null;
   product.isListed = !product.isListed;
   return await product.save();
 };
+
 export const getListedProducts = async ({
   search = "",
   page = 1,
@@ -74,17 +79,22 @@ export const getListedProducts = async ({
   category = "",
   minPrice = "",
   maxPrice = "",
+  condition = "",
+  brand = "",
 }) => {
   const query = {
     isDeleted: false,
     isListed: true,
     ...(search && {
       $or: [
-        { name: { $regex: search, $options: "i" } },
+        { title: { $regex: search, $options: "i" } },
         { author: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
       ],
     }),
     ...(category && { category }),
+    ...(condition && { condition }),
+    ...(brand && { brand: { $regex: brand, $options: "i" } }),
     ...(minPrice || maxPrice
       ? {
           price: {
@@ -99,8 +109,9 @@ export const getListedProducts = async ({
     newest: { createdAt: -1 },
     "price-low": { price: 1 },
     "price-high": { price: -1 },
-    "a-z": { name: 1 },
-    "z-a": { name: -1 },
+    "a-z": { title: 1 },
+    "z-a": { title: -1 },
+    popular: { views: -1 },
   };
 
   const skip = (page - 1) * limit;
@@ -108,6 +119,8 @@ export const getListedProducts = async ({
   const [products, total] = await Promise.all([
     Product.find(query)
       .populate("category", "name")
+      .populate("subcategory", "name")
+      .populate("seller", "name email")
       .sort(sortOptions[sort] || { createdAt: -1 })
       .skip(skip)
       .limit(limit),
@@ -123,20 +136,36 @@ export const getListedProducts = async ({
 };
 
 export const getListedProductById = async (id) => {
-  return await Product.findOne({
+  const product = await Product.findOne({
     _id: id,
     isDeleted: false,
     isListed: true,
-  }).populate("category", "name");
+  })
+    .populate("category", "name")
+    .populate("subcategory", "name")
+    .populate("seller", "name email");
+
+  if (product) {
+    await Product.findByIdAndUpdate(id, { $inc: { views: 1 } });
+  }
+
+  return product;
 };
 
-export const getRelatedProducts = async (categoryId, excludeId) => {
+export const getRelatedProducts = async (categoryId, excludeId, limit = 4) => {
   return await Product.find({
     category: categoryId,
     _id: { $ne: excludeId },
     isDeleted: false,
     isListed: true,
   })
-    .limit(4)
-    .populate("category", "name");
+    .limit(limit)
+    .populate("category", "name")
+    .populate("seller", "name")
+    .sort({ createdAt: -1 });
+};
+
+
+export const getAllBrands = async () => {
+  return await Product.distinct("brand", { isDeleted: false, brand: { $ne: null, $ne: "" } });
 };

@@ -193,11 +193,11 @@
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="firstName">First Name</label>
-                                    <input type="text" id="firstName" name="firstName" value="<%= user.firstName %>">
+                                    <input type="text" id="firstName" name="firstName" value="<%= user.firstName %>" maxlength="50">
                                 </div>
                                 <div class="form-group">
                                     <label for="lastName">Last Name</label>
-                                    <input type="text" id="lastName" name="lastName" value="<%= user.lastName %>">
+                                    <input type="text" id="lastName" name="lastName" value="<%= user.lastName %>" maxlength="50">
                                 </div>
                             </div>
 
@@ -205,7 +205,7 @@
                                 <label for="email">Email Address</label>
                                 <div style="display:flex; gap:10px; align-items:center;">
                                     <input type="email" id="email" value="<%= user.email %>" disabled
-                                        style="background:#f9f7f4; color:#999; flex:1;">
+                                        style="background:#f9f7f4; color:#999; flex:1;" maxlength="100">
                                     <button type="button" id="changeEmailBtn" class="btn-secondary"
                                         style="padding:8px 16px; font-size:12px; white-space:nowrap;">CHANGE EMAIL</button>
                                 </div>
@@ -215,7 +215,7 @@
                                 <div class="form-group">
                                     <label for="phone">Phone Number</label>
                                     <input type="tel" id="phone" name="phone"
-                                        value="<%= user.phone || '' %>" placeholder="Enter phone number">
+                                        value="<%= user.phone || '' %>" placeholder="Enter phone number" maxlength="15">
                                 </div>
                                 <div class="form-group">
                                     <label for="dateOfBirth">Date of Birth</label>
@@ -272,7 +272,7 @@
 
                             <div class="form-group">
                                 <label for="bio">Bio / About Me</label>
-                                <textarea id="bio" name="bio"
+                                <textarea id="bio" name="bio" maxlength="500"
                                     placeholder="Tell us about yourself..."><%= user.bio || '' %></textarea>
                             </div>
 
@@ -360,7 +360,7 @@
                 <p style="margin-bottom:15px; color:#666; font-size:14px;">Enter your new email address. We'll send a verification code to confirm the change.</p>
                 <div style="margin-bottom:20px;">
                     <label style="display:block; margin-bottom:5px; color:#5a4a3a; font-weight:500;">New Email Address</label>
-                    <input type="email" id="newEmail" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; font-size:14px;">
+                    <input type="email" id="newEmail" maxlength="100" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; font-size:14px;">
                 </div>
                 <div style="display:flex; gap:10px;">
                     <button id="sendEmailOTP" style="flex:1; background:#5a4a3a; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">Send Verification Code</button>
@@ -573,7 +573,7 @@
             if (resendCountdownTimer) clearInterval(resendCountdownTimer);
         });
 
-        document.getElementById('sendEmailOTP').addEventListener('click', async () => {
+        const sendEmailOTPThrottled = throttle(async function() {
             const newEmail = document.getElementById('newEmail').value.trim();
             if (!newEmail) {
                 Swal.fire({ title: 'Error!', text: 'Please enter a new email address', icon: 'error', confirmButtonColor: '#5a4a3a' });
@@ -583,6 +583,11 @@
                 Swal.fire({ title: 'Invalid Email!', text: 'Please enter a valid email address', icon: 'error', confirmButtonColor: '#5a4a3a' });
                 return;
             }
+            
+            const btn = document.getElementById('sendEmailOTP');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            
             try {
                 const response = await fetch('/profile/request-email-change', {
                     method: 'POST',
@@ -604,10 +609,15 @@
                 }
             } catch (error) {
                 Swal.fire({ title: 'Error!', text: 'Failed to send verification code', icon: 'error', confirmButtonColor: '#5a4a3a' });
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Send Verification Code';
             }
-        });
+        }, 3000); // 3 second throttle
 
-        document.getElementById('verifyEmailOTP').addEventListener('click', async () => {
+        document.getElementById('sendEmailOTP').addEventListener('click', sendEmailOTPThrottled);
+
+        const verifyEmailOTPThrottled = throttle(async function() {
             const otp = document.getElementById('emailOTP').value.trim();
             if (!otp) {
                 Swal.fire({ title: 'Error!', text: 'Please enter the verification code', icon: 'error', confirmButtonColor: '#5a4a3a' });
@@ -617,6 +627,11 @@
                 Swal.fire({ title: 'Invalid Code!', text: 'Verification code must be 6 digits', icon: 'error', confirmButtonColor: '#5a4a3a' });
                 return;
             }
+            
+            const btn = document.getElementById('verifyEmailOTP');
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
+            
             try {
                 const response = await fetch('/profile/verify-email-change', {
                     method: 'POST',
@@ -638,12 +653,21 @@
                 }
             } catch (error) {
                 Swal.fire({ title: 'Error!', text: 'Failed to verify code', icon: 'error', confirmButtonColor: '#5a4a3a' });
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Verify & Change Email';
             }
-        });
+        }, 2000); // 2 second throttle
 
-        document.getElementById('resendOTPBtn').addEventListener('click', async () => {
+        document.getElementById('verifyEmailOTP').addEventListener('click', verifyEmailOTPThrottled);
+
+        const resendOTPThrottled = throttle(async function() {
             const btn = document.getElementById('resendOTPBtn');
             if (btn.disabled) return;
+            
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            
             try {
                 const response = await fetch('/profile/resend-email-otp', {
                     method: 'POST',
@@ -660,11 +684,17 @@
                     Swal.fire({ title: 'OTP Resent!', text: 'A new verification code has been sent', icon: 'success', confirmButtonColor: '#5a4a3a' });
                 } else {
                     Swal.fire({ title: 'Error!', text: result.message, icon: 'error', confirmButtonColor: '#5a4a3a' });
+                    btn.disabled = false;
+                    btn.textContent = 'Resend OTP';
                 }
             } catch (error) {
                 Swal.fire({ title: 'Error!', text: 'Failed to resend OTP', icon: 'error', confirmButtonColor: '#5a4a3a' });
+                btn.disabled = false;
+                btn.textContent = 'Resend OTP';
             }
-        });
+        }, 3000); // 3 second throttle
+
+        document.getElementById('resendOTPBtn').addEventListener('click', resendOTPThrottled);
 
         function startResendCountdown() {
             if (resendCountdownTimer) clearInterval(resendCountdownTimer);
@@ -704,15 +734,50 @@
             emailTimeLeft--;
         }
 
-        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        function debounce(func, delay) {
+            let timeoutId;
+            return function (...args) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        function throttle(func, delay) {
+            let isThrottled = false;
+            return function (...args) {
+                if (isThrottled) {
+                    return;
+                }
+                func.apply(this, args);
+                isThrottled = true;
+                setTimeout(() => {
+                    isThrottled = false;
+                }, delay);
+            };
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            e.stopPropagation();
+            
             const formData = new FormData(e.target);
             const data     = {};
-            for (let [key, value] of formData.entries()) { data[key] = value; }
-            if (!validateForm(data)) return;
+            for (let [key, value] of formData.entries()) { 
+                data[key] = value; 
+            }
+            
+            if (!validateForm(data)) {
+                return;
+            }
 
             const submitBtn       = e.target.querySelector('button[type="submit"]');
             const originalText    = submitBtn.textContent;
+            
+            // Prevent double submission
+            if (submitBtn.disabled) {
+                return;
+            }
+            
             submitBtn.textContent = 'Updating...';
             submitBtn.disabled    = true;
 
@@ -722,15 +787,33 @@
                     headers: { 'Content-Type': 'application/json' },
                     body:    JSON.stringify(data),
                 });
+                
                 const result = await response.json();
+                
                 if (result.success) {
-                    Swal.fire({ title: 'Success!', text: 'Profile updated successfully', icon: 'success', confirmButtonColor: '#5a4a3a' })
-                        .then(() => { window.location.href = '/profile'; });
+                    Swal.fire({ 
+                        title: 'Success!', 
+                        text: 'Profile updated successfully', 
+                        icon: 'success', 
+                        confirmButtonColor: '#5a4a3a' 
+                    }).then(() => { 
+                        window.location.href = '/profile'; 
+                    });
                 } else {
-                    Swal.fire({ title: 'Error!', text: result.message, icon: 'error', confirmButtonColor: '#5a4a3a' });
+                    Swal.fire({ 
+                        title: 'Error!', 
+                        text: result.message, 
+                        icon: 'error', 
+                        confirmButtonColor: '#5a4a3a' 
+                    });
                 }
             } catch (error) {
-                Swal.fire({ title: 'Error!', text: 'Failed to update profile: ' + error.message, icon: 'error', confirmButtonColor: '#5a4a3a' });
+                Swal.fire({ 
+                    title: 'Error!', 
+                    text: 'Failed to update profile: ' + error.message, 
+                    icon: 'error', 
+                    confirmButtonColor: '#5a4a3a' 
+                });
             } finally {
                 submitBtn.textContent = originalText;
                 submitBtn.disabled    = false;
@@ -787,12 +870,6 @@
                     if (errorMsg) errorMsg.remove();
                 }
             });
-        });
-
-        history.pushState(null, null, location.href);
-        window.onpopstate = function() { history.go(1); };
-        window.addEventListener('beforeunload', function() {
-            history.replaceState(null, null, location.href);
         });
     </script>
 </body>

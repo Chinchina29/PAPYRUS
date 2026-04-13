@@ -1,4 +1,4 @@
-import User from "../Model/User.js";
+import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 
 export const findUserByEmail = async (email) => {
@@ -24,7 +24,12 @@ export const comparePassword = async (plainPassword, hashedPassword) => {
 };
 
 export const updateUser = async (userId, updateData) => {
-  return await User.findByIdAndUpdate(userId, updateData, { new: true });
+  try {
+    const result = await User.findByIdAndUpdate(userId, updateData, { new: true });
+    return result;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const getUserById = async (userId) => {

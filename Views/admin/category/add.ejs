@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Add Category - Papyrus Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       *,
       *::before,
@@ -24,7 +25,6 @@
         flex: 1;
         padding: 32px;
       }
-
       .page-header {
         display: flex;
         align-items: center;
@@ -55,13 +55,12 @@
         color: #8b7355;
         margin-top: 3px;
       }
-
       .form-card {
         background: white;
         border-radius: 12px;
         border: 1px solid #e8dcc8;
         padding: 32px;
-        max-width: 560px;
+        max-width: 600px;
       }
       .form-group {
         margin-bottom: 22px;
@@ -91,12 +90,6 @@
         box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
         background: white;
       }
-      .field-error {
-        font-size: 12px;
-        color: #c0392b;
-        margin-top: 5px;
-        display: none;
-      }
       .alert {
         padding: 12px 16px;
         border-radius: 8px;
@@ -115,12 +108,66 @@
         border: 1px solid #b7eacf;
       }
 
+      /* Subcategory tags */
+      .subcategory-wrap {
+        border: 1.5px solid #e8dcc8;
+        border-radius: 8px;
+        padding: 8px;
+        background: #faf8f5;
+        min-height: 48px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        cursor: text;
+      }
+      .subcategory-wrap:focus-within {
+        border-color: #8b7355;
+        background: white;
+      }
+      .sub-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #e8dcc8;
+        color: #5a4a3a;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+      }
+      .sub-tag button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #8b7355;
+        font-size: 14px;
+        padding: 0;
+        line-height: 1;
+      }
+      .sub-tag button:hover {
+        color: #c0392b;
+      }
+      .sub-input {
+        border: none !important;
+        outline: none !important;
+        background: transparent !important;
+        font-size: 14px;
+        padding: 4px 6px !important;
+        min-width: 140px;
+        flex: 1;
+        box-shadow: none !important;
+      }
+      .sub-hint {
+        font-size: 11px;
+        color: #9a8a78;
+        margin-top: 5px;
+      }
+
       .form-actions {
         display: flex;
         gap: 12px;
         margin-top: 28px;
       }
-
       .btn-submit {
         padding: 11px 28px;
         background: #8b7355;
@@ -138,7 +185,6 @@
         opacity: 0.6;
         cursor: not-allowed;
       }
-
       .btn-cancel {
         padding: 11px 28px;
         background: white;
@@ -153,6 +199,9 @@
       }
       .btn-cancel:hover {
         background: #f5f1ed;
+      }
+      .required {
+        color: #c0392b;
       }
     </style>
   </head>
@@ -175,7 +224,7 @@
         </a>
         <div class="page-title">
           <h1>Add Category</h1>
-          <p>Create a new book category</p>
+          <p>Create a new book category with subcategories</p>
         </div>
       </div>
 
@@ -185,86 +234,203 @@
 
         <form id="addCategoryForm" novalidate>
           <div class="form-group">
-            <label for="name">
-              Category Name <span style="color: #c0392b">*</span>
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              placeholder="e.g. Science Fiction"
-              maxlength="50"
-            />
-            <div class="field-error" id="nameError"></div>
+            <label>Category Type <span class="required">*</span></label>
+            <select id="categoryType" onchange="toggleParentCategory()" style="width: 100%; padding: 11px 14px; border: 1.5px solid #e8dcc8; border-radius: 8px; font-size: 14px; font-family: inherit; background: #faf8f5; outline: none;">
+              <option value="main">Main Category</option>
+              <option value="sub">Subcategory</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="parentCategoryGroup" style="display: none;">
+            <label>Parent Category <span class="required">*</span></label>
+            <select id="parentCategory" style="width: 100%; padding: 11px 14px; border: 1.5px solid #e8dcc8; border-radius: 8px; font-size: 14px; font-family: inherit; background: #faf8f5; outline: none;">
+              <option value="">Select Parent Category</option>
+              <% if (mainCategories && mainCategories.length > 0) { %>
+                <% mainCategories.forEach(cat => { %>
+                  <option value="<%= cat._id %>"><%= cat.name %></option>
+                <% }) %>
+              <% } %>
+            </select>
           </div>
 
           <div class="form-group">
-            <label for="description">
-              Description
-              <span style="color: #8b7355; font-weight: 400">(optional)</span>
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              rows="4"
-              placeholder="Brief description..."
-            ></textarea>
+            <label>Category Name <span class="required">*</span></label>
+            <input
+              type="text"
+              id="name"
+              placeholder="e.g. Fiction, Science Fiction"
+              maxlength="100"
+            />
           </div>
 
+          <div class="form-group" id="subcategoriesGroup">
+            <label
+              >Subcategories
+              <span style="color: #8b7355; font-weight: 400"
+                >(optional - only for main categories)</span
+              ></label
+            >
+            <div
+              class="subcategory-wrap"
+              id="subWrap"
+              onclick="document.getElementById('subInput').focus()"
+            >
+              <input
+                type="text"
+                class="sub-input"
+                id="subInput"
+                placeholder="Type and press Enter or comma to add..."
+              />
+            </div>
+            <div class="sub-hint">
+              Press Enter or comma after each subcategory
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label
+              >Description
+              <span style="color: #8b7355; font-weight: 400"
+                >(optional)</span
+              ></label
+            >
+            <textarea
+              id="description"
+              rows="4"
+              placeholder="Brief description..."
+              maxlength="500"
+            ></textarea>
+          </div>
           <div class="form-actions">
             <button type="submit" class="btn-submit" id="submitBtn">
               Add Category
             </button>
             <a href="/admin/categories" class="btn-cancel">Cancel</a>
           </div>
+
         </form>
       </div>
     </div>
-
     <script>
+      let subcategories = [];
+
+      const subInput = document.getElementById("subInput");
+      const subWrap = document.getElementById("subWrap");
+
+      function toggleParentCategory() {
+        const categoryType = document.getElementById("categoryType").value;
+        const parentGroup = document.getElementById("parentCategoryGroup");
+        const subcategoriesGroup = document.getElementById("subcategoriesGroup");
+        
+        if (categoryType === "sub") {
+          parentGroup.style.display = "block";
+          subcategoriesGroup.style.display = "none";
+          document.getElementById("parentCategory").required = true;
+        } else {
+          parentGroup.style.display = "none";
+          subcategoriesGroup.style.display = "block";
+          document.getElementById("parentCategory").required = false;
+        }
+      }
+
+      subInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === ",") {
+          e.preventDefault();
+          addSub(this.value.trim());
+        } else if (
+          e.key === "Backspace" &&
+          this.value === "" &&
+          subcategories.length > 0
+        ) {
+          removeSub(subcategories.length - 1);
+        }
+      });
+
+      subInput.addEventListener("blur", function () {
+        if (this.value.trim()) addSub(this.value.trim());
+      });
+
+      function addSub(val) {
+        val = val.replace(/,/g, "").trim();
+        if (!val || subcategories.includes(val)) {
+          subInput.value = "";
+          return;
+        }
+        subcategories.push(val);
+        renderTags();
+        subInput.value = "";
+      }
+
+      function removeSub(i) {
+        subcategories.splice(i, 1);
+        renderTags();
+      }
+
+      function renderTags() {
+        subWrap.querySelectorAll(".sub-tag").forEach((t) => t.remove());
+        subcategories.forEach((sub, i) => {
+          const tag = document.createElement("span");
+          tag.className = "sub-tag";
+          tag.innerHTML = `${sub}<button type="button" onclick="removeSub(${i})">✕</button>`;
+          subWrap.insertBefore(tag, subInput);
+        });
+      }
+
       document
         .getElementById("addCategoryForm")
         .addEventListener("submit", async (e) => {
-          e.preventDefault(); // stop normal form submit
-
+          e.preventDefault();
           const name = document.getElementById("name").value.trim();
+          const categoryType = document.getElementById("categoryType").value;
+          const parentCategory = categoryType === "sub" ? document.getElementById("parentCategory").value : "";
           const description = document
             .getElementById("description")
             .value.trim();
           const errorMsg = document.getElementById("errorMsg");
           const successMsg = document.getElementById("successMsg");
-          const nameError = document.getElementById("nameError");
           const submitBtn = document.getElementById("submitBtn");
 
-          // Reset all messages
           errorMsg.style.display = "none";
           successMsg.style.display = "none";
-          nameError.style.display = "none";
 
-          // Frontend validation
+          const pending = subInput.value.trim();
+          if (pending && categoryType === "main") addSub(pending);
+
           if (!name) {
-            nameError.textContent = "Category name is required";
-            nameError.style.display = "block";
+            errorMsg.textContent = "Category name is required";
+            errorMsg.style.display = "block";
             return;
           }
 
-          // Disable button to prevent double submit
+          if (categoryType === "sub" && !parentCategory) {
+            errorMsg.textContent = "Parent category is required for subcategories";
+            errorMsg.style.display = "block";
+            return;
+          }
+
           submitBtn.disabled = true;
           submitBtn.textContent = "Adding...";
 
           try {
-            // Send JSON to POST /admin/categories/add
+            const requestData = { 
+              name, 
+              description, 
+              parentCategory: categoryType === "sub" ? parentCategory : null
+            };
+            
+            if (categoryType === "main" && subcategories.length > 0) {
+              requestData.subcategories = subcategories;
+            }
+
             const res = await fetch("/admin/categories/add", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ name, description }),
+              body: JSON.stringify(requestData),
             });
             const data = await res.json();
-
             if (data.success) {
               successMsg.textContent = data.message;
               successMsg.style.display = "block";
-              // Redirect after short delay
               setTimeout(() => (window.location.href = data.redirectUrl), 1200);
             } else {
               errorMsg.textContent = data.message;

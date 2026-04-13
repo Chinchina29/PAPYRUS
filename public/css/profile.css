@@ -88,6 +88,13 @@ body {
 .breadcrumb a {
   color: #666;
   text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb a:hover {
+  color: #5a4a3a;
+  text-decoration: underline;
 }
 
 .breadcrumb span {

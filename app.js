@@ -3,18 +3,20 @@ import express from "express";
 import multer from "multer";
 import session from "express-session";
 import cookieParser from "cookie-parser";
-import connectDB from "./config/mongo.config.js";
-import passport from "./config/passport.config.js";
-import { setUserLocals } from "./Middlewares/auth.middleware.js";
-import { secureHeaders } from "./Middlewares/cache.middleware.js";
+import connectDB from "./src/shared/config/mongo.config.js";
+import passport from "./src/shared/config/passport.config.js";
+import { setUserLocals } from "./src/user/middleware/auth.middleware.js";
+import { secureHeaders } from "./src/shared/middleware/cache.middleware.js";
+import { generalApiLimiter } from "./src/shared/middleware/rateLimiting.middleware.js";
+
 import {
   userSessionStore,
   adminSessionStore,
-} from "./config/session.config.js";
+} from "./src/shared/config/session.config.js";
 
-import authRoutes from "./Routes/auth.routes.js";
-import profileRoutes from "./Routes/profile.routes.js";
-import adminRoutes from "./Routes/admin.routes.js";
+import authRoutes from "./src/user/routes/auth.routes.js";
+import userRoutes from "./src/user/routes/user.routes.js";
+import adminRoutes from "./src/admin/routes/admin.routes.js";
 
 const requiredEnvVars = [
   "MONGODB_URI",
@@ -23,18 +25,13 @@ const requiredEnvVars = [
 ];
 const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
 if (missingEnvVars.length > 0) {
-  console.error(
-    "Missing required environment variables:",
-    missingEnvVars.join(", "),
-  );
   process.exit(1);
 }
 
 const app = express();
 connectDB();
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
 const userSession = session({
@@ -166,9 +163,11 @@ app.use((req, res, next) => {
 
 app.use(setUserLocals);
 
+app.use(generalApiLimiter);
+
 app.use("/admin", preventUserFromAdminRoutes, adminRoutes);
 app.use("/", authRoutes);
-app.use("/profile", profileRoutes);
+app.use("/", userRoutes);
 
 app.use((req, res) => res.status(404).render("error/404"));
 
@@ -196,17 +195,15 @@ app.use((err, req, res, next) => {
           .json({ error: "Upload error", message: err.message });
     }
   }
-  console.error(err);
   res
     .status(500)
     .json({ error: "Internal server error", message: "Something went wrong." });
 });
 
 app.use((err, req, res, next) => {
-  console.error("Error:", err);
   res.status(500).render("error/500", { error: err });
 });
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () =>
-  console.log(`Server running on http://localhost:${PORT}`),
-);
+app.listen(PORT, () => {
+  console.log(`🚀 Papyrus server is running on http://localhost:${PORT}`);
+});

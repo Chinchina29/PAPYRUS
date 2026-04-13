@@ -33,14 +33,6 @@ export const sendEmail = async (to, subject, html) => {
 
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error("Email send failed:", error.message);
-    if (error.code === "EAUTH") {
-      return {
-        success: false,
-        error:
-          "Gmail authentication failed. Please check your email credentials and app password.",
-      };
-    }
     return { success: false, error: error.message };
   }
 };

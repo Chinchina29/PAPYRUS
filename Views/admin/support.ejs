@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Center - Papyrus Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8f6f3;
+            color: #2d2d2d;
+            line-height: 1.5;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            flex: 1;
+            padding: 32px;
+            min-height: 100vh;
+        }
+
+        .content-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .header-left h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2d2d2d;
+            margin-bottom: 4px;
+        }
+
+        .header-subtitle {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 60px 24px;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+
+        .coming-soon-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            opacity: 0.6;
+        }
+
+        .coming-soon-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+
+        .coming-soon-description {
+            font-size: 14px;
+            color: #9ca3af;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <%- include('../partials/admin-sidebar', { currentPage_name: 'support' }) %>
+        
+        <div class="main-content">
+            <div class="content-wrapper">
+                <div class="admin-header">
+                    <div class="header-left">
+                        <h1>Support Center</h1>
+                        <p class="header-subtitle">Help and support resources</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="coming-soon-icon">🚧</div>
+                    <h2 class="coming-soon-title">Support Center Coming Soon</h2>
+                    <p class="coming-soon-description">
+                        This feature is currently under development. We're working on help documentation, 
+                        support tickets, and customer service tools.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

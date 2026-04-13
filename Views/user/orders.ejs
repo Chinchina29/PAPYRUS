@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Orders - Papyrus</title>
+  <link rel="stylesheet" href="/css/home.css">
+  <style>
+    body {
+      background-color: #f8f6f3;
+    }
+
+    .orders-wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .breadcrumb-nav {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .breadcrumb-nav a {
+      color: #999;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .breadcrumb-nav a:hover {
+      color: #5a4a3a;
+      text-decoration: underline;
+    }
+
+    .orders-header {
+      margin-bottom: 32px;
+    }
+
+    .orders-header h1 {
+      font-size: 42px;
+      font-weight: 400;
+      color: #2d1f14;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .orders-subtitle {
+      font-size: 16px;
+      color: #7A5C3E;
+      font-style: italic;
+    }
+
+    .orders-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 32px;
+    }
+
+    .order-card {
+      background: white;
+      border: 1px solid #e8dcc8;
+      border-radius: 12px;
+      padding: 24px;
+      transition: box-shadow 0.2s;
+    }
+
+    .order-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .order-id {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2d1f14;
+      font-family: 'Courier New', monospace;
+    }
+
+    .order-date {
+      font-size: 14px;
+      color: #7A5C3E;
+      margin-top: 4px;
+    }
+
+    .order-status {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-pending { background: #f3f4f6; color: #374151; }
+    .status-processing { background: #fef3c7; color: #92400e; }
+    .status-shipped { background: #dbeafe; color: #1e40af; }
+    .status-delivered { background: #d1fae5; color: #065f46; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+
+    .order-items {
+      margin-bottom: 20px;
+    }
+
+    .order-item {
+      display: flex;
+      gap: 16px;
+      padding: 12px 0;
+    }
+
+    .item-image {
+      width: 70px;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #f5f1ed;
+      border: 1px solid #e8dcc8;
+    }
+
+    .item-details {
+      flex: 1;
+    }
+
+    .item-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #2d1f14;
+      margin-bottom: 6px;
+    }
+
+    .item-quantity {
+      font-size: 14px;
+      color: #7A5C3E;
+    }
+
+    .order-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 20px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .order-total {
+      font-size: 20px;
+      font-weight: 700;
+      color: #2d1f14;
+    }
+
+    .view-details-btn {
+      padding: 10px 24px;
+      background: #2d1f14;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .view-details-btn:hover {
+      background: #1a1209;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 120px 20px;
+      color: #7A5C3E;
+    }
+
+    .empty-state-icon {
+      font-size: 80px;
+      margin-bottom: 24px;
+    }
+
+    .empty-state h2 {
+      font-size: 28px;
+      color: #2d1f14;
+      margin-bottom: 12px;
+      font-weight: 400;
+    }
+
+    .empty-state p {
+      font-size: 16px;
+      margin-bottom: 32px;
+    }
+
+    .shop-now-btn {
+      display: inline-block;
+      padding: 14px 32px;
+      background: #2d1f14;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: background 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 13px;
+    }
+
+    .shop-now-btn:hover {
+      background: #1a1209;
+    }
+
+    @media (max-width: 768px) {
+      .orders-header h1 {
+        font-size: 32px;
+      }
+
+      .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .order-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .view-details-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <%- include('../partials/header') %>
+
+  <div class="orders-wrapper">
+    <div class="breadcrumb-nav">
+      <a href="/home">SHOP</a> / <a href="/profile">PROFILE</a> / <span>ORDERS</span>
+    </div>
+
+    <div class="orders-header">
+      <h1>My Orders</h1>
+      <p class="orders-subtitle">Track and manage your book orders.</p>
+    </div>
+
+    <% if (orders.length === 0) { %>
+      <div class="empty-state">
+        <div class="empty-state-icon">📦</div>
+        <h2>No orders yet</h2>
+        <p>Start shopping and your orders will appear here.</p>
+        <a href="/shop" class="shop-now-btn">Browse Books</a>
+      </div>
+    <% } else { %>
+      <div class="orders-list">
+        <% orders.forEach(order => { %>
+          <div class="order-card">
+            <div class="order-header">
+              <div>
+                <div class="order-id"><%= order.orderId %></div>
+                <div class="order-date">
+                  Placed on <%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %>
+                </div>
+              </div>
+              <span class="order-status status-<%= order.orderStatus.toLowerCase() %>">
+                <%= order.orderStatus %>
+              </span>
+            </div>
+
+            <div class="order-items">
+              <% order.items.slice(0, 3).forEach(item => { %>
+                <div class="order-item">
+                  <% if (item.product && item.product.images && item.product.images.length > 0) { %>
+                    <img src="<%= item.product.images[0].url %>" alt="<%= item.product.title %>" class="item-image"/>
+                  <% } else { %>
+                    <div class="item-image" style="display: flex; align-items: center; justify-content: center; font-size: 28px;">📚</div>
+                  <% } %>
+                  <div class="item-details">
+                    <div class="item-title"><%= item.title %></div>
+                    <div class="item-quantity">Quantity: <%= item.quantity %> × $<%= item.price.toFixed(2) %></div>
+                  </div>
+                </div>
+              <% }) %>
+              <% if (order.items.length > 3) { %>
+                <div style="font-size: 14px; color: #7A5C3E; margin-top: 12px; padding-left: 86px;">
+                  + <%= order.items.length - 3 %> more item(s)
+                </div>
+              <% } %>
+            </div>
+
+            <div class="order-footer">
+              <div class="order-total">Total: $<%= order.totalAmount.toFixed(2) %></div>
+              <button class="view-details-btn" onclick="viewOrderDetails('<%= order._id %>')">
+                View Details
+              </button>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    function viewOrderDetails(orderId) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Order Details',
+        text: 'Order detail page will be implemented soon.',
+        confirmButtonColor: '#2d1f14'
+      });
+    }
+  </script>
+</body>
+</html>

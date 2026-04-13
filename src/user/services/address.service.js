@@ -1,4 +1,4 @@
-import Address from '../Model/Address.js';
+import Address from "../../shared/models/Address.js";
 
 export const getUserAddresses = async (userId) => {
     return await Address.find({ userId }).sort({ isDefault: -1, createdAt: -1 });
@@ -17,7 +17,7 @@ export const updateAddress = async (addressId, userId, updateData) => {
     return await Address.findOneAndUpdate(
         { _id: addressId, userId },
         updateData,
-        { new: true }
+        { returnDocument: 'after' }
     );
 };
 
@@ -31,7 +31,7 @@ export const setDefaultAddress = async (addressId, userId) => {
     return await Address.findOneAndUpdate(
         { _id: addressId, userId },
         { isDefault: true },
-        { new: true }
+        { returnDocument: 'after' }
     );
 };
 

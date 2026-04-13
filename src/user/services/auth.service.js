@@ -1,6 +1,6 @@
-import * as userService from "./user.service.js";
-import * as otpService from "./otp.service.js";
-import * as emailService from "./email.service.js";
+import * as userService from "../../shared/services/user.service.js";
+import * as otpService from "../../shared/services/otp.service.js";
+import * as emailService from "../../shared/services/email.service.js";
 
 export const signupUser = async (userData) => {
   try {
@@ -41,7 +41,6 @@ export const signupUser = async (userData) => {
         "Account created! Please check your email for verification code.",
     };
   } catch (error) {
-    console.error("Signup error:", error);
     return { success: false, message: "Server error during signup" };
   }
 };
@@ -103,7 +102,6 @@ export const loginUser = async (email, password) => {
 
     return { success: true, user, message: "Login successful" };
   } catch (error) {
-    console.error("Login error:", error);
     return { success: false, message: "Server error during login" };
   }
 };
@@ -126,7 +124,6 @@ export const verifyUserOTP = async (userId, otp) => {
 
     return { success: true, user, message: "Email verified successfully" };
   } catch (error) {
-    console.error("Verify OTP error:", error);
     return { success: false, message: "Server error during verification" };
   }
 };
@@ -168,7 +165,6 @@ export const resendUserOTP = async (userId) => {
 
     return { success: true, message: "OTP sent successfully" };
   } catch (error) {
-    console.error("Resend OTP error:", error);
     return { success: false, message: "Server error" };
   }
 };
@@ -214,7 +210,6 @@ export const forgotPassword = async (email) => {
 
     return { success: true, message: "Password reset OTP sent to your email" };
   } catch (error) {
-    console.error("Forgot password error:", error);
     return { success: false, message: "Server error" };
   }
 };
@@ -237,7 +232,6 @@ export const resetPassword = async (email, otp, newPassword) => {
 
     return { success: true, message: "Password reset successfully" };
   } catch (error) {
-    console.error("Reset password error:", error);
     return { success: false, message: "Server error" };
   }
 };

@@ -201,7 +201,7 @@
       </a>
       <div class="page-title">
         <h1>Edit Product</h1>
-        <p>Updating "<%= product.name %>"</p>
+        <p>Updating "<%= product.title %>"</p>
       </div>
     </div>
 
@@ -218,7 +218,7 @@
           <div class="form-group">
             <label>Book Title <span class="required">*</span></label>
             <input type="text" id="name" name="name"
-              value="<%= product.name %>"/>
+              value="<%= product.title %>"/>
           </div>
 
           <div class="form-group">
@@ -284,6 +284,17 @@
               value="<%= product.stock %>" min="0"/>
           </div>
 
+          <div class="form-group">
+            <label>Condition <span class="required">*</span></label>
+            <select id="condition" name="condition">
+              <option value="new" <%= product.condition === 'new' ? 'selected' : '' %>>New</option>
+              <option value="like-new" <%= product.condition === 'like-new' ? 'selected' : '' %>>Like New</option>
+              <option value="good" <%= product.condition === 'good' ? 'selected' : '' %>>Good</option>
+              <option value="fair" <%= product.condition === 'fair' ? 'selected' : '' %>>Fair</option>
+              <option value="poor" <%= product.condition === 'poor' ? 'selected' : '' %>>Poor</option>
+            </select>
+          </div>
+
           <div class="card-title" style="margin-top:20px">📚 Book Details</div>
 
           <div class="form-group">
@@ -310,16 +321,20 @@
             Current Images:
           </p>
           <div class="existing-images" id="existingImages">
-            <% product.images.forEach((img, i) => { %>
-              <div class="existing-img-item"
-                data-public-id="<%= img.publicId %>">
-                <img src="<%= img.url %>" alt="Product image <%= i+1 %>"/>
-                <button type="button" class="remove-img"
-                  onclick="removeExistingImage(this, '<%= img.publicId %>')">
-                  ✕
-                </button>
-              </div>
-            <% }) %>
+            <% if (product.images && product.images.length > 0) { %>
+              <% product.images.forEach((img, i) => { %>
+                <div class="existing-img-item"
+                  data-public-id="<%= img.publicId || '' %>">
+                  <img src="<%= img.url %>" alt="Product image <%= i+1 %>"/>
+                  <button type="button" class="remove-img"
+                    onclick="removeExistingImage(this, '<%= img.publicId || '' %>')">
+                    ✕
+                  </button>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <p style="color: #999; font-style: italic;">No images uploaded yet</p>
+            <% } %>
           </div>
 
           <p style="font-size:13px; color:#8b7355; margin:16px 0 8px">
@@ -456,6 +471,7 @@
         const price         = document.getElementById("price").value;
         const originalPrice = document.getElementById("originalPrice").value;
         const stock         = document.getElementById("stock").value;
+        const condition     = document.getElementById("condition").value;
         const isbn          = document.getElementById("isbn").value.trim();
         const publisher     = document.getElementById("publisher").value.trim();
         const isListed      = document.getElementById("isListed").checked;
@@ -473,6 +489,10 @@
         }
         if (!category) {
           errorMsg.textContent   = "Please select a category";
+          errorMsg.style.display = "block"; return;
+        }
+        if (!condition) {
+          errorMsg.textContent   = "Please select a condition";
           errorMsg.style.display = "block"; return;
         }
         if (!price) {
@@ -493,7 +513,7 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               name, author, category, description,
-              price, originalPrice, stock,
+              price, originalPrice, stock, condition,
               isbn, publisher, isListed,
               newImages,
               removedImages,

@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Wishlist - Papyrus</title>
+  <link rel="stylesheet" href="/css/home.css">
+  <style>
+    body {
+      background-color: #f8f6f3;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .wishlist-wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .breadcrumb-nav {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .breadcrumb-nav a {
+      color: #999;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .breadcrumb-nav a:hover {
+      color: #5a4a3a;
+      text-decoration: underline;
+    }
+
+    .wishlist-header {
+      margin-bottom: 16px;
+    }
+
+    .wishlist-title {
+      font-size: 42px;
+      font-weight: 400;
+      color: #2d1f14;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .wishlist-subtitle {
+      font-size: 16px;
+      color: #7A5C3E;
+      font-style: italic;
+    }
+
+    .wishlist-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 32px;
+      margin-top: 48px;
+    }
+
+    .wishlist-card {
+      background: white;
+      border-radius: 0;
+      overflow: hidden;
+      position: relative;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 1px solid #e8e8e8;
+    }
+
+    .wishlist-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+
+    .remove-wishlist-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      z-index: 10;
+      transition: all 0.2s;
+    }
+
+    .remove-wishlist-btn:hover {
+      background: #f5f5f5;
+      transform: scale(1.1);
+    }
+
+    .remove-wishlist-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: #999;
+    }
+
+    .wishlist-image-wrap {
+      width: 100%;
+      height: 320px;
+      background: #f5f1ed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .wishlist-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+
+    .wishlist-card:hover .wishlist-image-wrap img {
+      transform: scale(1.05);
+    }
+
+    .wishlist-info {
+      padding: 20px;
+    }
+
+    .wishlist-book-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2d1f14;
+      margin-bottom: 6px;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .wishlist-author {
+      font-size: 13px;
+      color: #7A5C3E;
+      font-style: italic;
+      margin-bottom: 12px;
+    }
+
+    .wishlist-price-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .wishlist-price {
+      font-size: 20px;
+      font-weight: 600;
+      color: #2d1f14;
+    }
+
+    .wishlist-original-price {
+      font-size: 14px;
+      color: #999;
+      text-decoration: line-through;
+    }
+
+    .add-to-cart-btn {
+      width: 100%;
+      padding: 12px;
+      background: #2d1f14;
+      color: white;
+      border: none;
+      border-radius: 0;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .add-to-cart-btn:hover {
+      background: #1a1209;
+    }
+
+    .add-to-cart-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .out-of-stock-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(192,57,43,0.9);
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .empty-wishlist {
+      text-align: center;
+      padding: 120px 20px;
+      color: #999;
+    }
+
+    .empty-wishlist-icon {
+      font-size: 80px;
+      margin-bottom: 24px;
+    }
+
+    .empty-wishlist h2 {
+      font-size: 28px;
+      color: #2d1f14;
+      margin-bottom: 12px;
+      font-weight: 400;
+    }
+
+    .empty-wishlist p {
+      font-size: 16px;
+      margin-bottom: 32px;
+      color: #7A5C3E;
+    }
+
+    .shop-now-btn {
+      display: inline-block;
+      padding: 14px 32px;
+      background: #2d1f14;
+      color: white;
+      text-decoration: none;
+      border-radius: 0;
+      font-weight: 600;
+      transition: background 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 13px;
+    }
+
+    .shop-now-btn:hover {
+      background: #1a1209;
+    }
+
+    @media (max-width: 768px) {
+      .wishlist-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+
+      .wishlist-title {
+        font-size: 32px;
+      }
+
+      .wishlist-image-wrap {
+        height: 240px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <%- include('../partials/header') %>
+
+  <div class="wishlist-wrapper">
+    <div class="breadcrumb-nav">
+      <a href="/home">SHOP</a> / <a href="/profile">PROFILE</a> / <span>WISHLIST</span>
+    </div>
+
+    <div class="wishlist-header">
+      <h1 class="wishlist-title">My Wishlist</h1>
+      <p class="wishlist-subtitle">A curated collection of your next literary choices.</p>
+    </div>
+
+    <% if (!wishlist || !wishlist.items || wishlist.items.length === 0) { %>
+      <div class="empty-wishlist">
+        <div class="empty-wishlist-icon">♡</div>
+        <h2>Your wishlist is empty</h2>
+        <p>Save your favorite books for later and never lose track of what you want to read.</p>
+        <a href="/shop" class="shop-now-btn">Browse Books</a>
+      </div>
+    <% } else { %>
+      <div class="wishlist-grid">
+        <% wishlist.items.forEach(item => { %>
+          <% if (item.product) { %>
+            <div class="wishlist-card" data-product-id="<%= item.product._id %>">
+              <button class="remove-wishlist-btn" onclick="removeFromWishlist('<%= item.product._id %>')" title="Remove from wishlist">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+
+              <a href="/shop/<%= item.product._id %>" style="text-decoration: none; color: inherit;">
+                <div class="wishlist-image-wrap">
+                  <% if (item.product.images && item.product.images.length > 0) { %>
+                    <img src="<%= item.product.images[0].url %>" alt="<%= item.product.title %>"/>
+                  <% } else { %>
+                    <div style="font-size: 60px; color: #bbb;">📚</div>
+                  <% } %>
+                  <% if (item.product.stock === 0) { %>
+                    <span class="out-of-stock-badge">Out of Stock</span>
+                  <% } %>
+                </div>
+              </a>
+
+              <div class="wishlist-info">
+                <a href="/shop/<%= item.product._id %>" style="text-decoration: none; color: inherit;">
+                  <div class="wishlist-book-title"><%= item.product.title %></div>
+                  <% if (item.product.author) { %>
+                    <div class="wishlist-author">by <%= item.product.author %></div>
+                  <% } %>
+                </a>
+
+                <div class="wishlist-price-row">
+                  <span class="wishlist-price">$<%= item.product.price.toFixed(2) %></span>
+                  <% if (item.product.originalPrice && item.product.originalPrice > item.product.price) { %>
+                    <span class="wishlist-original-price">$<%= item.product.originalPrice.toFixed(2) %></span>
+                  <% } %>
+                </div>
+
+                <% if (item.product.stock > 0) { %>
+                  <button class="add-to-cart-btn" onclick="addToCartFromWishlist('<%= item.product._id %>', event)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="9" cy="21" r="1"></circle>
+                      <circle cx="20" cy="21" r="1"></circle>
+                      <path d="m1 1 4 4 2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    Add to Cart
+                  </button>
+                <% } else { %>
+                  <button class="add-to-cart-btn" disabled>
+                    Out of Stock
+                  </button>
+                <% } %>
+              </div>
+            </div>
+          <% } %>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+
+  <script>
+    async function removeFromWishlist(productId) {
+      try {
+        const response = await fetch(`/wishlist/remove/${productId}`, {
+          method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          const card = document.querySelector(`[data-product-id="${productId}"]`);
+          if (card) {
+            card.style.transition = 'opacity 0.3s, transform 0.3s';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.9)';
+            
+            setTimeout(() => {
+              card.remove();
+              
+              const remainingCards = document.querySelectorAll('.wishlist-card');
+              if (remainingCards.length === 0) {
+                location.reload();
+              }
+            }, 300);
+          }
+
+          showNotification('Removed from wishlist', 'success');
+          updateWishlistCount();
+        } else {
+          showNotification(data.message || 'Failed to remove item', 'error');
+        }
+      } catch (error) {
+        showNotification('Something went wrong. Please try again.', 'error');
+      }
+    }
+
+    async function addToCartFromWishlist(productId, event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      try {
+        const response = await fetch('/cart/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            productId: productId,
+            quantity: 1
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showNotification('Item added to cart successfully!', 'success');
+          updateCartCount();
+        } else {
+          if (response.status === 401) {
+            window.location.href = '/login';
+          } else {
+            showNotification(data.message || 'Failed to add item to cart', 'error');
+          }
+        }
+      } catch (error) {
+        showNotification('Something went wrong. Please try again.', 'error');
+      }
+    }
+
+    async function updateCartCount() {
+      try {
+        const response = await fetch('/cart/count');
+        const data = await response.json();
+        
+        if (data.success) {
+          const cartCountElement = document.querySelector('.cart-count');
+          if (cartCountElement) {
+            cartCountElement.textContent = data.count;
+            cartCountElement.style.display = data.count > 0 ? 'flex' : 'none';
+          }
+        }
+      } catch (error) {
+      }
+    }
+
+    async function updateWishlistCount() {
+      try {
+        const response = await fetch('/wishlist/count');
+        const data = await response.json();
+        
+        if (data.success) {
+          const wishlistCountElement = document.querySelector('.wishlist-count');
+          if (wishlistCountElement) {
+            wishlistCountElement.textContent = data.count;
+            wishlistCountElement.style.display = data.count > 0 ? 'flex' : 'none';
+          }
+        }
+      } catch (error) {
+      }
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.innerHTML = `
+        <div class="notification-content">
+          <span>${message}</span>
+          <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: inherit; font-size: 18px; cursor: pointer; margin-left: 10px;">&times;</button>
+        </div>
+      `;
+      
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        max-width: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s ease-out;
+      `;
+      
+      if (type === 'success') {
+        notification.style.backgroundColor = '#4caf50';
+      } else if (type === 'error') {
+        notification.style.backgroundColor = '#f44336';
+      } else {
+        notification.style.backgroundColor = '#2196f3';
+      }
+      
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+      `;
+      document.head.appendChild(style);
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.remove();
+        }
+      }, 3000);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      updateCartCount();
+      updateWishlistCount();
+    });
+  </script>
+</body>
+</html>
