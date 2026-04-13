@@ -21,7 +21,6 @@ export const getOrders = async (req, res) => {
       user: req.session.adminUser,
     });
   } catch (error) {
-    console.error('Orders error:', error);
     res.render("admin/orders", {
       orders: [],
       total: 0,

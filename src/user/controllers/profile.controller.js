@@ -54,6 +54,7 @@ export const showEditProfile = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.session?.userId;
+
     if (!userId) {
       return res
         .status(401)
@@ -142,7 +143,6 @@ export const updateProfile = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Profile update error:', error);
     return res
       .status(500)
       .json({ success: false, message: "Server error: " + error.message });

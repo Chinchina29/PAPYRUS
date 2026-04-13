@@ -204,4 +204,6 @@ app.use((err, req, res, next) => {
   res.status(500).render("error/500", { error: err });
 });
 const PORT = process.env.PORT || 3000;
-app.listen(PORT);
+app.listen(PORT, () => {
+  console.log(`🚀 Papyrus server is running on http://localhost:${PORT}`);
+});

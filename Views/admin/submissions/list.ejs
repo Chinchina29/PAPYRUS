@@ -56,12 +56,22 @@
     .page-btn.disabled { opacity: 0.4; pointer-events: none; }
     .empty-state { text-align: center; padding: 60px 20px; color: #9a8a78; }
     .empty-state p { font-size: 15px; }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 14px; }
+    .breadcrumb a { color: #8b7355; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb a:hover { color: #5a4a3a; text-decoration: underline; cursor: pointer; }
+    .breadcrumb span { color: #c8b89a; }
   </style>
 </head>
 <body>
   <%- include('../../partials/admin-sidebar') %>
 
   <div class="main-content">
+    <div class="breadcrumb">
+      <a href="/admin/dashboard">DASHBOARD</a>
+      <span>/</span>
+      <span style="color: #3a3a3a;">SUBMISSIONS</span>
+    </div>
+
     <div class="top-bar">
       <div class="search-box">
         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>

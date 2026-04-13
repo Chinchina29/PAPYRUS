@@ -250,6 +250,10 @@
                 padding: 16px;
             }
         }
+        .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 14px; }
+        .breadcrumb a { color: #3d5a3d; text-decoration: none; transition: color 0.2s; }
+        .breadcrumb a:hover { color: #2d4a2d; text-decoration: underline; cursor: pointer; }
+        .breadcrumb span { color: #9ca3af; }
     </style>
 </head>
 <body>
@@ -258,6 +262,12 @@
         
         <div class="main-content">
             <div class="content-wrapper">
+                <div class="breadcrumb">
+                    <a href="/admin/dashboard">DASHBOARD</a>
+                    <span>/</span>
+                    <span style="color: #2d2d2d;">COUPONS</span>
+                </div>
+
                 <div class="page-header">
                     <h1>Coupon Management</h1>
                     <button class="create-btn" onclick="createCoupon()">

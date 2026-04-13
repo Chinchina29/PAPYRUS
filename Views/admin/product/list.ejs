@@ -41,6 +41,7 @@
     .badge-good { background: #fff3e0; color: #f57c00; }
     .badge-fair { background: #fce4ec; color: #c2185b; }
     .badge-poor { background: #ffebee; color: #d32f2f; }
+    .badge-deleted { background: #f5f5f5; color: #757575; border: 1px dashed #bdbdbd; }
     .actions { display: flex; gap: 8px; align-items: center; }
     .btn-icon { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #e8dcc8; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; text-decoration: none; }
     .btn-icon svg { width: 16px; height: 16px; }
@@ -63,16 +64,26 @@
     .page-btn.disabled { opacity: 0.4; pointer-events: none; }
     .empty-state { text-align: center; padding: 60px 20px; color: #8b7355; }
     .empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.4; }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 14px; }
+    .breadcrumb a { color: #8b7355; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb a:hover { color: #5a4a3a; text-decoration: underline; cursor: pointer; }
+    .breadcrumb span { color: #c8b89a; }
   </style>
 </head>
 <body>
   <%- include('../../partials/admin-sidebar') %>
 
   <div class="main-content">
+    <div class="breadcrumb">
+      <a href="/admin/dashboard">DASHBOARD</a>
+      <span>/</span>
+      <span style="color: #2d1f14;">PRODUCTS</span>
+    </div>
+
     <div class="page-header">
       <div class="page-title">
         <h1>Product Management</h1>
-        <p>Manage your book inventory — <%= total %> total</p>
+        <p>Manage your book inventory — <%= total %> total<% if (showDeleted) { %> (including deleted)<% } %></p>
       </div>
       <a href="/admin/products/add" class="btn-add">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -87,12 +98,16 @@
           <button type="button" class="search-clear" id="clearBtn">✕</button>
         </div>
         <button type="submit" class="btn-search">Search</button>
+        <label style="display: flex; align-items: center; gap: 8px; margin-left: 12px; cursor: pointer; font-size: 14px; color: #5a4d42;">
+          <input type="checkbox" name="showDeleted" value="true" <%= showDeleted ? 'checked' : '' %> onchange="this.form.submit()" style="width: 16px; height: 16px; cursor: pointer;"/>
+          Show Deleted
+        </label>
       </div>
     </form>
 
     <div class="table-card">
       <div class="table-info">
-        Showing <%= products.length %> of <%= total %> products
+        Showing <%= products.length %> of <%= total %> products<% if (showDeleted) { %> (including deleted)<% } %>
         <% if (search) { %> — Results for "<strong><%= search %></strong>"<% } %>
       </div>
 
@@ -148,20 +163,29 @@
                 <span class="badge <%= product.isListed ? 'badge-listed' : 'badge-unlisted' %>">
                   <%= product.isListed ? '● Listed' : '● Unlisted' %>
                 </span>
+                <% if (product.isDeleted) { %>
+                  <span class="badge badge-deleted" style="margin-left: 4px;">🗑 Deleted</span>
+                <% } %>
               </td>
               <td>
                 <div class="actions">
-                  <label class="toggle-switch" title="Toggle listing">
-                    <input type="checkbox" <%= product.isListed ? 'checked' : '' %>
-                      onchange="toggleProduct('<%= product._id %>', this)"/>
-                    <span class="toggle-slider"></span>
-                  </label>
-                  <a href="/admin/products/edit/<%= product._id %>" class="btn-icon edit" title="Edit">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  </a>
-                  <button class="btn-icon delete" title="Delete" onclick="deleteProduct('<%= product._id %>', '<%= product.title %>')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                  </button>
+                  <% if (!product.isDeleted) { %>
+                    <label class="toggle-switch" title="Toggle listing">
+                      <input type="checkbox" <%= product.isListed ? 'checked' : '' %>
+                        onchange="toggleProduct('<%= product._id %>', this)"/>
+                      <span class="toggle-slider"></span>
+                    </label>
+                    <a href="/admin/products/edit/<%= product._id %>" class="btn-icon edit" title="Edit">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </a>
+                    <button class="btn-icon delete" title="Delete" onclick="deleteProduct('<%= product._id %>', '<%= product.title %>')">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                    </button>
+                  <% } else { %>
+                    <span style="font-size: 12px; color: #9a8a78; font-style: italic;">
+                      Deleted on <%= new Date(product.updatedAt).toLocaleDateString('en-IN', {day: 'numeric', month: 'short', year: 'numeric'}) %>
+                    </span>
+                  <% } %>
                 </div>
               </td>
             </tr>
@@ -173,11 +197,11 @@
         <div class="pagination">
           <div class="pagination-info">Page <%= currentPage %> of <%= totalPages %></div>
           <div class="pagination-btns">
-            <a href="?page=<%= currentPage-1 %>&search=<%= search %>" class="page-btn <%= currentPage === 1 ? 'disabled' : '' %>">‹</a>
+            <a href="?page=<%= currentPage-1 %>&search=<%= search %>&showDeleted=<%= showDeleted %>" class="page-btn <%= currentPage === 1 ? 'disabled' : '' %>">‹</a>
             <% for (let i = 1; i <= totalPages; i++) { %>
-              <a href="?page=<%= i %>&search=<%= search %>" class="page-btn <%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+              <a href="?page=<%= i %>&search=<%= search %>&showDeleted=<%= showDeleted %>" class="page-btn <%= i === currentPage ? 'active' : '' %>"><%= i %></a>
             <% } %>
-            <a href="?page=<%= currentPage+1 %>&search=<%= search %>" class="page-btn <%= currentPage === totalPages ? 'disabled' : '' %>">›</a>
+            <a href="?page=<%= currentPage+1 %>&search=<%= search %>&showDeleted=<%= showDeleted %>" class="page-btn <%= currentPage === totalPages ? 'disabled' : '' %>">›</a>
           </div>
         </div>
         <% } %>

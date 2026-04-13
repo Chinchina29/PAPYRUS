@@ -60,7 +60,28 @@ export const getProductDetail = async (req, res) => {
     const product = await productService.getListedProductById(req.params.id);
 
     if (!product) {
-      return res.redirect("/shop?error=product_unavailable");
+      // Check if product exists but is deleted/unlisted
+      const Product = (await import("../../shared/models/Product.js")).default;
+      const deletedProduct = await Product.findById(req.params.id).select('isDeleted isListed title');
+      
+      if (deletedProduct) {
+        if (deletedProduct.isDeleted) {
+          return res.status(404).render("error/404", {
+            message: "This product has been removed from our catalog.",
+            user: req.session.user || null,
+          });
+        } else if (!deletedProduct.isListed) {
+          return res.status(404).render("error/404", {
+            message: "This product is currently unavailable.",
+            user: req.session.user || null,
+          });
+        }
+      }
+      
+      return res.status(404).render("error/404", {
+        message: "Product not found.",
+        user: req.session.user || null,
+      });
     }
 
     const related = await productService.getRelatedProducts(
@@ -75,6 +96,8 @@ export const getProductDetail = async (req, res) => {
       user: req.session.user || null,
     });
   } catch (error) {
-    res.redirect("/shop?error=product_not_found");
+    res.status(500).render("error/500", {
+      user: req.session.user || null,
+    });
   }
 };

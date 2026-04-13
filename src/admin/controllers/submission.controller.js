@@ -22,16 +22,32 @@ export const getSubmissions = async (req, res) => {
     const submissions = await SellerSubmission.find(filter)
       .populate("submittedBy", "firstName lastName email")
       .populate("category", "name")
+      .populate("approvedProductId", "isDeleted")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
 
+    // Filter out submissions whose products have been deleted
+    const activeSubmissions = submissions.filter(sub => {
+      // Keep pending and rejected submissions
+      if (sub.status !== 'approved') return true;
+      
+      // For approved submissions, only keep if product exists and is not deleted
+      if (!sub.approvedProductId) return false;
+      if (sub.approvedProductId.isDeleted) return false;
+      
+      return true;
+    });
+
+    // Recalculate total based on filtered results
+    const filteredTotal = activeSubmissions.length;
+
     res.render("admin/submissions/list", {
-      submissions,
+      submissions: activeSubmissions,
       search,
       status,
       currentPage: page,
-      totalPages,
+      totalPages: Math.ceil(filteredTotal / limit) || 1,
       currentPage_name: "submissions",
       user: req.session.adminUser,
     });

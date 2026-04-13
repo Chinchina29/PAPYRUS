@@ -48,8 +48,12 @@
 
             <h1 class="error-title">Page Not Found</h1>
             <p class="error-message">
-                Oops! The page you're looking for seems to have wandered off like a book in a library. 
-                It might have been moved, deleted, or you entered the wrong URL.
+                <% if (typeof message !== 'undefined' && message) { %>
+                    <%= message %>
+                <% } else { %>
+                    Oops! The page you're looking for seems to have wandered off like a book in a library. 
+                    It might have been moved, deleted, or you entered the wrong URL.
+                <% } %>
             </p>
 
             <div class="error-actions">

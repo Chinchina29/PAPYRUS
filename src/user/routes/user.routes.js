@@ -6,6 +6,7 @@ import * as cartController from "../controllers/cart.controller.js";
 import * as sellerController from "../controllers/seller.controller.js";
 import * as reviewController from "../controllers/review.controller.js";
 import * as wishlistController from "../controllers/wishlist.controller.js";
+import * as orderController from "../controllers/order.controller.js";
 import { upload, videoUpload } from "../../shared/config/cloudinary.config.js";
 import { 
   generalApiLimiter, 
@@ -88,5 +89,8 @@ router.delete("/wishlist/remove/:productId", requireAuth, cartLimiter, wishlistC
 router.delete("/wishlist/clear", requireAuth, cartLimiter, wishlistController.clearWishlist);
 router.get("/wishlist/count", wishlistController.getWishlistCount);
 router.get("/wishlist/status/:productId", requireAuth, wishlistController.checkWishlistStatus);
+
+router.get("/orders", requireAuth, orderController.getUserOrders);
+router.get("/orders/:id", requireAuth, orderController.getOrderDetail);
 
 export default router;

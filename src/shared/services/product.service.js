@@ -1,11 +1,11 @@
 import Product from "../models/Product.js";
 
-export const getAllProducts = async ({ search = "", page = 1, limit = 10 }) => {
+export const getAllProducts = async ({ search = "", page = 1, limit = 10, showDeleted = false }) => {
   const query = {
-    isDeleted: false,
+    ...(showDeleted ? {} : { isDeleted: false }),
     ...(search && {
       $or: [
-        { name: { $regex: search, $options: "i" } },
+        { title: { $regex: search, $options: "i" } },
         { author: { $regex: search, $options: "i" } },
       ],
     }),
@@ -16,6 +16,7 @@ export const getAllProducts = async ({ search = "", page = 1, limit = 10 }) => {
   const [products, total] = await Promise.all([
     Product.find(query)
       .populate("category", "name")
+      .populate("seller", "firstName lastName email")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit),

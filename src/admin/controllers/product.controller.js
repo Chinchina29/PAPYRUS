@@ -5,10 +5,11 @@ export const getProducts = async (req, res) => {
   try {
     const search = req.query.search?.trim() || "";
     const page = parseInt(req.query.page) || 1;
+    const showDeleted = req.query.showDeleted === "true";
     const limit = 10;
 
     const { products, total, totalPages, currentPage } =
-      await productService.getAllProducts({ search, page, limit });
+      await productService.getAllProducts({ search, page, limit, showDeleted });
 
     res.render("admin/product/list", {
       products,
@@ -16,6 +17,7 @@ export const getProducts = async (req, res) => {
       totalPages,
       currentPage,
       search,
+      showDeleted,
       currentPage_name: "inventory",
       user: req.session.adminUser,
     });
@@ -313,6 +315,13 @@ export const deleteProduct = async (req, res) => {
     }
 
     await productService.softDeleteProduct(id);
+
+    // Clear the approvedProductId from the submission if it exists
+    const SellerSubmission = (await import("../../shared/models/SellerSubmission.js")).default;
+    await SellerSubmission.updateOne(
+      { approvedProductId: id },
+      { $unset: { approvedProductId: 1 }, status: 'rejected', adminNote: 'Product was deleted by admin' }
+    );
 
     return res.status(200).json({
       success: true,

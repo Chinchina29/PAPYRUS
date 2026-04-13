@@ -22,9 +22,12 @@
     .breadcrumb-nav a {
       color: #666;
       text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s ease;
     }
 
     .breadcrumb-nav a:hover {
+      color: #5a4a3a;
       text-decoration: underline;
     }
 
@@ -433,7 +436,7 @@
   <%- include('../partials/header') %>
 
   <div class="breadcrumb-nav">
-    <a href="/shop">SHOP</a> / <span>CART</span>
+    <a href="/home">SHOP</a> / <span>CART</span>
   </div>
 
   <div class="cart-wrapper">

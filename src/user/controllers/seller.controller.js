@@ -226,7 +226,33 @@ export const getMyListings = async (req, res) => {
     const submissions = await sellerService.getSubmissionsByUser(
       req.session.userId,
     );
-    res.render("user/my-listings", { submissions });
+    
+    // Populate approvedProductId to check if products exist and are listed
+    const populatedSubmissions = await Promise.all(
+      submissions.map(async (sub) => {
+        const subObj = sub.toObject();
+        if (subObj.approvedProductId) {
+          try {
+            const Product = (await import("../../shared/models/Product.js")).default;
+            const product = await Product.findById(subObj.approvedProductId)
+              .select('isDeleted isListed')
+              .lean();
+            
+            // Add product status to submission
+            subObj.productExists = !!product;
+            subObj.productDeleted = product?.isDeleted || false;
+            subObj.productListed = product?.isListed || false;
+          } catch (err) {
+            subObj.productExists = false;
+            subObj.productDeleted = false;
+            subObj.productListed = false;
+          }
+        }
+        return subObj;
+      })
+    );
+    
+    res.render("user/my-listings", { submissions: populatedSubmissions });
   } catch (error) {
     res.status(500).render("error/500", { error });
   }

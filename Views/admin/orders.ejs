@@ -248,6 +248,10 @@
         padding: 16px;
       }
     }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 14px; }
+    .breadcrumb a { color: #8b6f47; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb a:hover { color: #6b5a48; text-decoration: underline; cursor: pointer; }
+    .breadcrumb span { color: #9ca3af; }
   </style>
 </head>
 <body>
@@ -256,9 +260,15 @@
     
     <div class="main-content">
       <div class="content-wrapper">
+        <div class="breadcrumb">
+          <a href="/admin/dashboard">DASHBOARD</a>
+          <span>/</span>
+          <span style="color: #2d2d2d;">ORDERS</span>
+        </div>
+
         <div class="page-header">
           <h1>Order Management</h1>
-          <select class="filter-btn" onchange="filterByStatus(this.value)">
+          <select class="filter-btn" onchange="filterByStatus(this.value)" aria-label="Filter orders by status">
             <option value="">All Statuses</option>
             <option value="Pending" <%= status === 'Pending' ? 'selected' : '' %>>Pending</option>
             <option value="Processing" <%= status === 'Processing' ? 'selected' : '' %>>Processing</option>
@@ -272,12 +282,15 @@
           <div class="search-bar">
             <form method="GET" action="/admin/orders" id="searchForm">
               <input type="hidden" name="status" value="<%= status %>">
+              <label for="orderSearch" style="position: absolute; left: -9999px;">Search orders</label>
               <input 
                 type="text" 
+                id="orderSearch"
                 name="search" 
                 class="search-input" 
                 placeholder="Search by Order ID or Customer..."
                 value="<%= search %>"
+                autocomplete="off"
               />
             </form>
           </div>

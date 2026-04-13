@@ -264,6 +264,10 @@
                 padding: 16px;
             }
         }
+        .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 14px; }
+        .breadcrumb a { color: #8b6f47; text-decoration: none; transition: color 0.2s; }
+        .breadcrumb a:hover { color: #6b5a48; text-decoration: underline; cursor: pointer; }
+        .breadcrumb span { color: #9ca3af; }
     </style>
 </head>
 <body>
@@ -272,6 +276,12 @@
         
         <div class="main-content">
             <div class="content-wrapper">
+                <div class="breadcrumb">
+                    <a href="/admin/dashboard">DASHBOARD</a>
+                    <span>/</span>
+                    <span style="color: #2d2d2d;">USERS</span>
+                </div>
+
                 <div class="admin-header">
                     <div class="header-left">
                         <h1>User Management</h1>

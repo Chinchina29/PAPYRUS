@@ -24,7 +24,12 @@ export const comparePassword = async (plainPassword, hashedPassword) => {
 };
 
 export const updateUser = async (userId, updateData) => {
-  return await User.findByIdAndUpdate(userId, updateData, { new: true });
+  try {
+    const result = await User.findByIdAndUpdate(userId, updateData, { new: true });
+    return result;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const getUserById = async (userId) => {
