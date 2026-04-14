@@ -76,12 +76,11 @@ router.post("/sell/upload-video", requireAuth, uploadLimiter, videoUpload.single
 router.get("/sell/my-listings", requireAuth, sellerController.getMyListings);
 router.get("/sell/create", requireAuth, sellerController.getCreatePage);
 
-router.post("/reviews", requireAuth, generalApiLimiter, reviewController.createReview);
+router.post("/reviews", requireAuth, generalApiLimiter, reviewController.addReview);
 router.get("/reviews/product/:productId", reviewController.getProductReviews);
-router.get("/reviews/user", requireAuth, reviewController.getUserReviews);
 router.put("/reviews/:reviewId", requireAuth, generalApiLimiter, reviewController.updateReview);
 router.delete("/reviews/:reviewId", requireAuth, generalApiLimiter, reviewController.deleteReview);
-router.post("/reviews/:reviewId/helpful", generalApiLimiter, reviewController.markReviewHelpful);
+router.post("/reviews/:reviewId/helpful", generalApiLimiter, reviewController.markHelpful);
 
 router.get("/wishlist", requireAuth, wishlistController.getWishlist);
 router.post("/wishlist/add", requireAuth, cartLimiter, wishlistController.addToWishlist);

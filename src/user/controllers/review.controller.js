@@ -1,9 +1,17 @@
 import * as reviewService from "../../shared/services/review.service.js";
-import { v2 as cloudinary } from "cloudinary";
+import Order from "../../shared/models/Order.js";
 
-export const createReview = async (req, res) => {
+export const addReview = async (req, res) => {
   try {
-    const { productId, rating, title, comment, images } = req.body;
+    const { productId, rating, title, comment } = req.body;
+    const userId = req.session.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Please login to add a review",
+      });
+    }
 
     if (!productId || !rating || !comment) {
       return res.status(400).json({
@@ -19,37 +27,27 @@ export const createReview = async (req, res) => {
       });
     }
 
-    const uploadedImages = [];
+    // Check if user has purchased this product
+    const hasPurchased = await Order.findOne({
+      user: userId,
+      "items.product": productId,
+      orderStatus: { $in: ["delivered", "confirmed", "shipped"] },
+    });
 
-    if (images && images.length > 0) {
-      for (const base64Image of images) {
-        const result = await cloudinary.uploader.upload(base64Image, {
-          folder: "papyrus/reviews",
-          transformation: [
-            { width: 600, height: 600, crop: "limit" },
-            { quality: "auto" },
-          ],
-        });
-
-        uploadedImages.push({
-          url: result.secure_url,
-          publicId: result.public_id,
-        });
-      }
-    }
-
-    const review = await reviewService.createReview({
+    const reviewData = {
       product: productId,
-      user: req.session.userId,
+      user: userId,
       rating: parseInt(rating),
       title: title?.trim(),
       comment: comment.trim(),
-      images: uploadedImages,
-    });
+      isVerifiedPurchase: !!hasPurchased,
+    };
+
+    const review = await reviewService.createReview(reviewData);
 
     return res.status(201).json({
       success: true,
-      message: "Review submitted successfully",
+      message: "Review added successfully",
       review,
     });
   } catch (error) {
@@ -88,67 +86,24 @@ export const getProductReviews = async (req, res) => {
   }
 };
 
-export const getUserReviews = async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-
-    const { reviews, total, totalPages, currentPage } =
-      await reviewService.getUserReviews(req.session.userId, { page, limit });
-
-    return res.json({
-      success: true,
-      reviews,
-      total,
-      totalPages,
-      currentPage,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
 export const updateReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
-    const { rating, title, comment, images } = req.body;
+    const { rating, title, comment } = req.body;
+    const userId = req.session.userId;
 
-    const uploadedImages = [];
-
-    if (images && images.length > 0) {
-      for (const base64Image of images) {
-        if (base64Image.startsWith("data:")) {
-          const result = await cloudinary.uploader.upload(base64Image, {
-            folder: "papyrus/reviews",
-            transformation: [
-              { width: 600, height: 600, crop: "limit" },
-              { quality: "auto" },
-            ],
-          });
-
-          uploadedImages.push({
-            url: result.secure_url,
-            publicId: result.public_id,
-          });
-        } else {
-          uploadedImages.push(base64Image);
-        }
-      }
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Please login to update review",
+      });
     }
 
-    const review = await reviewService.updateReview(
-      reviewId,
-      req.session.userId,
-      {
-        rating: rating ? parseInt(rating) : undefined,
-        title: title?.trim(),
-        comment: comment?.trim(),
-        images: uploadedImages.length > 0 ? uploadedImages : undefined,
-      }
-    );
+    const review = await reviewService.updateReview(reviewId, userId, {
+      rating: rating ? parseInt(rating) : undefined,
+      title,
+      comment,
+    });
 
     return res.json({
       success: true,
@@ -166,8 +121,16 @@ export const updateReview = async (req, res) => {
 export const deleteReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
+    const userId = req.session.userId;
 
-    await reviewService.deleteReview(reviewId, req.session.userId);
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Please login to delete review",
+      });
+    }
+
+    await reviewService.deleteReview(reviewId, userId);
 
     return res.json({
       success: true,
@@ -181,16 +144,15 @@ export const deleteReview = async (req, res) => {
   }
 };
 
-export const markReviewHelpful = async (req, res) => {
+export const markHelpful = async (req, res) => {
   try {
     const { reviewId } = req.params;
 
-    const review = await reviewService.markReviewHelpful(reviewId);
+    await reviewService.markReviewHelpful(reviewId);
 
     return res.json({
       success: true,
       message: "Marked as helpful",
-      helpfulCount: review.helpfulCount,
     });
   } catch (error) {
     return res.status(400).json({

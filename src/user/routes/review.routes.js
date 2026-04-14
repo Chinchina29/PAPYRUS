@@ -1,0 +1,13 @@
+import express from "express";
+import * as reviewController from "../controllers/review.controller.js";
+import { requireAuth } from "../middleware/auth.middleware.js";
+
+const router = express.Router();
+
+router.post("/reviews", requireAuth, reviewController.addReview);
+router.get("/reviews/product/:productId", reviewController.getProductReviews);
+router.put("/reviews/:reviewId", requireAuth, reviewController.updateReview);
+router.delete("/reviews/:reviewId", requireAuth, reviewController.deleteReview);
+router.post("/reviews/:reviewId/helpful", reviewController.markHelpful);
+
+export default router;
