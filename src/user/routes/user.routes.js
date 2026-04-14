@@ -69,6 +69,8 @@ router.put("/cart/update/:productId", requireAuth, cartLimiter, cartController.u
 router.delete("/cart/remove/:productId", requireAuth, cartLimiter, cartController.removeFromCart);
 router.delete("/cart/clear", requireAuth, cartLimiter, cartController.clearCart);
 router.get("/cart/count", cartController.getCartCount);
+router.post("/cart/validate-coupon", requireAuth, generalApiLimiter, cartController.validateCoupon);
+router.post("/cart/remove-coupon", requireAuth, generalApiLimiter, cartController.removeCoupon);
 
 router.get("/sell", requireAuth, sellerController.getSellPage);
 router.post("/sell", requireAuth, sellerController.submitBook);

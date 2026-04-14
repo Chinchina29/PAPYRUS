@@ -1,4 +1,5 @@
 import * as cartService from "../services/cart.service.js";
+import * as couponService from "../../shared/services/coupon.service.js";
 
 export const getCart = async (req, res) => {
   try {
@@ -12,6 +13,7 @@ export const getCart = async (req, res) => {
       cart,
       currentPage_name: "cart",
       user: req.session.user || null,
+      appliedCoupon: req.session.appliedCoupon || null,
     });
   } catch (error) {
     res.status(500).render("error/500");
@@ -145,6 +147,80 @@ export const getCartCount = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to get cart count"
+    });
+  }
+};
+
+export const validateCoupon = async (req, res) => {
+  try {
+    const { code } = req.body;
+    const userId = req.session.userId;
+
+    if (!code) {
+      return res.status(400).json({
+        success: false,
+        message: "Coupon code is required"
+      });
+    }
+
+    const cart = await cartService.getOrCreateCart(userId);
+
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Your cart is empty"
+      });
+    }
+
+    const coupon = await couponService.validateCoupon(
+      code,
+      userId,
+      cart.totalAmount,
+      cart.items
+    );
+
+    const discount = couponService.calculateDiscount(coupon, cart.totalAmount);
+
+    // Store coupon in session
+    req.session.appliedCoupon = {
+      code: coupon.code,
+      discountType: coupon.discountType,
+      discountValue: coupon.discountValue,
+      discount: discount,
+      couponId: coupon._id
+    };
+
+    res.json({
+      success: true,
+      message: "Coupon applied successfully",
+      coupon: {
+        code: coupon.code,
+        description: coupon.description,
+        discountType: coupon.discountType,
+        discountValue: coupon.discountValue,
+        discount: discount
+      }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+export const removeCoupon = async (req, res) => {
+  try {
+    req.session.appliedCoupon = null;
+
+    res.json({
+      success: true,
+      message: "Coupon removed successfully"
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
     });
   }
 };

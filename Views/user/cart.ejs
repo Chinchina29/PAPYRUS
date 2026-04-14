@@ -209,6 +209,105 @@
       margin-bottom: 24px;
     }
 
+    .coupon-section {
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #e8e8e8;
+    }
+
+    .coupon-input-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .coupon-input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    .coupon-input:focus {
+      outline: none;
+      border-color: #2d1f14;
+    }
+
+    .apply-coupon-btn {
+      padding: 10px 20px;
+      background: #2d1f14;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      letter-spacing: 0.5px;
+    }
+
+    .apply-coupon-btn:hover {
+      background: #1a1209;
+    }
+
+    .applied-coupon {
+      background: #e8f5e9;
+      border: 1px solid #4caf50;
+      border-radius: 4px;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .coupon-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .coupon-code {
+      font-weight: 600;
+      color: #2e7d32;
+      font-size: 14px;
+    }
+
+    .remove-coupon-btn {
+      background: none;
+      border: none;
+      color: #666;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+
+    .remove-coupon-btn:hover {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .coupon-discount {
+      font-weight: 600;
+      color: #2e7d32;
+      font-size: 16px;
+    }
+
+    .discount-row {
+      color: #2e7d32;
+    }
+
+    .discount-amount {
+      font-weight: 600;
+    }
+
     .summary-row {
       display: flex;
       justify-content: space-between;
@@ -381,10 +480,35 @@
         <div class="cart-summary">
           <h2 class="summary-title">Order Summary</h2>
           
+          <!-- Coupon Section -->
+          <div class="coupon-section">
+            <% if (appliedCoupon) { %>
+              <div class="applied-coupon">
+                <div class="coupon-info">
+                  <span class="coupon-code">🎉 <%= appliedCoupon.code %></span>
+                  <button class="remove-coupon-btn" onclick="removeCoupon()">×</button>
+                </div>
+                <div class="coupon-discount">-₹<%= appliedCoupon.discount.toFixed(2) %></div>
+              </div>
+            <% } else { %>
+              <div class="coupon-input-group">
+                <input type="text" id="couponCode" placeholder="Enter coupon code" class="coupon-input">
+                <button class="apply-coupon-btn" onclick="applyCoupon()">APPLY</button>
+              </div>
+            <% } %>
+          </div>
+
           <div class="summary-row">
             <span>Subtotal</span>
             <span>₹<%= cart.totalAmount.toFixed(2) %></span>
           </div>
+          
+          <% if (appliedCoupon) { %>
+          <div class="summary-row discount-row">
+            <span>Discount (<%= appliedCoupon.code %>)</span>
+            <span class="discount-amount">-₹<%= appliedCoupon.discount.toFixed(2) %></span>
+          </div>
+          <% } %>
           
           <div class="summary-row">
             <span>Estimated Shipping</span>
@@ -393,7 +517,7 @@
           
           <div class="summary-row total">
             <span>Total</span>
-            <span>₹<%= (cart.totalAmount + 95).toFixed(2) %></span>
+            <span>₹<%= ((cart.totalAmount - (appliedCoupon ? appliedCoupon.discount : 0)) + 95).toFixed(2) %></span>
           </div>
 
           <button class="checkout-btn" onclick="proceedToCheckout()">
@@ -545,6 +669,105 @@
     function proceedToCheckout() {
       showNotification('Checkout functionality will be implemented soon!', 'info');
     }
+
+    async function applyCoupon() {
+      const couponCode = document.getElementById('couponCode').value.trim();
+
+      if (!couponCode) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Coupon Code Required',
+          text: 'Please enter a coupon code',
+          confirmButtonColor: '#2d1f14'
+        });
+        return;
+      }
+
+      try {
+        const response = await fetch('/cart/validate-coupon', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ code: couponCode })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Coupon Applied!',
+            html: `
+              <p><strong>${data.coupon.code}</strong> has been applied</p>
+              <p>You saved ₹${data.coupon.discount.toFixed(2)}!</p>
+            `,
+            confirmButtonColor: '#2d1f14'
+          }).then(() => {
+            location.reload();
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Invalid Coupon',
+            text: data.message,
+            confirmButtonColor: '#2d1f14'
+          });
+        }
+      } catch (error) {
+        console.error('Apply coupon error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Something went wrong. Please try again.',
+          confirmButtonColor: '#2d1f14'
+        });
+      }
+    }
+
+    async function removeCoupon() {
+      try {
+        const response = await fetch('/cart/remove-coupon', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          location.reload();
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: data.message || 'Failed to remove coupon',
+            confirmButtonColor: '#2d1f14'
+          });
+        }
+      } catch (error) {
+        console.error('Remove coupon error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Something went wrong. Please try again.',
+          confirmButtonColor: '#2d1f14'
+        });
+      }
+    }
+
+    // Allow Enter key to apply coupon
+    document.addEventListener('DOMContentLoaded', function() {
+      const couponInput = document.getElementById('couponCode');
+      if (couponInput) {
+        couponInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            applyCoupon();
+          }
+        });
+      }
+    });
 
     function showNotification(message, type = 'info') {
       const notification = document.createElement('div');
