@@ -258,6 +258,23 @@
             border-color: #8b6f47;
         }
 
+        /* Toggle Switch Styles */
+        .toggle-slider.active {
+            background-color: #059669;
+        }
+
+        .toggle-slider.blocked {
+            background-color: #e5e7eb;
+        }
+
+        .toggle-slider.active .toggle-thumb {
+            left: 22px;
+        }
+
+        .toggle-slider.blocked .toggle-thumb {
+            left: 2px;
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 margin-left: 0;
@@ -428,8 +445,8 @@
                                                    style="display: none;"
                                                    <%= user.isBlocked ? '' : 'checked' %>
                                                    onchange="toggleUserStatus('<%= user._id %>', this.checked)"/>
-                                            <div style="width: 44px; height: 24px; background: <%= user.isBlocked ? '#e5e7eb' : '#059669' %>; border-radius: 12px; position: relative; transition: all 0.3s ease;">
-                                                <div style="position: absolute; top: 2px; left: <%= user.isBlocked ? '2px' : '22px' %>; width: 20px; height: 20px; background: white; border-radius: 50%; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+                                            <div class="toggle-slider <%= user.isBlocked ? 'blocked' : 'active' %>" style="width: 44px; height: 24px; border-radius: 12px; position: relative; transition: all 0.3s ease;">
+                                                <div class="toggle-thumb" style="position: absolute; top: 2px; width: 20px; height: 20px; background-color: white; border-radius: 50%; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
                                             </div>
                                             <span style="font-size: 14px; font-weight: 500; color: #2d2d2d;">
                                                 <%= user.isBlocked ? 'Blocked' : 'Active' %>

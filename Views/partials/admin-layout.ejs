@@ -314,13 +314,11 @@
     </div>
 
     <script>
-        // Mobile sidebar toggle
         function toggleSidebar() {
             const sidebar = document.querySelector('.admin-sidebar');
             sidebar.classList.toggle('mobile-open');
         }
 
-        // Auto-hide alerts
         setTimeout(() => {
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
@@ -329,12 +327,10 @@
             });
         }, 5000);
 
-        // Search functionality
         const searchInput = document.getElementById('adminSearch');
         if (searchInput) {
             searchInput.addEventListener('input', function(e) {
                 const searchTerm = e.target.value.toLowerCase();
-                // Implement search logic based on current page
                 console.log('Searching for:', searchTerm);
             });
         }

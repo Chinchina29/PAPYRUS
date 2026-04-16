@@ -113,7 +113,6 @@
         }
     }
 
-    // Update cart count function
     async function updateCartCount() {
         try {
             const response = await fetch('/cart/count');
@@ -127,11 +126,9 @@
                 }
             }
         } catch (error) {
-            // Silently fail for cart count - user might not be logged in
         }
     }
 
-    // Update wishlist count function
     async function updateWishlistCount() {
         try {
             const response = await fetch('/wishlist/count');
@@ -145,11 +142,9 @@
                 }
             }
         } catch (error) {
-            // Silently fail for wishlist count - user might not be logged in
         }
     }
 
-    // Load cart and wishlist counts on page load
     document.addEventListener('DOMContentLoaded', function() {
         updateCartCount();
         updateWishlistCount();

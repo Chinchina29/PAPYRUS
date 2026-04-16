@@ -102,7 +102,6 @@ export const updateProfile = async (req, res) => {
       readingGoal: readingGoal ? parseInt(readingGoal) : null,
     };
 
-    // Handle date of birth separately to ensure proper date parsing
     if (dateOfBirth && dateOfBirth.trim()) {
       const parsedDate = new Date(dateOfBirth);
       if (!isNaN(parsedDate.getTime())) {
@@ -203,8 +202,9 @@ export const verifyEmailChange = async (req, res) => {
       return errorResponse(res, "No email change request found");
 
     const now = new Date();
-    const isValidOTP = user.emailChangeRequest.otp.code === otp && 
-                      now <= new Date(user.emailChangeRequest.otp.expiresAt);
+    const isValidOTP =
+      user.emailChangeRequest.otp.code === otp &&
+      now <= new Date(user.emailChangeRequest.otp.expiresAt);
 
     if (!isValidOTP) return errorResponse(res, "Invalid or expired OTP");
 
@@ -255,8 +255,7 @@ export const removeProfilePicture = async (req, res) => {
       const publicId = publicIdWithExtension.split(".")[0];
       const fullPublicId = `papyrus/profile-pictures/${publicId}`;
       await deleteImage(fullPublicId);
-    } catch (error) {
-    }
+    } catch (error) {}
 
     await userService.updateUser(userId, { profilePicture: null });
 
@@ -337,8 +336,7 @@ export const uploadAvatar = async (req, res) => {
         const urlParts = user.profilePicture.split("/");
         const publicId = `papyrus/profile-pictures/${urlParts[urlParts.length - 1].split(".")[0]}`;
         await deleteImage(publicId);
-      } catch (err) {
-      }
+      } catch (err) {}
     }
 
     await userService.updateUser(userId, { profilePicture: req.file.path });

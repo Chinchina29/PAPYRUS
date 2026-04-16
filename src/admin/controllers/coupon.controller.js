@@ -35,7 +35,6 @@ export const getCoupons = async (req, res) => {
 
 export const getAddCoupon = async (req, res) => {
   try {
-    // Placeholder - UI not implemented yet
     return res.status(501).send(`
       <!DOCTYPE html>
       <html>
@@ -110,7 +109,9 @@ export const addCoupon = async (req, res) => {
       discountType,
       discountValue: parseFloat(discountValue),
       minPurchaseAmount: minPurchaseAmount ? parseFloat(minPurchaseAmount) : 0,
-      maxDiscountAmount: maxDiscountAmount ? parseFloat(maxDiscountAmount) : null,
+      maxDiscountAmount: maxDiscountAmount
+        ? parseFloat(maxDiscountAmount)
+        : null,
       usageLimit: usageLimit ? parseInt(usageLimit) : null,
       perUserLimit: perUserLimit ? parseInt(perUserLimit) : 1,
       validFrom: new Date(validFrom),
@@ -134,7 +135,6 @@ export const addCoupon = async (req, res) => {
 
 export const getEditCoupon = async (req, res) => {
   try {
-    // Placeholder - UI not implemented yet
     return res.status(501).send(`
       <!DOCTYPE html>
       <html>
@@ -197,7 +197,9 @@ export const editCoupon = async (req, res) => {
       discountType,
       discountValue: parseFloat(discountValue),
       minPurchaseAmount: minPurchaseAmount ? parseFloat(minPurchaseAmount) : 0,
-      maxDiscountAmount: maxDiscountAmount ? parseFloat(maxDiscountAmount) : null,
+      maxDiscountAmount: maxDiscountAmount
+        ? parseFloat(maxDiscountAmount)
+        : null,
       usageLimit: usageLimit ? parseInt(usageLimit) : null,
       perUserLimit: perUserLimit ? parseInt(perUserLimit) : 1,
       validFrom: new Date(validFrom),
@@ -271,7 +273,7 @@ export const validateCoupon = async (req, res) => {
       code,
       req.session.userId,
       cartTotal,
-      cartItems
+      cartItems,
     );
 
     const discount = couponService.calculateDiscount(coupon, cartTotal);

@@ -27,7 +27,6 @@ export const addReview = async (req, res) => {
       });
     }
 
-    // Check if user has purchased this product
     const hasPurchased = await Order.findOne({
       user: userId,
       "items.product": productId,

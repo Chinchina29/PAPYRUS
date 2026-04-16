@@ -244,5 +244,12 @@ router.post(
   generalApiLimiter,
   submissionController.reviewSubmission,
 );
+router.patch(
+  "/submissions/:id/review",
+  blockUserFromAdmin,
+  isAdmin,
+  generalApiLimiter,
+  submissionController.reviewSubmission,
+);
 
 export default router;

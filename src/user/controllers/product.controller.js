@@ -60,10 +60,11 @@ export const getProductDetail = async (req, res) => {
     const product = await productService.getListedProductById(req.params.id);
 
     if (!product) {
-      // Check if product exists but is deleted/unlisted
       const Product = (await import("../../shared/models/Product.js")).default;
-      const deletedProduct = await Product.findById(req.params.id).select('isDeleted isListed title');
-      
+      const deletedProduct = await Product.findById(req.params.id).select(
+        "isDeleted isListed title",
+      );
+
       if (deletedProduct) {
         if (deletedProduct.isDeleted) {
           return res.status(404).render("error/404", {
@@ -77,7 +78,7 @@ export const getProductDetail = async (req, res) => {
           });
         }
       }
-      
+
       return res.status(404).render("error/404", {
         message: "Product not found.",
         user: req.session.user || null,

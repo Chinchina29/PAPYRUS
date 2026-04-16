@@ -4,11 +4,11 @@ import * as couponService from "../../shared/services/coupon.service.js";
 export const getCart = async (req, res) => {
   try {
     if (!req.session?.userId) {
-      return res.redirect('/login?message=Please log in to access your cart');
+      return res.redirect("/login?message=Please log in to access your cart");
     }
 
     const cart = await cartService.getOrCreateCart(req.session.userId);
-    
+
     res.render("user/cart", {
       cart,
       currentPage_name: "cart",
@@ -23,18 +23,18 @@ export const getCart = async (req, res) => {
 export const addToCart = async (req, res) => {
   try {
     const { productId, quantity = 1 } = req.body;
-    
+
     if (!productId) {
       return res.status(400).json({
         success: false,
-        message: "Product ID is required"
+        message: "Product ID is required",
       });
     }
 
     const cart = await cartService.addToCart(
       req.session.userId,
       productId,
-      parseInt(quantity)
+      parseInt(quantity),
     );
 
     res.json({
@@ -42,13 +42,13 @@ export const addToCart = async (req, res) => {
       message: "Item added to cart successfully",
       cart: {
         totalItems: cart.totalItems,
-        totalAmount: cart.totalAmount
-      }
+        totalAmount: cart.totalAmount,
+      },
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -57,18 +57,18 @@ export const updateCartItem = async (req, res) => {
   try {
     const { productId } = req.params;
     const { quantity } = req.body;
-    
+
     if (!quantity || quantity < 0) {
       return res.status(400).json({
         success: false,
-        message: "Valid quantity is required"
+        message: "Valid quantity is required",
       });
     }
 
     const cart = await cartService.updateCartItem(
       req.session.userId,
       productId,
-      parseInt(quantity)
+      parseInt(quantity),
     );
 
     res.json({
@@ -76,13 +76,13 @@ export const updateCartItem = async (req, res) => {
       message: "Cart updated successfully",
       cart: {
         totalItems: cart.totalItems,
-        totalAmount: cart.totalAmount
-      }
+        totalAmount: cart.totalAmount,
+      },
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -90,10 +90,10 @@ export const updateCartItem = async (req, res) => {
 export const removeFromCart = async (req, res) => {
   try {
     const { productId } = req.params;
-    
+
     const cart = await cartService.removeFromCart(
       req.session.userId,
-      productId
+      productId,
     );
 
     res.json({
@@ -101,13 +101,13 @@ export const removeFromCart = async (req, res) => {
       message: "Item removed from cart",
       cart: {
         totalItems: cart.totalItems,
-        totalAmount: cart.totalAmount
-      }
+        totalAmount: cart.totalAmount,
+      },
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -118,12 +118,12 @@ export const clearCart = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Cart cleared successfully"
+      message: "Cart cleared successfully",
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -133,20 +133,20 @@ export const getCartCount = async (req, res) => {
     if (!req.session?.userId) {
       return res.json({
         success: true,
-        count: 0
+        count: 0,
       });
     }
 
     const count = await cartService.getCartItemCount(req.session.userId);
-    
+
     res.json({
       success: true,
-      count
+      count,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Failed to get cart count"
+      message: "Failed to get cart count",
     });
   }
 };
@@ -159,7 +159,7 @@ export const validateCoupon = async (req, res) => {
     if (!code) {
       return res.status(400).json({
         success: false,
-        message: "Coupon code is required"
+        message: "Coupon code is required",
       });
     }
 
@@ -168,7 +168,7 @@ export const validateCoupon = async (req, res) => {
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "Your cart is empty"
+        message: "Your cart is empty",
       });
     }
 
@@ -176,18 +176,17 @@ export const validateCoupon = async (req, res) => {
       code,
       userId,
       cart.totalAmount,
-      cart.items
+      cart.items,
     );
 
     const discount = couponService.calculateDiscount(coupon, cart.totalAmount);
 
-    // Store coupon in session
     req.session.appliedCoupon = {
       code: coupon.code,
       discountType: coupon.discountType,
       discountValue: coupon.discountValue,
       discount: discount,
-      couponId: coupon._id
+      couponId: coupon._id,
     };
 
     res.json({
@@ -198,13 +197,13 @@ export const validateCoupon = async (req, res) => {
         description: coupon.description,
         discountType: coupon.discountType,
         discountValue: coupon.discountValue,
-        discount: discount
-      }
+        discount: discount,
+      },
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -215,12 +214,12 @@ export const removeCoupon = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Coupon removed successfully"
+      message: "Coupon removed successfully",
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };

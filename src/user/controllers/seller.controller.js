@@ -74,31 +74,31 @@ export const submitBook = async (req, res) => {
         .json({ success: false, message: "Minimum 3 images are required" });
 
     const uploadedImages = [];
-    
+
     if (!Array.isArray(images)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Images must be an array" 
+      return res.status(400).json({
+        success: false,
+        message: "Images must be an array",
       });
     }
-    
+
     for (let i = 0; i < images.length; i++) {
       const base64Image = images[i];
-      
-      if (typeof base64Image !== 'string') {
-        return res.status(400).json({ 
-          success: false, 
-          message: `Invalid image data format at index ${i}. Expected string, got ${typeof base64Image}` 
+
+      if (typeof base64Image !== "string") {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid image data format at index ${i}. Expected string, got ${typeof base64Image}`,
         });
       }
-      
-      if (!base64Image.startsWith('data:image/')) {
-        return res.status(400).json({ 
-          success: false, 
-          message: `Invalid image format at index ${i}. Must be a valid base64 data URL` 
+
+      if (!base64Image.startsWith("data:image/")) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid image format at index ${i}. Must be a valid base64 data URL`,
         });
       }
-      
+
       try {
         const result = await cloudinary.uploader.upload(base64Image, {
           folder: "papyrus/seller-submissions",
@@ -107,15 +107,15 @@ export const submitBook = async (req, res) => {
             { quality: "auto" },
           ],
         });
-        
+
         uploadedImages.push({
           url: result.secure_url,
           publicId: result.public_id,
         });
       } catch (uploadError) {
-        return res.status(400).json({ 
-          success: false, 
-          message: `Failed to upload image ${i}: ${uploadError.message}` 
+        return res.status(400).json({
+          success: false,
+          message: `Failed to upload image ${i}: ${uploadError.message}`,
         });
       }
     }
@@ -124,10 +124,17 @@ export const submitBook = async (req, res) => {
     if (videos && Array.isArray(videos) && videos.length > 0) {
       for (let i = 0; i < videos.length; i++) {
         const videoData = videos[i];
-        
-        if (typeof videoData === 'object' && videoData.url && videoData.publicId) {
+
+        if (
+          typeof videoData === "object" &&
+          videoData.url &&
+          videoData.publicId
+        ) {
           uploadedVideos.push(videoData);
-        } else if (typeof videoData === 'string' && videoData.startsWith('data:video/')) {
+        } else if (
+          typeof videoData === "string" &&
+          videoData.startsWith("data:video/")
+        ) {
           try {
             const result = await cloudinary.uploader.upload(videoData, {
               folder: "papyrus/seller-videos",
@@ -137,7 +144,7 @@ export const submitBook = async (req, res) => {
                 { quality: "auto" },
               ],
             });
-            
+
             uploadedVideos.push({
               url: result.secure_url,
               publicId: result.public_id,
@@ -145,15 +152,15 @@ export const submitBook = async (req, res) => {
               size: result.bytes,
             });
           } catch (uploadError) {
-            return res.status(400).json({ 
-              success: false, 
-              message: `Failed to upload video ${i}: ${uploadError.message}` 
+            return res.status(400).json({
+              success: false,
+              message: `Failed to upload video ${i}: ${uploadError.message}`,
             });
           }
         } else {
-          return res.status(400).json({ 
-            success: false, 
-            message: `Invalid video data format at index ${i}` 
+          return res.status(400).json({
+            success: false,
+            message: `Invalid video data format at index ${i}`,
           });
         }
       }
@@ -161,13 +168,13 @@ export const submitBook = async (req, res) => {
 
     const submissionData = {
       title: title.trim(),
-      author: author?.trim() || '',
-      description: description?.trim() || '',
+      author: author?.trim() || "",
+      description: description?.trim() || "",
       price: parseFloat(price),
       category,
       condition,
-      isbn: isbn?.trim() || '',
-      publisher: publisher?.trim() || '',
+      isbn: isbn?.trim() || "",
+      publisher: publisher?.trim() || "",
       images: uploadedImages,
       videos: uploadedVideos,
       submittedBy: req.session.userId,
@@ -176,7 +183,7 @@ export const submitBook = async (req, res) => {
     if (!submissionData.submittedBy) {
       return res.status(401).json({
         success: false,
-        message: "User session expired. Please log in again."
+        message: "User session expired. Please log in again.",
       });
     }
 
@@ -197,7 +204,7 @@ export const uploadVideo = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: "No video file provided"
+        message: "No video file provided",
       });
     }
 
@@ -211,12 +218,12 @@ export const uploadVideo = async (req, res) => {
     return res.json({
       success: true,
       message: "Video uploaded successfully",
-      video: videoData
+      video: videoData,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Failed to upload video: " + error.message
+      message: "Failed to upload video: " + error.message,
     });
   }
 };
@@ -226,19 +233,18 @@ export const getMyListings = async (req, res) => {
     const submissions = await sellerService.getSubmissionsByUser(
       req.session.userId,
     );
-    
-    // Populate approvedProductId to check if products exist and are listed
+
     const populatedSubmissions = await Promise.all(
       submissions.map(async (sub) => {
         const subObj = sub.toObject();
         if (subObj.approvedProductId) {
           try {
-            const Product = (await import("../../shared/models/Product.js")).default;
+            const Product = (await import("../../shared/models/Product.js"))
+              .default;
             const product = await Product.findById(subObj.approvedProductId)
-              .select('isDeleted isListed')
+              .select("isDeleted isListed")
               .lean();
-            
-            // Add product status to submission
+
             subObj.productExists = !!product;
             subObj.productDeleted = product?.isDeleted || false;
             subObj.productListed = product?.isListed || false;
@@ -249,9 +255,9 @@ export const getMyListings = async (req, res) => {
           }
         }
         return subObj;
-      })
+      }),
     );
-    
+
     res.render("user/my-listings", { submissions: populatedSubmissions });
   } catch (error) {
     res.status(500).render("error/500", { error });

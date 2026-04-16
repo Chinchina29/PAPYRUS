@@ -27,19 +27,15 @@ export const getSubmissions = async (req, res) => {
       .skip((page - 1) * limit)
       .limit(limit);
 
-    // Filter out submissions whose products have been deleted
-    const activeSubmissions = submissions.filter(sub => {
-      // Keep pending and rejected submissions
-      if (sub.status !== 'approved') return true;
-      
-      // For approved submissions, only keep if product exists and is not deleted
+    const activeSubmissions = submissions.filter((sub) => {
+      if (sub.status !== "approved") return true;
+
       if (!sub.approvedProductId) return false;
       if (sub.approvedProductId.isDeleted) return false;
-      
+
       return true;
     });
 
-    // Recalculate total based on filtered results
     const filteredTotal = activeSubmissions.length;
 
     res.render("admin/submissions/list", {
@@ -101,7 +97,7 @@ export const reviewSubmission = async (req, res) => {
     submission.reviewedBy = req.session.adminUser.id;
     submission.reviewedAt = new Date();
     if (adminNote) {
-      if (action === 'rejected') {
+      if (action === "rejected") {
         submission.rejectionReason = adminNote;
       } else {
         submission.reviewNotes = adminNote;
@@ -111,8 +107,8 @@ export const reviewSubmission = async (req, res) => {
     if (action === "approved") {
       const product = await productService.createProduct({
         title: submission.title,
-        author: submission.author || 'Unknown Author',
-        description: submission.description || 'No description provided',
+        author: submission.author || "Unknown Author",
+        description: submission.description || "No description provided",
         price: submission.price,
         category: submission.category._id,
         condition: submission.condition,
@@ -136,9 +132,10 @@ export const reviewSubmission = async (req, res) => {
           : "Submission rejected.",
     });
   } catch (error) {
-    return res.status(500).json({ 
-      success: false, 
-      message: "An error occurred while processing the submission: " + error.message 
+    return res.status(500).json({
+      success: false,
+      message:
+        "An error occurred while processing the submission: " + error.message,
     });
   }
 };

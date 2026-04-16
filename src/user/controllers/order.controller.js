@@ -6,7 +6,8 @@ export const getUserOrders = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
 
-    const { orders, total, totalPages, currentPage } = await orderService.getUserOrders(userId, { page, limit });
+    const { orders, total, totalPages, currentPage } =
+      await orderService.getUserOrders(userId, { page, limit });
 
     res.render("user/orders", {
       orders,
@@ -34,7 +35,6 @@ export const getOrderDetail = async (req, res) => {
       });
     }
 
-    // Verify the order belongs to the user
     if (order.user._id.toString() !== userId.toString()) {
       return res.status(403).render("error/403", {
         message: "Access denied",

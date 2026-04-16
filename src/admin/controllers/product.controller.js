@@ -53,7 +53,7 @@ export const addProduct = async (req, res) => {
   try {
     const {
       name,
-      title, 
+      title,
       description,
       price,
       originalPrice,
@@ -136,7 +136,10 @@ export const addProduct = async (req, res) => {
       category,
       subcategory: subcategory || null,
       condition: productCondition,
-      stock: stock !== undefined && stock !== null && stock !== '' ? parseInt(stock) : 0,
+      stock:
+        stock !== undefined && stock !== null && stock !== ""
+          ? parseInt(stock)
+          : 0,
       author: author?.trim(),
       isbn: isbn?.trim(),
       publisher: publisher?.trim(),
@@ -144,7 +147,9 @@ export const addProduct = async (req, res) => {
       publishedYear: publishedYear ? parseInt(publishedYear) : null,
       language: language?.trim() || "English",
       pages: pages ? parseInt(pages) : null,
-      maxQuantityPerOrder: maxQuantityPerOrder ? parseInt(maxQuantityPerOrder) : 10,
+      maxQuantityPerOrder: maxQuantityPerOrder
+        ? parseInt(maxQuantityPerOrder)
+        : 10,
       images: uploadedImages,
       seller: adminUser.id,
     });
@@ -276,7 +281,10 @@ export const editProduct = async (req, res) => {
       category,
       subcategory: subcategory || null,
       condition,
-      stock: stock !== undefined && stock !== null && stock !== '' ? parseInt(stock) : 0,
+      stock:
+        stock !== undefined && stock !== null && stock !== ""
+          ? parseInt(stock)
+          : 0,
       author: author?.trim(),
       isbn: isbn?.trim(),
       publisher: publisher?.trim(),
@@ -284,7 +292,9 @@ export const editProduct = async (req, res) => {
       publishedYear: publishedYear ? parseInt(publishedYear) : null,
       language: language?.trim() || "English",
       pages: pages ? parseInt(pages) : null,
-      maxQuantityPerOrder: maxQuantityPerOrder ? parseInt(maxQuantityPerOrder) : 10,
+      maxQuantityPerOrder: maxQuantityPerOrder
+        ? parseInt(maxQuantityPerOrder)
+        : 10,
       images: product.images,
       isListed: isListed === true || isListed === "true",
     });
@@ -316,11 +326,16 @@ export const deleteProduct = async (req, res) => {
 
     await productService.softDeleteProduct(id);
 
-    // Clear the approvedProductId from the submission if it exists
-    const SellerSubmission = (await import("../../shared/models/SellerSubmission.js")).default;
+    const SellerSubmission = (
+      await import("../../shared/models/SellerSubmission.js")
+    ).default;
     await SellerSubmission.updateOne(
       { approvedProductId: id },
-      { $unset: { approvedProductId: 1 }, status: 'rejected', adminNote: 'Product was deleted by admin' }
+      {
+        $unset: { approvedProductId: 1 },
+        status: "rejected",
+        adminNote: "Product was deleted by admin",
+      },
     );
 
     return res.status(200).json({
