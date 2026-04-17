@@ -118,6 +118,7 @@ export const reviewSubmission = async (req, res) => {
         images: submission.images,
         seller: submission.submittedBy._id,
         isListed: true,
+        hideFromSeller: true,
       });
       submission.approvedProductId = product._id;
     }

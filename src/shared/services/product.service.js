@@ -81,10 +81,17 @@ export const getListedProducts = async ({
   maxPrice = "",
   condition = "",
   brand = "",
+  userId = null,
 }) => {
   const query = {
     isDeleted: false,
     isListed: true,
+    ...(userId && {
+      $or: [
+        { hideFromSeller: false },
+        { seller: { $ne: userId } },
+      ],
+    }),
     ...(search && {
       $or: [
         { title: { $regex: search, $options: "i" } },

@@ -99,6 +99,10 @@ const productSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    hideFromSeller: {
+      type: Boolean,
+      default: false,
+    },
     averageRating: {
       type: Number,
       default: 0,

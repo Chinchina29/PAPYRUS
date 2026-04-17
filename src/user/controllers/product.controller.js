@@ -24,6 +24,7 @@ export const getShop = async (req, res) => {
         brand,
         minPrice,
         maxPrice,
+        userId: req.session.userId || null,
       });
 
     const { categories } = await categoryService.getAllCategories({
