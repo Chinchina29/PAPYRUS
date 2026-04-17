@@ -11,7 +11,7 @@ export const getOrCreateCart = async (userId) => {
 
     let cart = await Cart.findOne({ user: userId, isActive: true }).populate({
       path: "items.product",
-      select: "title author price images stock condition isListed isDeleted",
+      select: "title author price images stock condition isListed isDeleted seller hideFromSeller",
       populate: {
         path: "category",
         select: "name",
@@ -25,6 +25,11 @@ export const getOrCreateCart = async (userId) => {
       let needsUpdate = false;
       const validItems = cart.items.filter((item) => {
         if (!item.product || item.product.isDeleted || !item.product.isListed) {
+          needsUpdate = true;
+          return false;
+        }
+
+        if (item.product.hideFromSeller && item.product.seller && item.product.seller.toString() === userId.toString()) {
           needsUpdate = true;
           return false;
         }
@@ -49,7 +54,7 @@ export const getOrCreateCart = async (userId) => {
         cart = await Cart.findById(cart._id).populate({
           path: "items.product",
           select:
-            "title author price images stock condition isListed isDeleted",
+            "title author price images stock condition isListed isDeleted seller hideFromSeller",
           populate: {
             path: "category",
             select: "name",
@@ -73,6 +78,10 @@ export const addToCart = async (userId, productId, quantity = 1) => {
 
   if (!product) {
     throw new Error("Product not found or not available");
+  }
+
+  if (product.hideFromSeller && product.seller && product.seller.toString() === userId.toString()) {
+    throw new Error("You cannot add your own submitted product to cart");
   }
 
   if (product.stock === 0) {
@@ -126,7 +135,7 @@ export const addToCart = async (userId, productId, quantity = 1) => {
   return await Cart.findById(cart._id).populate({
     path: "items.product",
     select:
-      "title author price images stock condition isListed isDeleted maxQuantityPerOrder",
+      "title author price images stock condition isListed isDeleted maxQuantityPerOrder seller hideFromSeller",
     populate: {
       path: "category",
       select: "name",
@@ -182,7 +191,7 @@ export const updateCartItem = async (userId, productId, quantity) => {
       return await Cart.findById(cart._id).populate({
         path: "items.product",
         select:
-          "title author price images stock condition isListed isDeleted maxQuantityPerOrder",
+          "title author price images stock condition isListed isDeleted maxQuantityPerOrder seller hideFromSeller",
         populate: {
           path: "category",
           select: "name",
@@ -207,7 +216,7 @@ export const removeFromCart = async (userId, productId) => {
 
   return await Cart.findById(cart._id).populate({
     path: "items.product",
-    select: "title author price images stock condition isListed isDeleted",
+    select: "title author price images stock condition isListed isDeleted seller hideFromSeller",
     populate: {
       path: "category",
       select: "name",
