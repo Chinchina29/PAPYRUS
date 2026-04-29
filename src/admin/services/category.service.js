@@ -39,10 +39,39 @@ export const getCategoryById = async (id) => {
 };
 
 export const categoryNameExists = async (name, parentId = null, excludeId = null) => {
-  return null;
+  const query = {
+    name: { $regex: `^${name}$`, $options: 'i' },  // Case-insensitive exact match
+    isDeleted: false
+  };
+  
+  // If checking for subcategory, must have same parent
+  if (parentId) {
+    query.parentCategory = parentId;
+  } else {
+    // If checking for main category, must not have parent
+    query.parentCategory = null;
+  }
+  
+  // Exclude current category when updating
+  if (excludeId) {
+    query._id = { $ne: excludeId };
+  }
+  
+  return await Category.findOne(query);
 };
 
 export const createCategory = async ({ name, description, parentCategory = null, isSubcategory = false }) => {
+  // Check for duplicate category name
+  const existingCategory = await categoryNameExists(name, parentCategory);
+  
+  if (existingCategory) {
+    if (parentCategory) {
+      throw new Error(`Subcategory "${name}" already exists under this parent category`);
+    } else {
+      throw new Error(`Category "${name}" already exists`);
+    }
+  }
+  
   const category = new Category({ 
     name, 
     description, 
@@ -65,6 +94,19 @@ export const createCategory = async ({ name, description, parentCategory = null,
 export const updateCategory = async (id, { name, description, isListed, parentCategory }) => {
   const category = await Category.findById(id);
   if (!category) return null;
+
+  // Check for duplicate name if name is being changed
+  if (name !== undefined && name !== category.name) {
+    const existingCategory = await categoryNameExists(name, parentCategory || category.parentCategory, id);
+    
+    if (existingCategory) {
+      if (parentCategory || category.parentCategory) {
+        throw new Error(`Subcategory "${name}" already exists under this parent category`);
+      } else {
+        throw new Error(`Category "${name}" already exists`);
+      }
+    }
+  }
 
   if (parentCategory !== undefined && category.parentCategory?.toString() !== parentCategory) {
     if (category.parentCategory) {

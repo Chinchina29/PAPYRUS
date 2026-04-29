@@ -97,11 +97,16 @@ export const addCategory = async (req, res) => {
     if (subcategories && Array.isArray(subcategories) && subcategories.length > 0 && !isSubcategory) {
       for (const subName of subcategories) {
         if (subName?.trim()) {
-          await categoryService.createCategory({
-            name: subName.trim(),
-            parentCategory: category._id,
-            isSubcategory: true,
-          });
+          try {
+            await categoryService.createCategory({
+              name: subName.trim(),
+              parentCategory: category._id,
+              isSubcategory: true,
+            });
+          } catch (subError) {
+            // Skip duplicate subcategories but continue with others
+            console.log(`Skipping duplicate subcategory: ${subName}`);
+          }
         }
       }
     }
@@ -112,7 +117,18 @@ export const addCategory = async (req, res) => {
       redirectUrl: "/admin/categories",
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
+    // Handle duplicate category error
+    if (error.message.includes('already exists')) {
+      return res.status(409).json({ 
+        success: false, 
+        message: error.message 
+      });
+    }
+    
+    return res.status(500).json({ 
+      success: false, 
+      message: "Failed to add category. Please try again." 
+    });
   }
 };
 
@@ -202,11 +218,16 @@ export const editCategory = async (req, res) => {
     if (subcategories && Array.isArray(subcategories) && subcategories.length > 0 && !category.isSubcategory) {
       for (const subName of subcategories) {
         if (subName?.trim()) {
-          await categoryService.createCategory({
-            name: subName.trim(),
-            parentCategory: id,
-            isSubcategory: true,
-          });
+          try {
+            await categoryService.createCategory({
+              name: subName.trim(),
+              parentCategory: id,
+              isSubcategory: true,
+            });
+          } catch (subError) {
+            // Skip duplicate subcategories but continue with others
+            console.log(`Skipping duplicate subcategory: ${subName}`);
+          }
         }
       }
     }
@@ -217,9 +238,17 @@ export const editCategory = async (req, res) => {
       redirectUrl: "/admin/categories",
     });
   } catch (error) {
+    // Handle duplicate category error
+    if (error.message.includes('already exists')) {
+      return res.status(409).json({ 
+        success: false, 
+        message: error.message 
+      });
+    }
+    
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to update category. Please try again.",
     });
   }
 };
