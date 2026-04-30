@@ -367,14 +367,24 @@
         <div class="filter-group">
           <label>Category</label>
           <select name="category" class="filter-select">
-            <option value="">All Categories</option>
-            <% categories.forEach(cat => { %>
-              <option value="<%= cat._id %>"
-                <%= category === cat._id.toString() ? 'selected' : '' %>>
-                <%= cat.name %>
-              </option>
-            <% }) %>
-          </select>
+  <option value="">All Categories</option>
+
+  <% categories.forEach(cat => { %>
+
+    <option value="<%= cat._id %>">
+      <%= cat.name %>
+    </option>
+
+    <% if (cat.subcategories && cat.subcategories.length > 0) { %>
+      <% cat.subcategories.forEach(sub => { %>
+        <option value="<%= sub._id %>">
+          └ <%= sub.name %>
+        </option>
+      <% }) %>
+    <% } %>
+
+  <% }) %>
+</select>
         </div>
 
         <div class="filter-group">

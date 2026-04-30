@@ -1,5 +1,5 @@
 import * as productService from "../../shared/services/product.service.js";
-import * as categoryService from "../../admin/services/category.service.js";
+import * as categoryService from "../../shared/services/category.service.js";
 
 export const getShop = async (req, res) => {
   try {
@@ -26,9 +26,7 @@ export const getShop = async (req, res) => {
         maxPrice,
         userId: req.session.userId || null,
       });
-
-    // Get only listed (active) categories for user-side dropdown
-    const categories = await categoryService.getMainCategories();
+    const categories = await categoryService.getMainCategoriesWithSubs();
 
     const brands = await productService.getAllBrands();
 
