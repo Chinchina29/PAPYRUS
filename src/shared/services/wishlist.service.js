@@ -24,7 +24,7 @@ export const addToWishlist = async (userId, productId) => {
     _id: productId,
     isDeleted: false,
     isListed: true,
-  });
+  }).select('_id').lean();
 
   if (!product) {
     throw new Error("Product not found or unavailable");
@@ -47,10 +47,7 @@ export const addToWishlist = async (userId, productId) => {
   wishlist.items.push({ product: productId });
   await wishlist.save();
 
-  return await wishlist.populate({
-    path: "items.product",
-    populate: { path: "category", select: "name" },
-  });
+  return wishlist;
 };
 
 export const removeFromWishlist = async (userId, productId) => {
@@ -66,10 +63,7 @@ export const removeFromWishlist = async (userId, productId) => {
 
   await wishlist.save();
 
-  return await wishlist.populate({
-    path: "items.product",
-    populate: { path: "category", select: "name" },
-  });
+  return wishlist;
 };
 
 export const clearWishlist = async (userId) => {

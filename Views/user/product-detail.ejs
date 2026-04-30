@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="product-id" content="<%= product._id %>"/>
   <title><%= product.title %> - Papyrus</title>
   <link rel="stylesheet" href="/css/home.css">
   <style>
@@ -318,6 +319,19 @@
     .btn-secondary:hover {
       background: #7A5C3E;
       color: white;
+    }
+    .btn-secondary:hover svg {
+      fill: white;
+      stroke: white;
+    }
+    .btn-secondary.in-wishlist svg {
+      fill: #7A5C3E;
+      stroke: #7A5C3E;
+      transition: all 0.3s ease;
+    }
+    .btn-secondary.in-wishlist:hover svg {
+      fill: white;
+      stroke: white;
     }
 
     .product-details {
@@ -872,7 +886,7 @@
               Out of Stock
             </button>
           <% } %>
-          <button class="btn-secondary" onclick="addToWishlist('<%= product._id %>')">
+          <button class="btn-secondary" onclick="toggleWishlist(event, '<%= product._id %>')" id="wishlistBtn" data-product-id="<%= product._id %>">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
             </svg>
@@ -1068,6 +1082,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="/js/cart-wishlist.js"></script>
   <script>
     let currentZoom = 1;
     let isDragging = false;

@@ -14,7 +14,8 @@ export const getOrCreateCart = async (userId) => {
       select: "title author price images stock condition isListed isDeleted seller hideFromSeller",
       populate: {
         path: "category",
-        select: "name",
+        select: "name isListed",
+        match: { isListed: true, isDeleted: false }
       },
     });
 
@@ -24,7 +25,7 @@ export const getOrCreateCart = async (userId) => {
     } else {
       let needsUpdate = false;
       const validItems = cart.items.filter((item) => {
-        if (!item.product || item.product.isDeleted || !item.product.isListed) {
+        if (!item.product || !item.product.category || item.product.isDeleted || !item.product.isListed) {
           needsUpdate = true;
           return false;
         }
@@ -57,7 +58,8 @@ export const getOrCreateCart = async (userId) => {
             "title author price images stock condition isListed isDeleted seller hideFromSeller",
           populate: {
             path: "category",
-            select: "name",
+            select: "name isListed",
+            match: { isListed: true, isDeleted: false }
           },
         });
       }
@@ -74,7 +76,7 @@ export const addToCart = async (userId, productId, quantity = 1) => {
     _id: productId,
     isDeleted: false,
     isListed: true,
-  });
+  }).select('stock maxQuantityPerOrder price seller hideFromSeller').lean();
 
   if (!product) {
     throw new Error("Product not found or not available");
@@ -92,10 +94,14 @@ export const addToCart = async (userId, productId, quantity = 1) => {
     throw new Error("Insufficient stock available");
   }
 
-  let cart = await getOrCreateCart(userId);
+  let cart = await Cart.findOne({ user: userId, isActive: true });
+
+  if (!cart) {
+    cart = new Cart({ user: userId, items: [] });
+  }
 
   const existingItemIndex = cart.items.findIndex(
-    (item) => item.product._id.toString() === productId,
+    (item) => item.product.toString() === productId,
   );
 
   if (existingItemIndex > -1) {
@@ -132,15 +138,7 @@ export const addToCart = async (userId, productId, quantity = 1) => {
     await wishlistService.removeFromWishlist(userId, productId);
   } catch (error) {}
 
-  return await Cart.findById(cart._id).populate({
-    path: "items.product",
-    select:
-      "title author price images stock condition isListed isDeleted maxQuantityPerOrder seller hideFromSeller",
-    populate: {
-      path: "category",
-      select: "name",
-    },
-  });
+  return cart;
 };
 
 export const updateCartItem = async (userId, productId, quantity) => {
@@ -194,7 +192,8 @@ export const updateCartItem = async (userId, productId, quantity) => {
           "title author price images stock condition isListed isDeleted maxQuantityPerOrder seller hideFromSeller",
         populate: {
           path: "category",
-          select: "name",
+          select: "name isListed",
+          match: { isListed: true, isDeleted: false }
         },
       });
     },
@@ -219,7 +218,8 @@ export const removeFromCart = async (userId, productId) => {
     select: "title author price images stock condition isListed isDeleted seller hideFromSeller",
     populate: {
       path: "category",
-      select: "name",
+      select: "name isListed",
+      match: { isListed: true, isDeleted: false }
     },
   });
 };

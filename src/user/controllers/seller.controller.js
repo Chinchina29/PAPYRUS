@@ -4,10 +4,7 @@ import { v2 as cloudinary } from "cloudinary";
 
 export const getSellPage = async (req, res) => {
   try {
-    const { categories } = await categoryService.getAllCategories({
-      page: 1,
-      limit: 100,
-    });
+    const categories = await categoryService.getMainCategories();
     const submissions = await sellerService.getSubmissionsByUser(
       req.session.userId,
     );
@@ -31,10 +28,7 @@ export const getSellPage = async (req, res) => {
 
 export const getCreatePage = async (req, res) => {
   try {
-    const { categories } = await categoryService.getAllCategories({
-      page: 1,
-      limit: 100,
-    });
+    const categories = await categoryService.getMainCategories();
     res.render("user/sell-create", { categories });
   } catch (error) {
     res.status(500).render("error/500", { error });
@@ -68,6 +62,14 @@ export const submitBook = async (req, res) => {
       return res
         .status(400)
         .json({ success: false, message: "Category is required" });
+    
+    const categoryExists = await categoryService.getCategoryById(category);
+    if (!categoryExists || !categoryExists.isListed) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Selected category is not available" });
+    }
+    
     if (!images || !Array.isArray(images) || images.length < 3)
       return res
         .status(400)

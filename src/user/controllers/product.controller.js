@@ -27,10 +27,8 @@ export const getShop = async (req, res) => {
         userId: req.session.userId || null,
       });
 
-    const { categories } = await categoryService.getAllCategories({
-      page: 1,
-      limit: 100,
-    });
+    // Get only listed (active) categories for user-side dropdown
+    const categories = await categoryService.getMainCategories();
 
     const brands = await productService.getAllBrands();
 

@@ -125,19 +125,28 @@ export const getListedProducts = async ({
 
   const [products, total] = await Promise.all([
     Product.find(query)
-      .populate("category", "name")
-      .populate("subcategory", "name")
+      .populate({
+        path: "category",
+        select: "name isListed",
+        match: { isListed: true, isDeleted: false } 
+      })
+      .populate({
+        path: "subcategory",
+        select: "name isListed",
+        match: { isListed: true, isDeleted: false } 
+      })
       .populate("seller", "name email")
       .sort(sortOptions[sort] || { createdAt: -1 })
       .skip(skip)
-      .limit(limit),
+      .limit(limit)
+      .then(products => products.filter(p => p.category !== null)),  
     Product.countDocuments(query),
   ]);
 
   return {
     products,
-    total,
-    totalPages: Math.ceil(total / limit),
+    total: products.length,
+    totalPages: Math.ceil(products.length / limit),
     currentPage: page,
   };
 };
@@ -148,9 +157,21 @@ export const getListedProductById = async (id) => {
     isDeleted: false,
     isListed: true,
   })
-    .populate("category", "name")
-    .populate("subcategory", "name")
+    .populate({
+      path: "category",
+      select: "name isListed",
+      match: { isListed: true, isDeleted: false }
+    })
+    .populate({
+      path: "subcategory",
+      select: "name isListed",
+      match: { isListed: true, isDeleted: false }
+    })
     .populate("seller", "name email");
+
+  if (product && !product.category) {
+    return null;
+  }
 
   if (product) {
     await Product.findByIdAndUpdate(id, { $inc: { views: 1 } });
@@ -160,16 +181,22 @@ export const getListedProductById = async (id) => {
 };
 
 export const getRelatedProducts = async (categoryId, excludeId, limit = 4) => {
-  return await Product.find({
+  const products = await Product.find({
     category: categoryId,
     _id: { $ne: excludeId },
     isDeleted: false,
     isListed: true,
   })
     .limit(limit)
-    .populate("category", "name")
+    .populate({
+      path: "category",
+      select: "name isListed",
+      match: { isListed: true, isDeleted: false }
+    })
     .populate("seller", "name")
     .sort({ createdAt: -1 });
+  
+  return products.filter(p => p.category !== null);
 };
 
 

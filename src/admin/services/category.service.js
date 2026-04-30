@@ -163,13 +163,21 @@ export const toggleCategoryListed = async (id) => {
   const category = await Category.findById(id);
   if (!category) return null;
   
-  category.isListed = !category.isListed;
+  const newListedStatus = !category.isListed;
+  category.isListed = newListedStatus;
   
-  if (!category.isListed && category.subcategories && category.subcategories.length > 0) {
+  if (!newListedStatus && category.subcategories && category.subcategories.length > 0) {
     await Category.updateMany(
       { parentCategory: id },
       { isListed: false }
     );
+  }
+  
+  if (newListedStatus && category.isSubcategory && category.parentCategory) {
+    const parent = await Category.findById(category.parentCategory);
+    if (parent && !parent.isListed) {
+      throw new Error('Cannot unblock subcategory when parent category is blocked. Please unblock the parent category first.');
+    }
   }
   
   return await category.save();

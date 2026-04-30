@@ -22,7 +22,7 @@ export const getCart = async (req, res) => {
 
 export const addToCart = async (req, res) => {
   try {
-    const { productId, quantity = 1 } = req.body;
+    const { productId, quantity } = req.body;
 
     if (!productId) {
       return res.status(400).json({
@@ -31,10 +31,19 @@ export const addToCart = async (req, res) => {
       });
     }
 
+    const qty = Number(quantity);
+
+    if (isNaN(qty) || qty < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid quantity",
+      });
+    }
+
     const cart = await cartService.addToCart(
       req.session.userId,
       productId,
-      parseInt(quantity),
+      qty,
     );
 
     res.json({
