@@ -17,9 +17,9 @@ import {
   setGooglePassword,
   skipSetPassword,
 } from "../controllers/password.controller.js";
-import { 
-  authLimiter, 
-  emailLimiter 
+import {
+  authLimiter,
+  emailLimiter,
 } from "../../shared/middleware/rateLimiting.middleware.js";
 
 const router = express.Router();
@@ -29,11 +29,11 @@ router.get("/", (req, res) => {
 });
 
 router.get("/home", (req, res) => {
-  if (req.session && req.session.userId) {
-    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
-    res.set("Pragma", "no-cache");
-    res.set("Expires", "0");
-  }
+  // if (req.session && req.session.userId) {
+  //   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  //   res.set("Pragma", "no-cache");
+  //   res.set("Expires", "0");
+  // }
   res.render("user/home");
 });
 
@@ -68,12 +68,21 @@ router.get(
   (req, res) => res.render("user/login"),
 );
 
-router.post("/login", authLimiter, preventLoginIfAdminActive, authController.login);
+router.post(
+  "/login",
+  authLimiter,
+  preventLoginIfAdminActive,
+  authController.login,
+);
 
 router.get("/forgot-password", isNotAuthenticated, (req, res) =>
   res.render("user/forgotpassword"),
 );
-router.post("/forgot-password/send", emailLimiter, passwordController.forgotPassword);
+router.post(
+  "/forgot-password/send",
+  emailLimiter,
+  passwordController.forgotPassword,
+);
 
 router.get("/forgot-password/verify", (req, res) => {
   if (!req.session.resetEmail) {
@@ -84,8 +93,16 @@ router.get("/forgot-password/verify", (req, res) => {
     type: "reset",
   });
 });
-router.post("/forgot-password/verify", authLimiter, passwordController.verifyResetOTP);
-router.post("/forgot-password/resend", emailLimiter, passwordController.resendResetOTP);
+router.post(
+  "/forgot-password/verify",
+  authLimiter,
+  passwordController.verifyResetOTP,
+);
+router.post(
+  "/forgot-password/resend",
+  emailLimiter,
+  passwordController.resendResetOTP,
+);
 
 router.get("/forgot-password/reset", (req, res) => {
   if (!req.session.resetEmail || !req.session.resetVerified) {

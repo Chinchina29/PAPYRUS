@@ -463,9 +463,9 @@
                   </div>
                 <% } %>
                 <div class="quantity-controls">
-                  <button class="qty-btn" onclick="updateQuantity('<%= item.product._id %>', <%= item.quantity - 1 %>)" <% if (item.quantity <= 1) { %>disabled<% } %>>−</button>
+                  <button class="qty-btn" onclick="updateQuantity('<%= item.product._id %>', <%= item.quantity - 1 %>)" <%= item.quantity <= 1 ? 'disabled' : '' %>>−</button>
                   <span class="qty-display"><%= item.quantity %></span>
-                  <button class="qty-btn" onclick="updateQuantity('<%= item.product._id %>', <%= item.quantity + 1 %>)" <% if (item.quantity >= item.product.stock) { %>disabled<% } %>>+</button>
+                  <button class="qty-btn" onclick="updateQuantity('<%= item.product._id %>', <%= item.quantity + 1 %>)" <%= item.quantity >= item.product.stock ? 'disabled' : '' %>>+</button>
                 </div>
                 <button class="remove-link" onclick="removeFromCart('<%= item.product._id %>')">REMOVE</button>
               </div>
@@ -480,7 +480,6 @@
         <div class="cart-summary">
           <h2 class="summary-title">Order Summary</h2>
           
-          <!-- Coupon Section -->
           <div class="coupon-section">
             <% if (appliedCoupon) { %>
               <div class="applied-coupon">

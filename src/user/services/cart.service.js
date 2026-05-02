@@ -76,10 +76,21 @@ export const addToCart = async (userId, productId, quantity = 1) => {
     _id: productId,
     isDeleted: false,
     isListed: true,
-  }).select('stock maxQuantityPerOrder price seller hideFromSeller').lean();
+  })
+    .select('stock maxQuantityPerOrder price seller hideFromSeller category')
+    .populate({
+      path: 'category',
+      select: 'isListed',
+      match: { isListed: true, isDeleted: false }
+    })
+    .lean();
 
   if (!product) {
     throw new Error("Product not found or not available");
+  }
+
+  if (!product.category) {
+    throw new Error("This product is unavailable because its category has been disabled");
   }
 
   if (product.hideFromSeller && product.seller && product.seller.toString() === userId.toString()) {
@@ -91,7 +102,7 @@ export const addToCart = async (userId, productId, quantity = 1) => {
   }
 
   if (product.stock < quantity) {
-    throw new Error("Insufficient stock available");
+    throw new Error(`Only ${product.stock} item(s) available in stock`);
   }
 
   let cart = await Cart.findOne({ user: userId, isActive: true });
@@ -108,12 +119,12 @@ export const addToCart = async (userId, productId, quantity = 1) => {
     const newQuantity = cart.items[existingItemIndex].quantity + quantity;
 
     if (newQuantity > product.stock) {
-      throw new Error("Cannot add more items than available stock");
+      throw new Error(`Cannot add more items. Only ${product.stock} available in stock`);
     }
 
     if (newQuantity > product.maxQuantityPerOrder) {
       throw new Error(
-        `Maximum ${product.maxQuantityPerOrder} items allowed per order`,
+        `Maximum ${product.maxQuantityPerOrder} items allowed per order for this product`,
       );
     }
 
@@ -121,7 +132,7 @@ export const addToCart = async (userId, productId, quantity = 1) => {
   } else {
     if (quantity > product.maxQuantityPerOrder) {
       throw new Error(
-        `Maximum ${product.maxQuantityPerOrder} items allowed per order`,
+        `Maximum ${product.maxQuantityPerOrder} items allowed per order for this product`,
       );
     }
 
@@ -151,9 +162,20 @@ export const updateCartItem = async (userId, productId, quantity) => {
         return await removeFromCart(userId, productId);
       }
 
-      const product = await Product.findById(productId);
-      if (!product) {
-        throw new Error("Product not found");
+      const product = await Product.findById(productId)
+        .select('stock maxQuantityPerOrder isListed isDeleted category')
+        .populate({
+          path: 'category',
+          select: 'isListed',
+          match: { isListed: true, isDeleted: false }
+        });
+        
+      if (!product || product.isDeleted || !product.isListed) {
+        throw new Error("Product not found or no longer available");
+      }
+
+      if (!product.category) {
+        throw new Error("This product is unavailable because its category has been disabled");
       }
 
       if (product.stock === 0) {
@@ -161,12 +183,12 @@ export const updateCartItem = async (userId, productId, quantity) => {
       }
 
       if (product.stock < quantity) {
-        throw new Error("Insufficient stock available");
+        throw new Error(`Only ${product.stock} item(s) available in stock`);
       }
 
       if (quantity > product.maxQuantityPerOrder) {
         throw new Error(
-          `Maximum ${product.maxQuantityPerOrder} items allowed per order`,
+          `Maximum ${product.maxQuantityPerOrder} items allowed per order for this product`,
         );
       }
 

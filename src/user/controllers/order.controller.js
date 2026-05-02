@@ -18,7 +18,10 @@ export const getUserOrders = async (req, res) => {
       user: req.session.user || null,
     });
   } catch (error) {
-    res.status(500).render("error/500");
+    res.status(500).render("error/500", {
+      message: "An error occurred while loading your orders. Please try again later.",
+      user: req.session.user || null,
+    });
   }
 };
 
@@ -31,13 +34,15 @@ export const getOrderDetail = async (req, res) => {
 
     if (!order) {
       return res.status(404).render("error/404", {
-        message: "Order not found",
+        message: "Order not found. Please check your order history.",
+        user: req.session.user || null,
       });
     }
 
     if (order.user._id.toString() !== userId.toString()) {
       return res.status(403).render("error/403", {
-        message: "Access denied",
+        message: "You do not have permission to view this order.",
+        user: req.session.user || null,
       });
     }
 
@@ -47,6 +52,9 @@ export const getOrderDetail = async (req, res) => {
       user: req.session.user || null,
     });
   } catch (error) {
-    res.status(500).render("error/500");
+    res.status(500).render("error/500", {
+      message: "An error occurred while loading your order details. Please try again later.",
+      user: req.session.user || null,
+    });
   }
 };

@@ -1,5 +1,5 @@
 import * as productService from "../../shared/services/product.service.js";
-import * as categoryService from "../../shared/services/category.service.js";
+import * as categoryService from "../../admin/services/category.service.js";
 
 export const getShop = async (req, res) => {
   try {
@@ -26,7 +26,8 @@ export const getShop = async (req, res) => {
         maxPrice,
         userId: req.session.userId || null,
       });
-    const categories = await categoryService.getMainCategoriesWithSubs();
+
+    const categories = await categoryService.getMainCategories();
 
     const brands = await productService.getAllBrands();
 
@@ -48,7 +49,10 @@ export const getShop = async (req, res) => {
       user: req.session.user || null,
     });
   } catch (error) {
-    res.status(500).render("error/500");
+    res.status(500).render("error/500", {
+      message: "An error occurred while loading products. Please try again later.",
+      user: req.session.user || null,
+    });
   }
 };
 
@@ -58,26 +62,37 @@ export const getProductDetail = async (req, res) => {
 
     if (!product) {
       const Product = (await import("../../shared/models/Product.js")).default;
-      const deletedProduct = await Product.findById(req.params.id).select(
-        "isDeleted isListed title",
-      );
+      const Category = (await import("../../shared/models/Category.js")).default;
+      
+      const blockedProduct = await Product.findById(req.params.id)
+        .select("isDeleted isListed title category")
+        .populate("category", "isListed");
 
-      if (deletedProduct) {
-        if (deletedProduct.isDeleted) {
+      if (blockedProduct) {
+        if (blockedProduct.isDeleted) {
           return res.status(404).render("error/404", {
-            message: "This product has been removed from our catalog.",
+            message: "This product has been permanently removed from our catalog and is no longer available for purchase.",
             user: req.session.user || null,
           });
-        } else if (!deletedProduct.isListed) {
+        }
+        
+        if (!blockedProduct.isListed) {
           return res.status(404).render("error/404", {
-            message: "This product is currently unavailable.",
+            message: "This product is currently unavailable. It may have been temporarily disabled by the seller or administrator.",
+            user: req.session.user || null,
+          });
+        }
+        
+        if (blockedProduct.category && !blockedProduct.category.isListed) {
+          return res.status(404).render("error/404", {
+            message: "This product is currently unavailable because its category has been disabled. Please check back later or browse other categories.",
             user: req.session.user || null,
           });
         }
       }
 
       return res.status(404).render("error/404", {
-        message: "Product not found.",
+        message: "The product you are looking for does not exist or has been removed.",
         user: req.session.user || null,
       });
     }
@@ -95,6 +110,7 @@ export const getProductDetail = async (req, res) => {
     });
   } catch (error) {
     res.status(500).render("error/500", {
+      message: "An unexpected error occurred while loading the product. Please try again later.",
       user: req.session.user || null,
     });
   }
