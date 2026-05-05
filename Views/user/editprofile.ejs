@@ -235,18 +235,20 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label for="favoriteGenre">Favorite Genre</label>
-                                    <select id="favoriteGenre" name="favoriteGenre">
-                                        <option value="">Select Genre</option>
-                                        <option value="fiction"     <%= user.favoriteGenre === 'fiction'     ? 'selected' : '' %>>Fiction</option>
-                                        <option value="non-fiction" <%= user.favoriteGenre === 'non-fiction' ? 'selected' : '' %>>Non-Fiction</option>
-                                        <option value="mystery"     <%= user.favoriteGenre === 'mystery'     ? 'selected' : '' %>>Mystery</option>
-                                        <option value="romance"     <%= user.favoriteGenre === 'romance'     ? 'selected' : '' %>>Romance</option>
-                                        <option value="sci-fi"      <%= user.favoriteGenre === 'sci-fi'      ? 'selected' : '' %>>Science Fiction</option>
-                                        <option value="fantasy"     <%= user.favoriteGenre === 'fantasy'     ? 'selected' : '' %>>Fantasy</option>
-                                        <option value="biography"   <%= user.favoriteGenre === 'biography'   ? 'selected' : '' %>>Biography</option>
-                                        <option value="history"     <%= user.favoriteGenre === 'history'     ? 'selected' : '' %>>History</option>
+                                    <label for="favoriteGenres">Favorite Genres</label>
+                                    <select id="favoriteGenres" name="favoriteGenres" multiple style="height: 120px;">
+                                        <% if (categories && categories.length > 0) { %>
+                                            <% categories.forEach(category => { %>
+                                                <option value="<%= category._id %>" 
+                                                    <%= user.favoriteGenres && user.favoriteGenres.includes(category._id.toString()) ? 'selected' : '' %>>
+                                                    <%= category.name %>
+                                                </option>
+                                            <% }) %>
+                                        <% } else { %>
+                                            <option disabled>Loading categories...</option>
+                                        <% } %>
                                     </select>
+                                    <small style="color: #999; font-size: 12px; margin-top: 5px; display: block;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple genres</small>
                                 </div>
                             </div>
 
@@ -762,8 +764,15 @@
             
             const formData = new FormData(e.target);
             const data     = {};
-            for (let [key, value] of formData.entries()) { 
-                data[key] = value; 
+            
+            const favoriteGenresSelect = document.getElementById('favoriteGenres');
+            const selectedGenres = Array.from(favoriteGenresSelect.selectedOptions).map(option => option.value);
+            data.favoriteGenres = selectedGenres;
+            
+            for (let [key, value] of formData.entries()) {
+                if (key !== 'favoriteGenres') {
+                    data[key] = value;
+                }
             }
             
             if (!validateForm(data)) {
@@ -773,7 +782,6 @@
             const submitBtn       = e.target.querySelector('button[type="submit"]');
             const originalText    = submitBtn.textContent;
             
-            // Prevent double submission
             if (submitBtn.disabled) {
                 return;
             }
@@ -829,8 +837,24 @@
                 if (!/^[0-9]{10}$/.test(data.phone.replace(/\D/g, ''))) { showError('phone', 'Please enter a valid 10-digit phone number'); isValid = false; }
             }
             if (data.dateOfBirth) {
-                const age = new Date().getFullYear() - new Date(data.dateOfBirth).getFullYear();
-                if (age < 13 || age > 120) { showError('dateOfBirth', 'Please enter a valid date of birth'); isValid = false; }
+                const birthDate = new Date(data.dateOfBirth);
+                const today = new Date();
+                const age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                const dayDiff = today.getDate() - birthDate.getDate();
+                
+                const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
+                
+                if (birthDate > today) {
+                    showError('dateOfBirth', 'Date of birth cannot be in the future');
+                    isValid = false;
+                } else if (actualAge < 13) {
+                    showError('dateOfBirth', 'You must be at least 13 years old to use this service');
+                    isValid = false;
+                } else if (actualAge > 120) {
+                    showError('dateOfBirth', 'Please enter a valid date of birth');
+                    isValid = false;
+                }
             }
             if (data.readingGoal && (data.readingGoal < 1 || data.readingGoal > 365)) { showError('readingGoal', 'Reading goal must be between 1 and 365 books'); isValid = false; }
             if (data.bio && data.bio.length > 500) { showError('bio', 'Bio must be less than 500 characters'); isValid = false; }

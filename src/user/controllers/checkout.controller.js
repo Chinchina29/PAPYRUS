@@ -1,7 +1,9 @@
 import * as cartService from "../services/cart.service.js";
 import * as addressService from "../services/address.service.js";
 import * as orderService from "../../shared/services/order.service.js";
+import * as couponService from "../../shared/services/coupon.service.js";
 import Product from "../../shared/models/Product.js";
+import Coupon from "../../shared/models/Coupon.js";
 
 export const getCheckout = async (req, res) => {
   try {
@@ -22,6 +24,23 @@ export const getCheckout = async (req, res) => {
     const discount = req.session.appliedCoupon?.discount || 0;
     const totalAmount = subtotal + shippingCharge - discount;
 
+    const now = new Date();
+    const availableCoupons = await Coupon.find({
+      isDeleted: false,
+      isActive: true,
+      validFrom: { $lte: now },
+      validUntil: { $gte: now },
+      $or: [
+        { usageLimit: { $exists: false } },
+        { $expr: { $lt: ["$usageCount", "$usageLimit"] } }
+      ],
+      minPurchaseAmount: { $lte: subtotal }
+    })
+    .populate("applicableCategories", "name")
+    .populate("applicableProducts", "title")
+    .sort({ discountValue: -1 })
+    .limit(10);
+
     res.render("user/checkout", {
       cart,
       addresses,
@@ -31,6 +50,7 @@ export const getCheckout = async (req, res) => {
       discount,
       totalAmount,
       appliedCoupon: req.session.appliedCoupon || null,
+      availableCoupons: availableCoupons || [],
       currentPage_name: "checkout",
       user: req.session.user || null,
     });

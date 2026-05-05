@@ -1,5 +1,6 @@
 import * as productService from "../../shared/services/product.service.js";
 import * as categoryService from "../../admin/services/category.service.js";
+import Product from "../../shared/models/Product.js";
 
 export const getShop = async (req, res) => {
   try {
@@ -56,7 +57,25 @@ export const getShop = async (req, res) => {
 
 export const getProductDetail = async (req, res) => {
   try {
-    const product = await productService.getListedProductById(req.params.id);
+    const fromMyListings = req.query.from === 'my-listings';
+    let product;
+    
+    if (fromMyListings) {
+      product = await Product.findOne({
+        _id: req.params.id,
+        isDeleted: false,
+        isListed: true,
+      })
+        .populate("category", "name isListed")
+        .populate("subcategory", "name isListed")
+        .populate("seller", "name email");
+      
+      if (product) {
+        await Product.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
+      }
+    } else {
+      product = await productService.getListedProductById(req.params.id);
+    }
 
     if (!product) {
       const Product = (await import("../../shared/models/Product.js")).default;
@@ -76,7 +95,7 @@ export const getProductDetail = async (req, res) => {
     }
 
     const related = await productService.getRelatedProducts(
-      product.category._id,
+      product.category?._id,
       product._id,
     );
 
@@ -86,6 +105,7 @@ export const getProductDetail = async (req, res) => {
       currentPage_name: "shop",
       user: req.session.user || null,
       userId: req.session.userId || null,
+      from: req.query.from || null,
     });
   } catch (error) {
     return res.redirect("/shop?error=" + encodeURIComponent("An error occurred while loading the product. Please try again later."));

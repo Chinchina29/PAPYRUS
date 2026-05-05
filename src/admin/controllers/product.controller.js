@@ -329,14 +329,13 @@ export const deleteProduct = async (req, res) => {
     const SellerSubmission = (
       await import("../../shared/models/SellerSubmission.js")
     ).default;
-    await SellerSubmission.updateOne(
-      { approvedProductId: id },
-      {
-        $unset: { approvedProductId: 1 },
-        status: "rejected",
-        adminNote: "Product was deleted by admin",
-      },
-    );
+    
+    const submission = await SellerSubmission.findOne({ approvedProductId: id });
+    if (submission) {
+      submission.status = "rejected";
+      submission.adminNote = "Product was deleted by admin";
+      await submission.save();
+    }
 
     return res.status(200).json({
       success: true,

@@ -45,6 +45,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    favoriteGenres: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'Category',
+      default: [],
+    },
     primaryInterest: {
       type: String,
       default: null,

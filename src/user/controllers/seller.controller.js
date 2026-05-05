@@ -8,7 +8,32 @@ export const getSellPage = async (req, res) => {
     const submissions = await sellerService.getSubmissionsByUser(
       req.session.userId,
     );
-    const recentSubmissions = submissions.slice(0, 3);
+    
+    const populatedSubmissions = await Promise.all(
+      submissions.map(async (sub) => {
+        const subObj = sub.toObject();
+        if (subObj.approvedProductId) {
+          try {
+            const Product = (await import("../../shared/models/Product.js"))
+              .default;
+            const product = await Product.findById(subObj.approvedProductId)
+              .select("isDeleted isListed")
+              .lean();
+
+            subObj.productExists = !!product;
+            subObj.productDeleted = product?.isDeleted || false;
+            subObj.productListed = product?.isListed || false;
+          } catch (err) {
+            subObj.productExists = false;
+            subObj.productDeleted = false;
+            subObj.productListed = false;
+          }
+        }
+        return subObj;
+      }),
+    );
+    
+    const recentSubmissions = populatedSubmissions.slice(0, 3);
     const stats = {
       totalRevenue: 0,
       itemsSold: 0,
@@ -22,7 +47,7 @@ export const getSellPage = async (req, res) => {
       recentOrders: [],
     });
   } catch (error) {
-    res.status(500).render("error/500", { error });
+    return res.redirect(`/home?error=${encodeURIComponent('Failed to load seller dashboard. Please try again.')}`);
   }
 };
 
@@ -31,7 +56,7 @@ export const getCreatePage = async (req, res) => {
     const categories = await categoryService.getMainCategories();
     res.render("user/sell-create", { categories });
   } catch (error) {
-    res.status(500).render("error/500", { error });
+    return res.redirect(`/sell?error=${encodeURIComponent('Failed to load create listing page. Please try again.')}`);
   }
 };
 
@@ -244,16 +269,18 @@ export const getMyListings = async (req, res) => {
             const Product = (await import("../../shared/models/Product.js"))
               .default;
             const product = await Product.findById(subObj.approvedProductId)
-              .select("isDeleted isListed")
+              .select("isDeleted isListed stock")
               .lean();
 
             subObj.productExists = !!product;
             subObj.productDeleted = product?.isDeleted || false;
             subObj.productListed = product?.isListed || false;
+            subObj.productStock = product?.stock || 0;
           } catch (err) {
             subObj.productExists = false;
             subObj.productDeleted = false;
             subObj.productListed = false;
+            subObj.productStock = 0;
           }
         }
         return subObj;
@@ -262,6 +289,117 @@ export const getMyListings = async (req, res) => {
 
     res.render("user/my-listings", { submissions: populatedSubmissions });
   } catch (error) {
-    res.status(500).render("error/500", { error });
+    return res.redirect(`/sell?error=${encodeURIComponent('Failed to load your listings. Please try again.')}`);
+  }
+};
+
+export const deleteSubmission = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.session.userId;
+
+    const submission = await sellerService.getSubmissionById(id);
+
+    if (!submission) {
+      return res.status(404).json({
+        success: false,
+        message: "Submission not found",
+      });
+    }
+
+    const submittedById = submission.submittedBy._id 
+      ? submission.submittedBy._id.toString() 
+      : submission.submittedBy.toString();
+
+    if (submittedById !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to delete this submission",
+      });
+    }
+
+    if (submission.images && submission.images.length > 0) {
+      for (const image of submission.images) {
+        if (image.publicId) {
+          try {
+            await cloudinary.uploader.destroy(image.publicId);
+          } catch (err) {
+            console.error(`Failed to delete image ${image.publicId}:`, err);
+          }
+        }
+      }
+    }
+
+    if (submission.videos && submission.videos.length > 0) {
+      for (const video of submission.videos) {
+        if (video.publicId) {
+          try {
+            await cloudinary.uploader.destroy(video.publicId, {
+              resource_type: "video",
+            });
+          } catch (err) {
+            console.error(`Failed to delete video ${video.publicId}:`, err);
+          }
+        }
+      }
+    }
+
+    await sellerService.deleteSubmission(id);
+
+    return res.json({
+      success: true,
+      message: "Submission deleted successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete submission: " + error.message,
+    });
+  }
+};
+
+export const updateProductStock = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { stock } = req.body;
+    const userId = req.session.userId;
+
+    if (stock === undefined || stock === null || stock < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid stock value is required (must be 0 or greater)",
+      });
+    }
+
+    const Product = (await import("../../shared/models/Product.js")).default;
+    const product = await Product.findById(productId).select("seller stock");
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    if (product.seller.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to update this product",
+      });
+    }
+
+    product.stock = parseInt(stock);
+    await product.save();
+
+    return res.json({
+      success: true,
+      message: "Stock updated successfully",
+      stock: product.stock,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update stock: " + error.message,
+    });
   }
 };

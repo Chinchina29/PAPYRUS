@@ -25,16 +25,20 @@ import {
 const router = express.Router();
 
 router.get("/", (req, res) => {
-  res.render("user/login");
+  if (req.session && req.session.userId) {
+    return res.redirect("/home");
+  }
+  res.render("user/home-landing", { user: null });
 });
 
 router.get("/home", (req, res) => {
-  // if (req.session && req.session.userId) {
-  //   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
-  //   res.set("Pragma", "no-cache");
-  //   res.set("Expires", "0");
-  // }
-  res.render("user/home");
+  if (req.session && req.session.userId) {
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
+    return res.render("user/home", { user: req.session.user });
+  }
+  res.redirect("/");
 });
 
 router.get("/signup", isNotAuthenticated, (req, res) =>

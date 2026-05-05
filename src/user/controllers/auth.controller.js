@@ -135,8 +135,19 @@ export const logout = (req, res) => {
   res.set("Pragma", "no-cache");
   res.set("Expires", "0");
 
+  const isAjax = req.xhr || req.headers.accept?.includes("application/json");
+
   req.session.destroy((err) => {
     res.clearCookie("papyrus.user.sid");
-    return res.redirect("/login");
+    
+    if (isAjax) {
+      return res.json({
+        success: true,
+        message: "Logged out successfully",
+        redirectUrl: "/",
+      });
+    }
+    
+    return res.redirect("/");
   });
 };

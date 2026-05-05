@@ -92,10 +92,10 @@
 </head>
 <body>
   <div class="seller-sidebar">
-    <div class="sidebar-logo">
+    <a href="/home" class="sidebar-logo" style="text-decoration: none; color: inherit; cursor: pointer;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
       Papyrus
-    </div>
+    </a>
     <nav class="sidebar-nav">
       <a href="/sell">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -505,6 +505,24 @@
       document.getElementById('videoPreview').style.display = 'none';
       document.getElementById('previewVideo').src = '';
     }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      
+      if (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: decodeURIComponent(error),
+          confirmButtonColor: '#7A5C3E'
+        }).then(() => {
+          const url = new URL(window.location);
+          url.searchParams.delete('error');
+          window.history.replaceState({}, '', url);
+        });
+      }
+    });
   </script>
 </body>
 </html>

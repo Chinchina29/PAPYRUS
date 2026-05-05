@@ -209,105 +209,6 @@
       margin-bottom: 24px;
     }
 
-    .coupon-section {
-      margin-bottom: 24px;
-      padding-bottom: 24px;
-      border-bottom: 1px solid #e8e8e8;
-    }
-
-    .coupon-input-group {
-      display: flex;
-      gap: 8px;
-    }
-
-    .coupon-input {
-      flex: 1;
-      padding: 10px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-      text-transform: uppercase;
-    }
-
-    .coupon-input:focus {
-      outline: none;
-      border-color: #2d1f14;
-    }
-
-    .apply-coupon-btn {
-      padding: 10px 20px;
-      background: #2d1f14;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-      letter-spacing: 0.5px;
-    }
-
-    .apply-coupon-btn:hover {
-      background: #1a1209;
-    }
-
-    .applied-coupon {
-      background: #e8f5e9;
-      border: 1px solid #4caf50;
-      border-radius: 4px;
-      padding: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .coupon-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex: 1;
-    }
-
-    .coupon-code {
-      font-weight: 600;
-      color: #2e7d32;
-      font-size: 14px;
-    }
-
-    .remove-coupon-btn {
-      background: none;
-      border: none;
-      color: #666;
-      font-size: 24px;
-      cursor: pointer;
-      padding: 0;
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      transition: background 0.2s;
-    }
-
-    .remove-coupon-btn:hover {
-      background: rgba(0, 0, 0, 0.1);
-    }
-
-    .coupon-discount {
-      font-weight: 600;
-      color: #2e7d32;
-      font-size: 16px;
-    }
-
-    .discount-row {
-      color: #2e7d32;
-    }
-
-    .discount-amount {
-      font-weight: 600;
-    }
-
     .summary-row {
       display: flex;
       justify-content: space-between;
@@ -443,7 +344,7 @@
       <div class="cart-content">
         <div class="cart-items">
           <% cart.items.forEach(item => { %>
-            <div class="cart-item" data-product-id="<%= item.product._id %>">
+            <div class="cart-item" data-product-id="<%= item.product._id %>" data-item-price="<%= item.price %>" data-max-stock="<%= item.product.stock %>">
               <div class="item-image">
                 <% if (item.product.images && item.product.images.length > 0) { %>
                   <img src="<%= item.product.images[0].url %>" alt="<%= item.product.title %>"/>
@@ -463,11 +364,11 @@
                   </div>
                 <% } %>
                 <div class="quantity-controls">
-                  <button class="qty-btn" onclick="updateQuantity('<%= item.product._id %>', <%= item.quantity - 1 %>)" <% if (item.quantity <= 1) { %>disabled<% } %>>−</button>
+                  <button type="button" class="qty-btn" onclick="updateQuantity('<%= item.product._id %>', <%= item.quantity - 1 %>)" <%= item.quantity <= 1 ? 'disabled' : '' %>>−</button>
                   <span class="qty-display"><%= item.quantity %></span>
-                  <button class="qty-btn" onclick="updateQuantity('<%= item.product._id %>', <%= item.quantity + 1 %>)" <% if (item.quantity >= item.product.stock) { %>disabled<% } %>>+</button>
+                  <button type="button" class="qty-btn" onclick="updateQuantity('<%= item.product._id %>', <%= item.quantity + 1 %>)" <%= item.quantity >= item.product.stock ? 'disabled' : '' %>>+</button>
                 </div>
-                <button class="remove-link" onclick="removeFromCart('<%= item.product._id %>')">REMOVE</button>
+                <button type="button" class="remove-link" onclick="removeFromCart('<%= item.product._id %>')">REMOVE</button>
               </div>
 
               <div class="item-price">
@@ -479,35 +380,11 @@
 
         <div class="cart-summary">
           <h2 class="summary-title">Order Summary</h2>
-          
-          <div class="coupon-section">
-            <% if (appliedCoupon) { %>
-              <div class="applied-coupon">
-                <div class="coupon-info">
-                  <span class="coupon-code">🎉 <%= appliedCoupon.code %></span>
-                  <button class="remove-coupon-btn" onclick="removeCoupon()">×</button>
-                </div>
-                <div class="coupon-discount">-₹<%= appliedCoupon.discount.toFixed(2) %></div>
-              </div>
-            <% } else { %>
-              <div class="coupon-input-group">
-                <input type="text" id="couponCode" placeholder="Enter coupon code" class="coupon-input">
-                <button class="apply-coupon-btn" onclick="applyCoupon()">APPLY</button>
-              </div>
-            <% } %>
-          </div>
 
           <div class="summary-row">
             <span>Subtotal</span>
             <span>₹<%= cart.totalAmount.toFixed(2) %></span>
           </div>
-          
-          <% if (appliedCoupon) { %>
-          <div class="summary-row discount-row">
-            <span>Discount (<%= appliedCoupon.code %>)</span>
-            <span class="discount-amount">-₹<%= appliedCoupon.discount.toFixed(2) %></span>
-          </div>
-          <% } %>
           
           <div class="summary-row">
             <span>Estimated Shipping</span>
@@ -516,7 +393,7 @@
           
           <div class="summary-row total">
             <span>Total</span>
-            <span>₹<%= ((cart.totalAmount - (appliedCoupon ? appliedCoupon.discount : 0)) + 95).toFixed(2) %></span>
+            <span>₹<%= (cart.totalAmount + 95).toFixed(2) %></span>
           </div>
 
           <button class="checkout-btn" onclick="proceedToCheckout()">
@@ -574,7 +451,24 @@
         const data = await response.json();
 
         if (data.success) {
-          location.reload(); 
+          const itemRow = document.querySelector(`[data-product-id="${productId}"]`);
+          if (itemRow) {
+            const qtyDisplay = itemRow.querySelector('.qty-display');
+            const priceAmount = itemRow.querySelector('.price-amount');
+            const itemPrice = parseFloat(itemRow.dataset.itemPrice);
+            
+            if (qtyDisplay) qtyDisplay.textContent = newQuantity;
+            if (priceAmount) priceAmount.textContent = `₹${(itemPrice * newQuantity).toFixed(2)}`;
+            
+            const decreaseBtn = itemRow.querySelector('.qty-btn:first-of-type');
+            const increaseBtn = itemRow.querySelector('.qty-btn:last-of-type');
+            const maxStock = parseInt(itemRow.dataset.maxStock);
+            
+            if (decreaseBtn) decreaseBtn.disabled = newQuantity <= 1;
+            if (increaseBtn) increaseBtn.disabled = newQuantity >= maxStock;
+          }
+          
+          updateCartSummary();
         } else {
           if (data.message && (data.message.toLowerCase().includes('out of stock') || data.message.toLowerCase().includes('stock') && data.message.includes('0'))) {
             Swal.fire({
@@ -626,6 +520,26 @@
     function updateQuantity(productId, newQuantity) {
       debouncedUpdateQuantity(productId, newQuantity);
     }
+    
+    async function updateCartSummary() {
+      try {
+        const response = await fetch('/cart');
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        const newSubtotal = doc.querySelector('.summary-row:nth-child(1) .summary-value');
+        const newTotal = doc.querySelector('.summary-total .summary-value');
+        
+        const currentSubtotal = document.querySelector('.summary-row:nth-child(1) .summary-value');
+        const currentTotal = document.querySelector('.summary-total .summary-value');
+        
+        if (newSubtotal && currentSubtotal) currentSubtotal.textContent = newSubtotal.textContent;
+        if (newTotal && currentTotal) currentTotal.textContent = newTotal.textContent;
+      } catch (error) {
+        console.error('Failed to update cart summary:', error);
+      }
+    }
 
     const throttledRemoveFromCart = throttle(async function(productId) {
       const result = await Swal.fire({
@@ -669,103 +583,7 @@
       window.location.href = '/checkout';
     }
 
-    async function applyCoupon() {
-      const couponCode = document.getElementById('couponCode').value.trim();
-
-      if (!couponCode) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Coupon Code Required',
-          text: 'Please enter a coupon code',
-          confirmButtonColor: '#2d1f14'
-        });
-        return;
-      }
-
-      try {
-        const response = await fetch('/cart/validate-coupon', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ code: couponCode })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Coupon Applied!',
-            html: `
-              <p><strong>${data.coupon.code}</strong> has been applied</p>
-              <p>You saved ₹${data.coupon.discount.toFixed(2)}!</p>
-            `,
-            confirmButtonColor: '#2d1f14'
-          }).then(() => {
-            location.reload();
-          });
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Invalid Coupon',
-            text: data.message,
-            confirmButtonColor: '#2d1f14'
-          });
-        }
-      } catch (error) {
-        console.error('Apply coupon error:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Something went wrong. Please try again.',
-          confirmButtonColor: '#2d1f14'
-        });
-      }
-    }
-
-    async function removeCoupon() {
-      try {
-        const response = await fetch('/cart/remove-coupon', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          location.reload();
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: data.message || 'Failed to remove coupon',
-            confirmButtonColor: '#2d1f14'
-          });
-        }
-      } catch (error) {
-        console.error('Remove coupon error:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Something went wrong. Please try again.',
-          confirmButtonColor: '#2d1f14'
-        });
-      }
-    }
-
     document.addEventListener('DOMContentLoaded', function() {
-      const couponInput = document.getElementById('couponCode');
-      if (couponInput) {
-        couponInput.addEventListener('keypress', function(e) {
-          if (e.key === 'Enter') {
-            applyCoupon();
-          }
-        });
-      }
-
       const urlParams = new URLSearchParams(window.location.search);
       const error = urlParams.get('error');
       

@@ -432,7 +432,7 @@
         <div class="section-card">
           <div class="section-header">
             <h2 class="section-title">Delivery Address</h2>
-            <a href="/profile/addresses/add" class="add-address-btn">+ Add New</a>
+            <a href="/profile/addresses/add?from=checkout" class="add-address-btn">+ Add New</a>
           </div>
 
           <% if (addresses && addresses.length > 0) { %>
@@ -553,6 +553,63 @@
           <span>₹<%= subtotal.toFixed(2) %></span>
         </div>
 
+        <!-- Coupon Section -->
+        <div style="margin: 20px 0; padding: 20px; background: #f9f7f4; border-radius: 8px; border: 1px solid #e8dcc8;">
+          <% if (appliedCoupon) { %>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <div>
+                <div style="font-weight: 600; color: #2e7d32; font-size: 14px;">
+                  ✓ Coupon Applied: <%= appliedCoupon.code %>
+                </div>
+                <div style="font-size: 12px; color: #666; margin-top: 4px;">
+                  You saved ₹<%= appliedCoupon.discount.toFixed(2) %>
+                </div>
+              </div>
+              <button type="button" onclick="removeCoupon()" style="padding: 6px 12px; background: #d32f2f; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; transition: background 0.2s;">
+                Remove
+              </button>
+            </div>
+          <% } else { %>
+            <div style="font-weight: 600; color: #2d1f14; margin-bottom: 10px; font-size: 14px;">Have a Coupon Code?</div>
+            
+            <% if (availableCoupons && availableCoupons.length > 0) { %>
+              <div style="margin-bottom: 12px;">
+                <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px;">Select from available coupons:</label>
+                <select id="couponSelect" onchange="selectCoupon()" style="width: 100%; padding: 10px 12px; border: 1.5px solid #e8dcc8; border-radius: 6px; font-size: 14px; outline: none; font-family: inherit; background: white; cursor: pointer;">
+                  <option value="">-- Select a coupon --</option>
+                  <% availableCoupons.forEach(coupon => { %>
+                    <% 
+                      let discountText = '';
+                      if (coupon.discountType === 'percentage') {
+                        discountText = `${coupon.discountValue}% OFF`;
+                        if (coupon.maxDiscountAmount) {
+                          discountText += ` (Max ₹${coupon.maxDiscountAmount})`;
+                        }
+                      } else {
+                        discountText = `₹${coupon.discountValue} OFF`;
+                      }
+                    %>
+                    <option value="<%= coupon.code %>" data-description="<%= coupon.description || '' %>">
+                      <%= coupon.code %> - <%= discountText %>
+                    </option>
+                  <% }) %>
+                </select>
+              </div>
+              
+              <div id="couponDescription" style="display: none; font-size: 12px; color: #666; margin-bottom: 12px; padding: 8px; background: white; border-radius: 4px; border: 1px solid #e8dcc8;"></div>
+              
+              <div style="text-align: center; margin: 12px 0; color: #999; font-size: 12px;">OR</div>
+            <% } %>
+            
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="couponCode" placeholder="Enter coupon code" style="flex: 1; padding: 10px 12px; border: 1.5px solid #e8dcc8; border-radius: 6px; font-size: 14px; outline: none; font-family: inherit;">
+              <button type="button" onclick="applyCoupon()" style="padding: 10px 20px; background: #2d1f14; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.2s; white-space: nowrap;">
+                Apply
+              </button>
+            </div>
+          <% } %>
+        </div>
+
         <% if (discount > 0) { %>
         <div class="summary-row discount">
           <span>Discount<% if (appliedCoupon) { %> (<%= appliedCoupon.code %>)<% } %></span>
@@ -671,7 +728,134 @@
       }
     }
 
+    function selectCoupon() {
+      const select = document.getElementById('couponSelect');
+      const selectedOption = select.options[select.selectedIndex];
+      const couponCode = selectedOption.value;
+      const description = selectedOption.getAttribute('data-description');
+      const descriptionDiv = document.getElementById('couponDescription');
+      const couponInput = document.getElementById('couponCode');
+      
+      if (couponCode) {
+        couponInput.value = couponCode;
+        if (description) {
+          descriptionDiv.textContent = description;
+          descriptionDiv.style.display = 'block';
+        } else {
+          descriptionDiv.style.display = 'none';
+        }
+      } else {
+        couponInput.value = '';
+        descriptionDiv.style.display = 'none';
+      }
+    }
+
+    async function applyCoupon() {
+      const couponCode = document.getElementById('couponCode').value.trim();
+
+      if (!couponCode) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Coupon Code Required',
+          text: 'Please enter a coupon code',
+          confirmButtonColor: '#2d1f14'
+        });
+        return;
+      }
+
+      try {
+        const response = await fetch('/cart/validate-coupon', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ code: couponCode })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Coupon Applied!',
+            html: `
+              <p><strong>${data.coupon.code}</strong> has been applied</p>
+              <p>You saved ₹${data.coupon.discount.toFixed(2)}!</p>
+            `,
+            confirmButtonColor: '#2d1f14'
+          }).then(() => {
+            location.reload();
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Invalid Coupon',
+            text: data.message || 'This coupon code is not valid',
+            confirmButtonColor: '#2d1f14'
+          });
+        }
+      } catch (error) {
+        console.error('Apply coupon error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Something went wrong. Please try again.',
+          confirmButtonColor: '#2d1f14'
+        });
+      }
+    }
+
+    async function removeCoupon() {
+      try {
+        const response = await fetch('/cart/remove-coupon', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Coupon Removed',
+            text: 'The coupon has been removed from your order',
+            timer: 1500,
+            showConfirmButton: false
+          }).then(() => {
+            location.reload();
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: data.message || 'Failed to remove coupon',
+            confirmButtonColor: '#2d1f14'
+          });
+        }
+      } catch (error) {
+        console.error('Remove coupon error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Something went wrong. Please try again.',
+          confirmButtonColor: '#2d1f14'
+        });
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
+      const couponInput = document.getElementById('couponCode');
+      if (couponInput) {
+        couponInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            applyCoupon();
+          }
+        });
+      }
+      
       const urlParams = new URLSearchParams(window.location.search);
       const error = urlParams.get('error');
       

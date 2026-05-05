@@ -198,6 +198,18 @@ router.post(
 );
 router.get("/sell/my-listings", requireAuth, sellerController.getMyListings);
 router.get("/sell/create", requireAuth, sellerController.getCreatePage);
+router.delete(
+  "/sell/submission/:id",
+  requireAuth,
+  generalApiLimiter,
+  sellerController.deleteSubmission,
+);
+router.patch(
+  "/sell/product/:productId/stock",
+  requireAuth,
+  generalApiLimiter,
+  sellerController.updateProductStock,
+);
 
 router.post(
   "/reviews",
@@ -252,6 +264,16 @@ router.get(
 
 router.get("/orders", requireAuth, orderController.getUserOrders);
 router.get("/orders/:id", requireAuth, orderController.getOrderDetail);
+router.post(
+  "/orders/:orderId/cancel",
+  requireAuth,
+  orderController.cancelOrder,
+);
+router.post(
+  "/orders/:orderId/return",
+  requireAuth,
+  orderController.returnOrder,
+);
 router.get("/checkout", requireAuth, checkoutController.getCheckout);
 router.post(
   "/checkout/place-order",

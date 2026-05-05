@@ -1,917 +1,459 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Papyrus - Discover Timeless Books</title>
-  <link rel="stylesheet" href="/css/home.css">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Georgia', 'Times New Roman', serif;
-      background-color: #f5f1ed;
-      color: #2d1f14;
-      line-height: 1.6;
-    }
-
-    .landing-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 60px;
-      background-color: #f5f1ed;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid #e8dcc8;
-    }
-
-    .logo-text {
-      font-size: 20px;
-      font-weight: 600;
-      color: #2d1f14;
-      letter-spacing: 1px;
-    }
-
-    .header-nav {
-      display: flex;
-      gap: 40px;
-      align-items: center;
-    }
-
-    .header-nav a {
-      color: #7A5C3E;
-      text-decoration: none;
-      font-size: 14px;
-      transition: color 0.2s;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    .header-nav a:hover {
-      color: #2d1f14;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-    }
-
-    .btn-signin {
-      padding: 8px 24px;
-      background: #2d1f14;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-      transition: background 0.2s;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    .btn-signin:hover {
-      background: #1a1209;
-    }
-
-    .icon-btn {
-      width: 24px;
-      height: 24px;
-      color: #2d1f14;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-
-    .icon-btn:hover {
-      color: #7A5C3E;
-    }
-
-    .hero-section {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 80px 60px 120px;
-      text-align: center;
-      position: relative;
-    }
-
-    .hero-title {
-      font-size: 96px;
-      font-weight: 700;
-      color: #2d1f14;
-      margin-bottom: 40px;
-      line-height: 1;
-      letter-spacing: -2px;
-      position: relative;
-      display: inline-block;
-      animation: gentleFloat 6s ease-in-out infinite;
-    }
-
-    @keyframes gentleFloat {
-      0%, 100% {
-        transform: translateY(0px);
-      }
-      50% {
-        transform: translateY(-10px);
-      }
-    }
-
-    .autumn-leaf {
-      position: absolute;
-      width: 60px;
-      height: 60px;
-      top: 50%;
-      left: -100px;
-      animation: leafFloat 12s ease-in-out infinite;
-      pointer-events: none;
-      z-index: 10;
-    }
-
-    @keyframes leafFloat {
-      0% {
-        left: -100px;
-        top: 20%;
-        transform: rotate(0deg) translateY(0px);
-        opacity: 0;
-      }
-      10% {
-        opacity: 1;
-      }
-      25% {
-        transform: rotate(90deg) translateY(-20px);
-      }
-      50% {
-        left: 50%;
-        top: 50%;
-        transform: rotate(180deg) translateY(20px);
-      }
-      75% {
-        transform: rotate(270deg) translateY(-20px);
-      }
-      90% {
-        opacity: 1;
-      }
-      100% {
-        left: calc(100% + 100px);
-        top: 80%;
-        transform: rotate(360deg) translateY(0px);
-        opacity: 0;
-      }
-    }
-
-    .leaf-svg {
-      width: 100%;
-      height: 100%;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-    }
-
-    .search-container {
-      max-width: 600px;
-      margin: 0 auto 40px;
-      position: relative;
-    }
-
-    .search-input {
-      width: 100%;
-      padding: 16px 50px 16px 20px;
-      border: 1px solid #e8dcc8;
-      border-radius: 8px;
-      font-size: 15px;
-      background: white;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    .search-input:focus {
-      outline: none;
-      border-color: #7A5C3E;
-    }
-
-    .search-icon {
-      position: absolute;
-      right: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 20px;
-      height: 20px;
-      color: #7A5C3E;
-    }
-
-    .hero-buttons {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-
-    .btn-primary {
-      padding: 14px 32px;
-      background: #2d1f14;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-      transition: background 0.2s;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .btn-primary:hover {
-      background: #1a1209;
-    }
-
-    .btn-secondary {
-      padding: 14px 32px;
-      background: transparent;
-      color: #2d1f14;
-      border: 1px solid #2d1f14;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-      transition: all 0.2s;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .btn-secondary:hover {
-      background: #2d1f14;
-      color: white;
-    }
-
-    .hero-subtitle {
-      font-size: 13px;
-      color: #7A5C3E;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    .recommended-section {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 60px 60px 80px;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 40px;
-    }
-
-    .section-title {
-      font-size: 36px;
-      font-weight: 400;
-      color: #2d1f14;
-      font-style: italic;
-    }
-
-    .carousel-controls {
-      display: flex;
-      gap: 12px;
-    }
-
-    .carousel-btn {
-      width: 40px;
-      height: 40px;
-      border: 1px solid #e8dcc8;
-      background: white;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      color: #2d1f14;
-      transition: all 0.2s;
-    }
-
-    .carousel-btn:hover {
-      background: #2d1f14;
-      color: white;
-      border-color: #2d1f14;
-    }
-
-    .books-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 40px;
-    }
-
-    .book-card {
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      transition: transform 0.2s, box-shadow 0.2s;
-      cursor: pointer;
-      text-decoration: none;
-      color: inherit;
-      display: block;
-    }
-
-    .book-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 12px 32px rgba(0,0,0,0.1);
-    }
-
-    .book-image {
-      width: 100%;
-      height: 400px;
-      overflow: hidden;
-      background: #f5f1ed;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .book-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .book-info {
-      padding: 20px;
-    }
-
-    .book-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: #2d1f14;
-      margin-bottom: 8px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    .book-meta {
-      font-size: 13px;
-      color: #7A5C3E;
-      margin-bottom: 12px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    .book-price {
-      font-size: 18px;
-      font-weight: 700;
-      color: #2d1f14;
-    }
-
-    .features-section {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 80px 60px;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 60px;
-    }
-
-    .feature-card {
-      text-align: center;
-    }
-
-    .feature-icon {
-      width: 60px;
-      height: 60px;
-      margin: 0 auto 24px;
-      color: #2d1f14;
-    }
-
-    .feature-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: #2d1f14;
-      margin-bottom: 12px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    .feature-description {
-      font-size: 14px;
-      color: #7A5C3E;
-      line-height: 1.6;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    .newsletter-section {
-      background: #2d5016;
-      color: white;
-      padding: 80px 60px;
-      margin: 80px 0;
-    }
-
-    .newsletter-content {
-      max-width: 800px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 60px;
-      align-items: center;
-    }
-
-    .newsletter-text h2 {
-      font-size: 48px;
-      font-weight: 400;
-      font-style: italic;
-      margin-bottom: 20px;
-      line-height: 1.2;
-    }
-
-    .newsletter-text p {
-      font-size: 15px;
-      line-height: 1.8;
-      opacity: 0.9;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    .newsletter-form {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .newsletter-input {
-      padding: 14px 20px;
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 8px;
-      font-size: 15px;
-      background: rgba(255,255,255,0.1);
-      color: white;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    .newsletter-input::placeholder {
-      color: rgba(255,255,255,0.6);
-    }
-
-    .newsletter-input:focus {
-      outline: none;
-      border-color: white;
-      background: rgba(255,255,255,0.15);
-    }
-
-    .btn-newsletter {
-      padding: 14px 32px;
-      background: white;
-      color: #2d5016;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .btn-newsletter:hover {
-      background: #f5f1ed;
-    }
-
-    .footer {
-      background: #f5f1ed;
-      padding: 60px 60px 40px;
-      border-top: 1px solid #e8dcc8;
-    }
-
-    .footer-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 60px;
-      margin-bottom: 40px;
-    }
-
-    .footer-section h4 {
-      font-size: 12px;
-      font-weight: 600;
-      color: #2d1f14;
-      margin-bottom: 20px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    .footer-section ul {
-      list-style: none;
-    }
-
-    .footer-section ul li {
-      margin-bottom: 12px;
-    }
-
-    .footer-section ul li a {
-      color: #7A5C3E;
-      text-decoration: none;
-      font-size: 14px;
-      transition: color 0.2s;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    .footer-section ul li a:hover {
-      color: #2d1f14;
-    }
-
-    .footer-bottom {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding-top: 40px;
-      border-top: 1px solid #e8dcc8;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .footer-bottom p {
-      font-size: 13px;
-      color: #7A5C3E;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    .social-links {
-      display: flex;
-      gap: 16px;
-    }
-
-    .social-links a {
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #7A5C3E;
-      transition: color 0.2s;
-    }
-
-    .social-links a:hover {
-      color: #2d1f14;
-    }
-
-    @media (max-width: 968px) {
-      .landing-header {
-        padding: 20px 30px;
-      }
-
-      .hero-section {
-        padding: 60px 30px 80px;
-      }
-
-      .hero-title {
-        font-size: 64px;
-      }
-
-      .books-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 30px;
-      }
-
-      .features-grid {
-        grid-template-columns: 1fr;
-        gap: 40px;
-      }
-
-      .newsletter-content {
-        grid-template-columns: 1fr;
-        gap: 40px;
-      }
-
-      .footer-content {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 40px;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .hero-title {
-        font-size: 48px;
-      }
-
-      .books-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .hero-buttons {
-        flex-direction: column;
-      }
-
-      .footer-content {
-        grid-template-columns: 1fr;
-      }
-
-      .footer-bottom {
-        flex-direction: column;
-        gap: 20px;
-        text-align: center;
-      }
-    }
-  </style>
-</head>
-<body>
-
-  <header class="landing-header">
-    <div class="logo-text">Papyrus</div>
-    <nav class="header-nav">
-      <a href="/shop">Books</a>
-      <a href="/sell">Sell</a>
-      <a href="/about">About</a>
-      <a href="/stories">Stories</a>
-    </nav>
-    <div class="header-actions">
-      <% if (user) { %>
-        <a href="/profile" class="btn-signin">My Account</a>
-      <% } else { %>
-        <a href="/login" class="btn-signin">SIGN IN</a>
-      <% } %>
-      <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"></circle>
-        <path d="m21 21-4.35-4.35"></path>
-      </svg>
-    </div>
-  </header>
-
-  <section class="hero-section">
-    <div class="autumn-leaf">
-      <svg class="leaf-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="leafGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#d4691a;stop-opacity:1" />
-            <stop offset="50%" style="stop-color:#c45911;stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#8b3a0e;stop-opacity:1" />
-          </linearGradient>
-        </defs>
-        <path d="M50 10 Q30 30 25 50 Q20 70 30 85 Q40 95 50 90 Q60 95 70 85 Q80 70 75 50 Q70 30 50 10 Z" 
-              fill="url(#leafGradient)" 
-              stroke="#6b2d0e" 
-              stroke-width="1.5"/>
-        <path d="M50 10 Q50 30 50 50 Q50 70 50 90" 
-              stroke="#8b3a0e" 
-              stroke-width="2" 
-              fill="none"/>
-        <path d="M50 30 Q35 35 30 45" 
-              stroke="#8b3a0e" 
-              stroke-width="1.5" 
-              fill="none"/>
-        <path d="M50 30 Q65 35 70 45" 
-              stroke="#8b3a0e" 
-              stroke-width="1.5" 
-              fill="none"/>
-        <path d="M50 50 Q35 52 28 60" 
-              stroke="#8b3a0e" 
-              stroke-width="1.5" 
-              fill="none"/>
-        <path d="M50 50 Q65 52 72 60" 
-              stroke="#8b3a0e" 
-              stroke-width="1.5" 
-              fill="none"/>
-        <path d="M50 70 Q40 72 35 78" 
-              stroke="#8b3a0e" 
-              stroke-width="1.5" 
-              fill="none"/>
-        <path d="M50 70 Q60 72 65 78" 
-              stroke="#8b3a0e" 
-              stroke-width="1.5" 
-              fill="none"/>
-      </svg>
-    </div>
-    <h1 class="hero-title">Pappyrus</h1>
-    
-    <div class="search-container">
-      <input type="text" class="search-input" placeholder="Search for title, author, or genre..." id="searchInput">
-      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"></circle>
-        <path d="m21 21-4.35-4.35"></path>
-      </svg>
-    </div>
-
-    <div class="hero-buttons">
-      <a href="/shop" class="btn-primary">Visit Our Shelves</a>
-      <a href="/sell" class="btn-secondary">Sell Your Collection</a>
-    </div>
-
-    <p class="hero-subtitle">Discover timeless stories and rare finds</p>
-  </section>
-
-  <section class="recommended-section">
-    <div class="section-header">
-      <h2 class="section-title">Recommended for You</h2>
-      <div class="carousel-controls">
-        <button class="carousel-btn prev" onclick="scrollCarousel('left')">‹</button>
-        <button class="carousel-btn next" onclick="scrollCarousel('right')">›</button>
-      </div>
-    </div>
-
-    <div class="books-grid" id="booksGrid">
-      <a href="/shop" class="book-card">
-        <div class="book-image">
-          <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop" alt="Moby Dick"/>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Papyrus - Stories Worth Sharing</title>
+    <link rel="stylesheet" href="/css/home.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+  <body>
+    <%- include('../partials/header') %>
+
+    <section class="hero">
+      <div class="container">
+        <div class="hero-content">
+          <p class="hero-subtitle">EST. 1974</p>
+          <h1 class="hero-title">Stories Worth Sharing</h1>
+          <p class="hero-description">
+            Discover vintage books that have stood the test of time and timeless
+            classics that will find a new home. Explore our curated collection
+            preserving literary heritage.
+          </p>
+          <a href="/shop" class="btn-primary">Explore Collections</a>
         </div>
-        <div class="book-info">
-          <div class="book-title">Moby Dick</div>
-          <div class="book-meta">Herman Melville • 1851 Edition</div>
-          <div class="book-price">₹2.50</div>
+        <div class="hero-images">
+          <div class="hero-image-main">
+            <img
+              src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop"
+              alt="Book Cover"
+            />
+          </div>
+          <div class="hero-image-stack">
+            <div class="stack-image stack-1">
+              <img
+                src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&h=450&fit=crop"
+                alt="Vintage Book"
+              />
+            </div>
+            <div class="stack-image stack-2">
+              <img
+                src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=300&h=450&fit=crop"
+                alt="Classic Book"
+              />
+            </div>
+            <div class="stack-image stack-3">
+              <img
+                src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&h=450&fit=crop"
+                alt="Book Stack"
+              />
+            </div>
+            <div class="stack-image stack-4">
+              <img
+                src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=300&h=450&fit=crop"
+                alt="Old Book"
+              />
+            </div>
+          </div>
         </div>
-      </a>
+      </div>
+    </section>
 
-      <a href="/shop" class="book-card">
-        <div class="book-image">
-          <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop" alt="The Great Gatsby"/>
+    <section class="featured-collections">
+      <div class="container">
+        <div class="section-header">
+          <h2>Featured Collections</h2>
+          <a href="/shop" class="view-all">VIEW ALL ></a>
         </div>
-        <div class="book-info">
-          <div class="book-title">The Great Gatsby</div>
-          <div class="book-meta">F. Scott Fitzgerald • First Edition</div>
-          <div class="book-price">₹12.00</div>
+        <div class="collections-grid">
+          <div class="collection-card">
+            <img
+              src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=300&fit=crop"
+              alt="Rare Finds"
+            />
+            <div class="collection-info">
+              <h3>Rare Finds</h3>
+              <p>View More</p>
+            </div>
+          </div>
+          <div class="collection-card">
+            <img
+              src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=300&fit=crop"
+              alt="The Classics"
+            />
+            <div class="collection-info">
+              <h3>The Classics</h3>
+              <p>View More</p>
+            </div>
+          </div>
+          <div class="collection-card">
+            <img
+              src="https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=400&h=300&fit=crop"
+              alt="Nonfiction Picks"
+            />
+            <div class="collection-info">
+              <h3>Nonfiction Picks</h3>
+              <p>View More</p>
+            </div>
+          </div>
         </div>
-      </a>
+      </div>
+    </section>
 
-      <a href="/shop" class="book-card">
-        <div class="book-image">
-          <img src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=400&h=600&fit=crop" alt="Leaves of Grass"/>
+    <section class="recommended">
+      <div class="container">
+        <div class="section-header">
+          <h2>Recommended for You</h2>
+          <div class="carousel-controls">
+            <button class="carousel-btn prev">‹</button>
+            <button class="carousel-btn next">›</button>
+          </div>
         </div>
-        <div class="book-info">
-          <div class="book-title">Leaves of Grass</div>
-          <div class="book-meta">Walt Whitman • 1855 Edition</div>
-          <div class="book-price">₹8.75</div>
+        <div class="books-carousel">
+          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+            <div class="book-image">
+              <img
+                src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop"
+                alt="The Garden of Evening"
+              />
+            </div>
+            <h3>THE GARDEN OF EVENING</h3>
+            <p class="price">$8.8</p>
+          </a>
+          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+            <div class="book-image">
+              <img
+                src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&h=400&fit=crop"
+                alt="Notebook 1947"
+              />
+            </div>
+            <h3>NOTEBOOK 1947</h3>
+            <p class="price">$6.5</p>
+          </a>
+          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+            <div class="book-image">
+              <img
+                src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=300&h=400&fit=crop"
+                alt="Spectre"
+              />
+            </div>
+            <h3>SPECTRE</h3>
+            <p class="price">$7.5</p>
+          </a>
+          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+            <div class="book-image">
+              <img
+                src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&h=400&fit=crop"
+                alt="Notes of the Air"
+              />
+            </div>
+            <h3>NOTES OF THE AIR</h3>
+            <p class="price">$8.8</p>
+          </a>
+          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+            <div class="book-image">
+              <img
+                src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=300&h=400&fit=crop"
+                alt="The Secret History"
+              />
+            </div>
+            <h3>THE SECRET HISTORY</h3>
+            <p class="price">$9.9</p>
+          </a>
+          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+            <div class="book-image">
+              <img
+                src="https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=300&h=400&fit=crop"
+                alt="One Summer's Day"
+              />
+            </div>
+            <h3>ONE SUMMER'S DAY</h3>
+            <p class="price">$6.2</p>
+          </a>
         </div>
-      </a>
-    </div>
-  </section>
-
-  <section class="features-section">
-    <div class="features-grid">
-      <div class="feature-card">
-        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-        </svg>
-        <h3 class="feature-title">Sustainable Legacy</h3>
-        <p class="feature-description">Every book finds a new home, reducing waste and preserving literary heritage for future generations.</p>
       </div>
+    </section>
 
-      <div class="feature-card">
-        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-        </svg>
-        <h3 class="feature-title">Curated with Care</h3>
-        <p class="feature-description">Each book is carefully inspected and authenticated to ensure quality and preserve its story.</p>
+    <section class="top-sellers">
+      <div class="container">
+        <h2>Top Sellers This Week</h2>
+        <div class="books-grid">
+          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+            <div class="book-image">
+              <span class="badge">-15% OFF</span>
+              <img
+                src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&h=400&fit=crop"
+                alt="The Bluest Eye"
+              />
+            </div>
+            <h3>THE BLUEST EYE</h3>
+            <p class="price">$8.8 <span class="old-price">$10</span></p>
+          </a>
+          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+            <div class="book-image">
+              <span class="badge new">NEW</span>
+              <img
+                src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop"
+                alt="Frost Song"
+              />
+            </div>
+            <h3>FROST SONG</h3>
+            <p class="price">$10.0</p>
+          </a>
+          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+            <div class="book-image">
+              <img
+                src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=300&h=400&fit=crop"
+                alt="Watership Daisies"
+              />
+            </div>
+            <h3>WATERSHIP DAISIES</h3>
+            <p class="price">$7.5</p>
+          </a>
+          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+            <div class="book-image">
+              <img
+                src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&h=400&fit=crop"
+                alt="Green Lantern"
+              />
+            </div>
+            <h3>GREEN LANTERN</h3>
+            <p class="price">$8.0</p>
+          </a>
+          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+            <div class="book-image">
+              <img
+                src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=300&h=400&fit=crop"
+                alt="The Alchemist"
+              />
+            </div>
+            <h3>THE ALCHEMIST</h3>
+            <p class="price">$9.7</p>
+          </a>
+        </div>
       </div>
+    </section>
 
-      <div class="feature-card">
-        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-        <h3 class="feature-title">Community of Readers</h3>
-        <p class="feature-description">Join a passionate community of book lovers sharing stories and discovering hidden literary gems.</p>
+    <section class="promise">
+      <div class="container">
+        <h2>The Papyrus Promise</h2>
+        <div class="promise-grid">
+          <div class="promise-card">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            <h3>Authenticity</h3>
+            <p>Every book is verified for authenticity and quality.</p>
+          </div>
+          <div class="promise-card">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <h3>Fast Delivery</h3>
+            <p>Delivered to your doorstep within 3-5 business days.</p>
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="newsletter-section">
-    <div class="newsletter-content">
-      <div class="newsletter-text">
-        <h2>The Archivist's Weekly</h2>
-        <p>A curated selection of rare finds, literary insights, and stories from our community. Delivered every Sunday morning to your inbox.</p>
+    <section class="sell-story">
+      <div class="container">
+        <div class="sell-content">
+          <h2>Sell Your Story</h2>
+          <p>
+            Got a book you no longer need? Turn your unwanted books into cash.
+          </p>
+          <div class="sell-steps">
+            <div class="step">
+              <span class="step-number">1. SNAP</span>
+            </div>
+            <div class="step">
+              <span class="step-number">2. LIST</span>
+            </div>
+            <div class="step">
+              <span class="step-number">3. SHIP</span>
+            </div>
+          </div>
+          <a href="/sell" class="btn-secondary">START SELLING TODAY</a>
+        </div>
       </div>
-      <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
-        <input type="email" class="newsletter-input" placeholder="Your email address" required>
-        <button type="submit" class="btn-newsletter">Subscribe</button>
-      </form>
-    </div>
-  </section>
+    </section>
 
-  <footer class="footer">
-    <div class="footer-content">
-      <div class="footer-section">
-        <h4>Papyrus</h4>
-        <p style="font-size: 13px; color: #7A5C3E; line-height: 1.8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-          Preserving literary heritage through sustainable book trading since 1974.
-        </p>
+    <section class="testimonials">
+      <div class="container">
+        <h2>Reader Testimonials</h2>
+        <div class="testimonial-list">
+          <div class="testimonial">
+            <div class="testimonial-avatar"></div>
+            <div class="testimonial-content">
+              <p class="testimonial-text">
+                "I found rare editions I've been searching for years!"
+              </p>
+              <p class="testimonial-author">- Sarah Mitchell</p>
+            </div>
+          </div>
+          <div class="testimonial">
+            <div class="testimonial-avatar"></div>
+            <div class="testimonial-content">
+              <p class="testimonial-text">
+                "The quality and service are exceptional."
+              </p>
+              <p class="testimonial-author">- James Anderson</p>
+            </div>
+          </div>
+        </div>
       </div>
+    </section>
 
-      <div class="footer-section">
-        <h4>Discover</h4>
-        <ul>
-          <li><a href="/shop">Browse Books</a></li>
-          <li><a href="/collections">Collections</a></li>
-          <li><a href="/rare-books">Rare Finds</a></li>
-          <li><a href="/new-arrivals">New Arrivals</a></li>
-        </ul>
+    <section class="recent-stories">
+      <div class="container">
+        <h2>Recent Stories</h2>
+        <div class="stories-grid">
+          <div class="story-card">
+            <img
+              src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&h=400&fit=crop"
+              alt="Story"
+            />
+            <p>Love among the Daisies</p>
+          </div>
+          <div class="story-card">
+            <img
+              src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=300&h=400&fit=crop"
+              alt="Story"
+            />
+            <p>Stories in the Attic</p>
+          </div>
+          <div class="story-card">
+            <img
+              src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop"
+              alt="Story"
+            />
+          </div>
+          <div class="story-card">
+            <img
+              src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&h=400&fit=crop"
+              alt="Story"
+            />
+          </div>
+        </div>
       </div>
+    </section>
 
-      <div class="footer-section">
-        <h4>Resources</h4>
-        <ul>
-          <li><a href="/about">About Us</a></li>
-          <li><a href="/sell">Sell Books</a></li>
-          <li><a href="/stories">Stories</a></li>
-          <li><a href="/contact">Contact</a></li>
-        </ul>
+    <section class="journey">
+      <div class="container">
+        <h2>Begin Your Journey</h2>
+        <p>Discover stories that will stay with you forever</p>
+        <a href="/shop" class="btn-primary">EXPLORE NOW</a>
       </div>
+    </section>
 
-      <div class="footer-section">
-        <h4>Support</h4>
-        <ul>
-          <li><a href="/help">Help Center</a></li>
-          <li><a href="/shipping">Shipping Info</a></li>
-          <li><a href="/returns">Returns</a></li>
-          <li><a href="/privacy">Privacy Policy</a></li>
-        </ul>
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <div class="footer-logo">
+              <svg
+                viewBox="0 0 100 100"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 70 L50 85 Q48 90 45 90 L15 90 Q10 90 10 85 Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 70 L50 85 Q52 90 55 90 L85 90 Q90 90 90 85 Z"
+                  fill="currentColor"
+                />
+                <path d="M50 70 L45 50 L50 30 L55 50 Z" fill="currentColor" />
+                <circle cx="50" cy="25" r="6" fill="currentColor" />
+                <ellipse cx="50" cy="15" rx="4" ry="7" fill="currentColor" />
+                <ellipse cx="42" cy="20" rx="4" ry="6" fill="currentColor" />
+                <ellipse cx="58" cy="20" rx="4" ry="6" fill="currentColor" />
+              </svg>
+              <span>PAPYRUS</span>
+            </div>
+            <p>
+              Preserving literary heritage through sustainable book trading
+              since 1974.
+            </p>
+            <div class="social-links">
+              <a href="#"
+                ><svg viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
+                  /></svg
+              ></a>
+              <a href="#"
+                ><svg viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"
+                  /></svg
+              ></a>
+            </div>
+          </div>
+          <div class="footer-section">
+            <h4>EXPLORE</h4>
+            <ul>
+              <li><a href="/shop">Collections</a></li>
+              <li><a href="/shop">Rare Books</a></li>
+              <li><a href="/shop">New Arrivals</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h4>COMPANY</h4>
+            <ul>
+              <li><a href="#" onclick="showComingSoon(event, 'About')">About</a></li>
+              <li><a href="/contact">Contact</a></li>
+              <li><a href="/careers">Careers</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h4>NEWSLETTER</h4>
+            <p>Stay updated with our latest finds</p>
+            <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
+              <input type="email" placeholder="Email address" required />
+              <button type="submit">GO</button>
+            </form>
+          </div>
+        </div>
       </div>
-    </div>
+    </footer>
 
-    <div class="footer-bottom">
-      <p>© 2024 Papyrus. All rights reserved.</p>
-      <div class="social-links">
-        <a href="#" aria-label="Facebook">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-          </svg>
-        </a>
-        <a href="#" aria-label="Twitter">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-          </svg>
-        </a>
-        <a href="#" aria-label="Instagram">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="currentColor" stroke-width="2"/>
-            <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
-            <circle cx="17.5" cy="6.5" r="1.5"/>
-          </svg>
-        </a>
-      </div>
-    </div>
-  </footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script>
-    document.getElementById('searchInput').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        const searchQuery = this.value.trim();
-        if (searchQuery) {
-          window.location.href = `/shop?search=${encodeURIComponent(searchQuery)}`;
-        }
-      }
-    });
-
-    function scrollCarousel(direction) {
-      const grid = document.getElementById('booksGrid');
-      const scrollAmount = 400;
-      
-      if (direction === 'left') {
-        grid.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-      } else {
-        grid.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-      }
-    }
-
-    function subscribeNewsletter(event) {
-      event.preventDefault();
-      const email = event.target.querySelector('input[type="email"]').value;
-      
-      Swal.fire({
-        icon: 'success',
-        title: 'Subscribed!',
-        text: 'Thank you for subscribing to The Archivist\'s Weekly',
-        confirmButtonColor: '#2d1f14'
-      });
-      
-      event.target.reset();
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const error = urlParams.get('error');
-      
-      if (error) {
+    <script>
+      function subscribeNewsletter(event) {
+        event.preventDefault();
         Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: decodeURIComponent(error),
-          confirmButtonColor: '#2d1f14'
-        }).then(() => {
-          const url = new URL(window.location);
-          url.searchParams.delete('error');
-          window.history.replaceState({}, '', url);
+          icon: 'success',
+          title: 'Subscribed!',
+          text: 'Thank you for subscribing to our newsletter',
+          confirmButtonColor: '#7A5C3E'
+        });
+        event.target.reset();
+      }
+
+      function showComingSoon(event, pageName) {
+        event.preventDefault();
+        Swal.fire({
+            icon: 'info',
+            title: `${pageName} Page`,
+            html: `<p>The <strong>${pageName}</strong> page is currently under development.</p><p>We're working hard to bring you this feature soon!</p>`,
+            confirmButtonText: 'Got it',
+            confirmButtonColor: '#7A5C3E',
+            iconColor: '#7A5C3E'
         });
       }
-    });
-  </script>
-</body>
+    </script>
+  </body>
 </html>

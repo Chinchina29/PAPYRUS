@@ -2,6 +2,7 @@ import * as userService from "../../shared/services/user.service.js";
 import * as otpService from "../../shared/services/otp.service.js";
 import * as emailService from "../../shared/services/email.service.js";
 import * as addressService from "../../user/services/address.service.js";
+import * as categoryService from "../../shared/services/category.service.js";
 import { deleteImage } from "../../shared/config/cloudinary.config.js";
 import {
   successResponse,
@@ -20,6 +21,10 @@ export const showProfile = async (req, res) => {
     }
 
     const addresses = await addressService.getUserAddresses(userId);
+    
+    if (user.favoriteGenres && user.favoriteGenres.length > 0) {
+      await user.populate('favoriteGenres');
+    }
 
     res.render("user/profile", {
       user,
@@ -41,8 +46,11 @@ export const showEditProfile = async (req, res) => {
       return res.redirect("/login");
     }
 
+    const categories = await categoryService.getMainCategoriesWithSubs();
+
     res.render("user/editprofile", {
       user,
+      categories,
       initials: getInitials(user.firstName, user.lastName),
       avatarColor: getAvatarColor(user.firstName),
     });
@@ -69,6 +77,7 @@ export const updateProfile = async (req, res) => {
       gender,
       bio,
       favoriteGenre,
+      favoriteGenres,
       primaryInterest,
       readingGoal,
     } = req.body;
@@ -95,6 +104,7 @@ export const updateProfile = async (req, res) => {
       bio: bio && bio.trim() ? bio.trim() : null,
       favoriteGenre:
         favoriteGenre && favoriteGenre.trim() ? favoriteGenre.trim() : null,
+      favoriteGenres: Array.isArray(favoriteGenres) ? favoriteGenres : [],
       primaryInterest:
         primaryInterest && primaryInterest.trim()
           ? primaryInterest.trim()
@@ -136,6 +146,7 @@ export const updateProfile = async (req, res) => {
           gender: updatedUser.gender,
           bio: updatedUser.bio,
           favoriteGenre: updatedUser.favoriteGenre,
+          favoriteGenres: updatedUser.favoriteGenres,
           primaryInterest: updatedUser.primaryInterest,
           readingGoal: updatedUser.readingGoal,
         },

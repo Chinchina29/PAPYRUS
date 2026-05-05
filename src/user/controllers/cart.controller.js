@@ -13,7 +13,6 @@ export const getCart = async (req, res) => {
       cart,
       currentPage_name: "cart",
       user: req.session.user || null,
-      appliedCoupon: req.session.appliedCoupon || null,
       error: req.query.error || null,
     });
   } catch (error) {

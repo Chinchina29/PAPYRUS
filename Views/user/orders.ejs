@@ -5,337 +5,285 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Orders - Papyrus</title>
   <link rel="stylesheet" href="/css/home.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    body {
-      background-color: #f8f6f3;
-    }
-
-    .orders-wrapper {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 40px 24px 80px;
-    }
-
-    .breadcrumb-nav {
-      font-size: 13px;
-      color: #999;
-      margin-bottom: 24px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .breadcrumb-nav a {
-      color: #999;
-      text-decoration: none;
-      cursor: pointer;
-      transition: color 0.2s ease;
-    }
-
-    .breadcrumb-nav a:hover {
-      color: #5a4a3a;
-      text-decoration: underline;
-    }
-
-    .orders-header {
-      margin-bottom: 32px;
-    }
-
-    .orders-header h1 {
-      font-size: 42px;
-      font-weight: 400;
-      color: #2d1f14;
-      margin-bottom: 8px;
-      letter-spacing: -0.5px;
-    }
-
-    .orders-subtitle {
-      font-size: 16px;
-      color: #7A5C3E;
-      font-style: italic;
-    }
-
-    .orders-list {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      margin-top: 32px;
-    }
-
-    .order-card {
-      background: white;
-      border: 1px solid #e8dcc8;
-      border-radius: 12px;
-      padding: 24px;
-      transition: box-shadow 0.2s;
-    }
-
-    .order-card:hover {
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-
-    .order-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #f0f0f0;
-    }
-
-    .order-id {
-      font-size: 18px;
-      font-weight: 600;
-      color: #2d1f14;
-      font-family: 'Courier New', monospace;
-    }
-
-    .order-date {
-      font-size: 14px;
-      color: #7A5C3E;
-      margin-top: 4px;
-    }
-
-    .order-status {
-      display: inline-block;
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .status-pending { background: #f3f4f6; color: #374151; }
-    .status-processing { background: #fef3c7; color: #92400e; }
-    .status-shipped { background: #dbeafe; color: #1e40af; }
-    .status-delivered { background: #d1fae5; color: #065f46; }
-    .status-cancelled { background: #fee2e2; color: #991b1b; }
-
-    .order-items {
-      margin-bottom: 20px;
-    }
-
-    .order-item {
-      display: flex;
-      gap: 16px;
-      padding: 12px 0;
-    }
-
-    .item-image {
-      width: 70px;
-      height: 90px;
-      object-fit: cover;
-      border-radius: 8px;
-      background: #f5f1ed;
-      border: 1px solid #e8dcc8;
-    }
-
-    .item-details {
-      flex: 1;
-    }
-
-    .item-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: #2d1f14;
-      margin-bottom: 6px;
-    }
-
-    .item-quantity {
-      font-size: 14px;
-      color: #7A5C3E;
-    }
-
-    .order-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 20px;
-      border-top: 1px solid #f0f0f0;
-    }
-
-    .order-total {
-      font-size: 20px;
-      font-weight: 700;
-      color: #2d1f14;
-    }
-
-    .view-details-btn {
-      padding: 10px 24px;
-      background: #2d1f14;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .view-details-btn:hover {
-      background: #1a1209;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 120px 20px;
-      color: #7A5C3E;
-    }
-
-    .empty-state-icon {
-      font-size: 80px;
-      margin-bottom: 24px;
-    }
-
-    .empty-state h2 {
-      font-size: 28px;
-      color: #2d1f14;
-      margin-bottom: 12px;
-      font-weight: 400;
-    }
-
-    .empty-state p {
-      font-size: 16px;
-      margin-bottom: 32px;
-    }
-
-    .shop-now-btn {
-      display: inline-block;
-      padding: 14px 32px;
-      background: #2d1f14;
-      color: white;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 600;
-      transition: background 0.2s;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-size: 13px;
-    }
-
-    .shop-now-btn:hover {
-      background: #1a1209;
-    }
-
-    @media (max-width: 768px) {
-      .orders-header h1 {
-        font-size: 32px;
-      }
-
-      .order-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-      }
-
-      .order-footer {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-      }
-
-      .view-details-btn {
-        width: 100%;
-      }
-    }
+    body { background-color: #f8f6f3; }
+    .orders-wrapper { max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
+    .breadcrumb-nav { font-size: 13px; color: #999; margin-bottom: 24px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .breadcrumb-nav a { color: #999; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb-nav a:hover { color: #5a4a3a; text-decoration: underline; }
+    .orders-header { margin-bottom: 32px; }
+    .orders-header h1 { font-size: 42px; font-weight: 400; color: #2d1f14; margin-bottom: 8px; }
+    
+    .filters-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .search-box { flex: 1; min-width: 250px; position: relative; }
+    .search-box input { width: 100%; padding: 12px 16px 12px 40px; border: 1.5px solid #e8dcc8; border-radius: 8px; font-size: 14px; }
+    .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #999; }
+    .filter-select { padding: 12px 16px; border: 1.5px solid #e8dcc8; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; }
+    .clear-btn { padding: 12px 20px; background: #d32f2f; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
+    
+    .order-card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px; border: 1px solid #e8dcc8; }
+    .order-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #f0f0f0; }
+    .order-id { font-size: 16px; font-weight: 600; color: #2d1f14; }
+    .order-date { font-size: 13px; color: #666; margin-top: 4px; }
+    .order-status { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+    .status-pending { background: #fff3e0; color: #f57c00; }
+    .status-processing { background: #e3f2fd; color: #1976d2; }
+    .status-shipped { background: #e8f5e9; color: #388e3c; }
+    .status-delivered { background: #c8e6c9; color: #2e7d32; }
+    .status-cancelled { background: #ffebee; color: #d32f2f; }
+    .status-returned { background: #f3e5f5; color: #7b1fa2; }
+    
+    .order-items { margin-bottom: 16px; }
+    .order-item { display: flex; gap: 16px; padding: 12px 0; }
+    .item-image { width: 60px; height: 80px; border-radius: 6px; overflow: hidden; background: #f5f1ed; }
+    .item-image img { width: 100%; height: 100%; object-fit: cover; }
+    .item-details { flex: 1; }
+    .item-title { font-weight: 600; color: #2d1f14; margin-bottom: 4px; }
+    .item-qty { font-size: 13px; color: #666; }
+    .item-price { font-weight: 600; color: #2d1f14; }
+    
+    .order-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px solid #f0f0f0; }
+    .order-total { font-size: 18px; font-weight: 600; color: #2d1f14; }
+    .order-actions { display: flex; gap: 8px; }
+    .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-block; }
+    .btn-primary { background: #2d1f14; color: white; border: none; }
+    .btn-primary:hover { background: #1a1209; }
+    .btn-secondary { background: white; color: #2d1f14; border: 1.5px solid #2d1f14; }
+    .btn-secondary:hover { background: #2d1f14; color: white; }
+    .btn-danger { background: #d32f2f; color: white; border: none; }
+    .btn-danger:hover { background: #b71c1c; }
+    
+    .empty-state { text-align: center; padding: 80px 20px; }
+    .empty-state svg { width: 64px; height: 64px; color: #ccc; margin-bottom: 16px; }
+    .empty-state h2 { font-size: 24px; color: #666; margin-bottom: 8px; }
+    .empty-state p { color: #999; margin-bottom: 24px; }
+    
+    .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 32px; }
+    .page-btn { padding: 10px 16px; border: 1px solid #e8dcc8; background: white; border-radius: 6px; cursor: pointer; }
+    .page-btn.active { background: #2d1f14; color: white; }
+    .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
-
   <%- include('../partials/header') %>
 
   <div class="orders-wrapper">
     <div class="breadcrumb-nav">
-      <a href="/home">SHOP</a> / <a href="/profile">PROFILE</a> / <span>ORDERS</span>
+      <a href="/home">HOME</a> / <a href="/profile">PROFILE</a> / <span>MY ORDERS</span>
     </div>
 
     <div class="orders-header">
       <h1>My Orders</h1>
-      <p class="orders-subtitle">Track and manage your book orders.</p>
+      <p style="color: #666;">Track and manage your orders</p>
     </div>
 
-    <% if (orders.length === 0) { %>
-      <div class="empty-state">
-        <div class="empty-state-icon">📦</div>
-        <h2>No orders yet</h2>
-        <p>Start shopping and your orders will appear here.</p>
-        <a href="/shop" class="shop-now-btn">Browse Books</a>
+    <div class="filters-bar">
+      <div class="search-box">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search by order ID or product name..." value="<%= search %>">
       </div>
-    <% } else { %>
-      <div class="orders-list">
-        <% orders.forEach(order => { %>
-          <div class="order-card">
-            <div class="order-header">
-              <div>
-                <div class="order-id"><%= order.orderId %></div>
-                <div class="order-date">
-                  Placed on <%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %>
-                </div>
-              </div>
-              <span class="order-status status-<%= order.orderStatus.toLowerCase() %>">
-                <%= order.orderStatus %>
-              </span>
-            </div>
+      <select id="statusFilter" class="filter-select">
+        <option value="">All Status</option>
+        <option value="Pending" <%= status === 'Pending' ? 'selected' : '' %>>Pending</option>
+        <option value="Processing" <%= status === 'Processing' ? 'selected' : '' %>>Processing</option>
+        <option value="Shipped" <%= status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+        <option value="Delivered" <%= status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+        <option value="Cancelled" <%= status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+        <option value="Returned" <%= status === 'Returned' ? 'selected' : '' %>>Returned</option>
+      </select>
+      <select id="sortFilter" class="filter-select">
+        <option value="newest" <%= sort === 'newest' ? 'selected' : '' %>>Newest First</option>
+        <option value="oldest" <%= sort === 'oldest' ? 'selected' : '' %>>Oldest First</option>
+        <option value="amount-high" <%= sort === 'amount-high' ? 'selected' : '' %>>Amount: High to Low</option>
+        <option value="amount-low" <%= sort === 'amount-low' ? 'selected' : '' %>>Amount: Low to High</option>
+      </select>
+      <button class="clear-btn" onclick="clearFilters()">Clear</button>
+    </div>
 
-            <div class="order-items">
-              <% order.items.slice(0, 3).forEach(item => { %>
-                <div class="order-item">
+    <% if (orders && orders.length > 0) { %>
+      <% orders.forEach(order => { %>
+        <div class="order-card">
+          <div class="order-header">
+            <div>
+              <div class="order-id"><%= order.orderId %></div>
+              <div class="order-date">Ordered on <%= new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) %></div>
+            </div>
+            <span class="order-status status-<%= order.orderStatus.toLowerCase() %>"><%= order.orderStatus %></span>
+          </div>
+
+          <div class="order-items">
+            <% order.items.slice(0, 2).forEach(item => { %>
+              <div class="order-item">
+                <div class="item-image">
                   <% if (item.product && item.product.images && item.product.images.length > 0) { %>
-                    <img src="<%= item.product.images[0].url %>" alt="<%= item.product.title %>" class="item-image"/>
+                    <img src="<%= item.product.images[0].url %>" alt="<%= item.title %>">
                   <% } else { %>
-                    <div class="item-image" style="display: flex; align-items: center; justify-content: center; font-size: 28px;">📚</div>
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 24px;">📚</div>
                   <% } %>
-                  <div class="item-details">
-                    <div class="item-title"><%= item.title %></div>
-                    <div class="item-quantity">Quantity: <%= item.quantity %> × $<%= item.price.toFixed(2) %></div>
-                  </div>
                 </div>
-              <% }) %>
-              <% if (order.items.length > 3) { %>
-                <div style="font-size: 14px; color: #7A5C3E; margin-top: 12px; padding-left: 86px;">
-                  + <%= order.items.length - 3 %> more item(s)
+                <div class="item-details">
+                  <div class="item-title"><%= item.title %></div>
+                  <div class="item-qty">Qty: <%= item.quantity %></div>
                 </div>
+                <div class="item-price">₹<%= item.subtotal.toFixed(2) %></div>
+              </div>
+            <% }) %>
+            <% if (order.items.length > 2) { %>
+              <div style="font-size: 13px; color: #666; margin-top: 8px;">+ <%= order.items.length - 2 %> more item(s)</div>
+            <% } %>
+          </div>
+
+          <div class="order-footer">
+            <div class="order-total">Total: ₹<%= order.totalAmount.toFixed(2) %></div>
+            <div class="order-actions">
+              <a href="/orders/<%= order._id %>" class="btn btn-primary">View Details</a>
+              <% if (order.orderStatus === 'Pending' || order.orderStatus === 'Processing') { %>
+                <button class="btn btn-danger" onclick="cancelOrder('<%= order._id %>')">Cancel Order</button>
+              <% } %>
+              <% if (order.orderStatus === 'Delivered') { %>
+                <button class="btn btn-secondary" onclick="returnOrder('<%= order._id %>')">Return Order</button>
               <% } %>
             </div>
-
-            <div class="order-footer">
-              <div class="order-total">Total: $<%= order.totalAmount.toFixed(2) %></div>
-              <button class="view-details-btn" onclick="viewOrderDetails('<%= order._id %>')">
-                View Details
-              </button>
-            </div>
           </div>
-        <% }) %>
+        </div>
+      <% }) %>
+
+      <% if (totalPages > 1) { %>
+        <div class="pagination">
+          <button class="page-btn" onclick="goToPage(<%= currentPage - 1 %>)" <%= currentPage === 1 ? 'disabled' : '' %>>Previous</button>
+          <% for (let i = 1; i <= totalPages; i++) { %>
+            <button class="page-btn <%= i === currentPage ? 'active' : '' %>" onclick="goToPage(<%= i %>)"><%= i %></button>
+          <% } %>
+          <button class="page-btn" onclick="goToPage(<%= currentPage + 1 %>)" <%= currentPage === totalPages ? 'disabled' : '' %>>Next</button>
+        </div>
+      <% } %>
+    <% } else { %>
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <h2>No Orders Found</h2>
+        <p>You haven't placed any orders yet</p>
+        <a href="/shop" class="btn btn-primary">Start Shopping</a>
       </div>
     <% } %>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
-    function viewOrderDetails(orderId) {
-      Swal.fire({
-        icon: 'info',
-        title: 'Order Details',
-        text: 'Order detail page will be implemented soon.',
-        confirmButtonColor: '#2d1f14'
+    function applyFilters() {
+      const search = document.getElementById('searchInput').value;
+      const status = document.getElementById('statusFilter').value;
+      const sort = document.getElementById('sortFilter').value;
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (status) params.append('status', status);
+      if (sort) params.append('sort', sort);
+      window.location.href = `/orders?${params.toString()}`;
+    }
+
+    function clearFilters() {
+      window.location.href = '/orders';
+    }
+
+    function goToPage(page) {
+      const params = new URLSearchParams(window.location.search);
+      params.set('page', page);
+      window.location.href = `/orders?${params.toString()}`;
+    }
+
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') applyFilters();
+    });
+
+    document.getElementById('statusFilter').addEventListener('change', applyFilters);
+    document.getElementById('sortFilter').addEventListener('change', applyFilters);
+
+    async function cancelOrder(orderId) {
+      const result = await Swal.fire({
+        title: 'Cancel Order?',
+        text: 'Are you sure you want to cancel this order?',
+        icon: 'warning',
+        input: 'textarea',
+        inputPlaceholder: 'Reason for cancellation (optional)',
+        showCancelButton: true,
+        confirmButtonColor: '#d32f2f',
+        cancelButtonColor: '#999',
+        confirmButtonText: 'Yes, Cancel Order'
       });
+
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(`/orders/${orderId}/cancel`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason: result.value })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            Swal.fire('Cancelled!', data.message, 'success').then(() => location.reload());
+          } else {
+            Swal.fire('Error', data.message, 'error');
+          }
+        } catch (error) {
+          Swal.fire('Error', 'Failed to cancel order', 'error');
+        }
+      }
+    }
+
+    async function returnOrder(orderId) {
+      const result = await Swal.fire({
+        title: 'Return Order',
+        html: `
+          <textarea id="returnReason" class="swal2-textarea" placeholder="Reason for return (required)" style="height: 80px;"></textarea>
+          <textarea id="returnComments" class="swal2-textarea" placeholder="Additional comments (optional)" style="height: 60px; margin-top: 10px;"></textarea>
+        `,
+        showCancelButton: true,
+        confirmButtonColor: '#2d1f14',
+        cancelButtonColor: '#999',
+        confirmButtonText: 'Submit Return Request',
+        preConfirm: () => {
+          const reason = document.getElementById('returnReason').value;
+          if (!reason) {
+            Swal.showValidationMessage('Please provide a reason for return');
+          }
+          return { reason, comments: document.getElementById('returnComments').value };
+        }
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(`/orders/${orderId}/return`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(result.value)
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            Swal.fire('Success!', data.message, 'success').then(() => location.reload());
+          } else {
+            Swal.fire('Error', data.message, 'error');
+          }
+        } catch (error) {
+          Swal.fire('Error', 'Failed to process return request', 'error');
+        }
+      }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
       const error = urlParams.get('error');
-      
       if (error) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: decodeURIComponent(error),
-          confirmButtonColor: '#2d1f14'
-        }).then(() => {
-          const url = new URL(window.location);
-          url.searchParams.delete('error');
-          window.history.replaceState({}, '', url);
-        });
+        Swal.fire({ icon: 'error', title: 'Error', text: decodeURIComponent(error), confirmButtonColor: '#2d1f14' });
       }
     });
   </script>

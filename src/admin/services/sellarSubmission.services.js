@@ -53,3 +53,7 @@ export const linkApprovedProduct = async (submissionId, productId) => {
     { returnDocument: 'after' },
   );
 };
+
+export const deleteSubmission = async (id) => {
+  return await SellerSubmission.findByIdAndDelete(id);
+};

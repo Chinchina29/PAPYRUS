@@ -27,7 +27,8 @@ export const getAddressesList = async (req, res) => {
 };
 
 export const showAddAddress = (req, res) => {
-  res.render("user/addaddress");
+  const from = req.query.from || null;
+  res.render("user/addaddress", { from });
 };
 
 export const addAddress = async (req, res) => {

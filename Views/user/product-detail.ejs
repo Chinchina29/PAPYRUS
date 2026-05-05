@@ -768,6 +768,16 @@
     .out-of-stock { background: #f44336; }
     .low-stock { background: #ff9800; }
 
+    .quantity-btn:hover {
+      background: #7A5C3E;
+      color: white;
+    }
+
+    .quantity-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     @media (max-width: 768px) {
       .product-main {
         grid-template-columns: 1fr;
@@ -801,11 +811,19 @@
   <div class="product-wrapper">
 
     <div class="breadcrumb">
-      <a href="/shop">BOOKS</a>
-      <span class="breadcrumb-separator">›</span>
-      <a href="/shop?category=<%= product.category._id %>"><%= product.category.name %></a>
-      <span class="breadcrumb-separator">›</span>
-      <span><%= product.title %></span>
+      <% if (from === 'my-listings') { %>
+        <a href="/home">HOME</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="/sell/my-listings">MY LISTINGS</a>
+        <span class="breadcrumb-separator">›</span>
+        <span><%= product.title %></span>
+      <% } else { %>
+        <a href="/shop">BOOKS</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="/shop?category=<%= product.category._id %>"><%= product.category.name %></a>
+        <span class="breadcrumb-separator">›</span>
+        <span><%= product.title %></span>
+      <% } %>
     </div>
 
     <div class="product-main">
@@ -871,26 +889,51 @@
           <% } %>
         </div>
 
+        <% if (product.stock > 0 && !(locals.userId && product.seller._id.toString() === userId.toString())) { %>
+        <div style="margin-bottom: 24px;">
+          <label style="display: block; font-weight: 600; color: #2d1f14; margin-bottom: 8px;">Quantity</label>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <button type="button" id="decreaseBtn" class="quantity-btn" style="width: 40px; height: 40px; border: 2px solid #7A5C3E; background: white; color: #7A5C3E; border-radius: 8px; font-size: 20px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">−</button>
+            <input type="number" id="quantityInput" value="1" min="1" max="<%= product.stock %>" readonly style="width: 80px; height: 40px; text-align: center; border: 2px solid #e8dcc8; border-radius: 8px; font-size: 16px; font-weight: 600; color: #2d1f14;">
+            <button type="button" id="increaseBtn" class="quantity-btn" style="width: 40px; height: 40px; border: 2px solid #7A5C3E; background: white; color: #7A5C3E; border-radius: 8px; font-size: 20px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">+</button>
+            <span style="color: #666; font-size: 14px;">Max: <%= product.stock %></span>
+          </div>
+        </div>
+        <% } %>
+
         <div class="action-buttons">
-          <% if (product.stock > 0) { %>
-            <button class="btn-primary" onclick="addToCart('<%= product._id %>')">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="9" cy="21" r="1"></circle>
-                <circle cx="20" cy="21" r="1"></circle>
-                <path d="m1 1 4 4 2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-              </svg>
-              Add to Cart
-            </button>
+          <% if (locals.userId && product.seller._id.toString() === userId.toString()) { %>
+            <div style="background: #f5f1ed; border: 1px solid #e8dcc8; border-radius: 8px; padding: 16px; text-align: center;">
+              <p style="color: #7A5C3E; font-size: 14px; margin: 0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                This is your own listing
+              </p>
+            </div>
           <% } else { %>
-            <button class="btn-primary" disabled>
-              Out of Stock
+            <% if (product.stock > 0) { %>
+              <button class="btn-primary" onclick="addToCart('<%= product._id %>')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="9" cy="21" r="1"></circle>
+                  <circle cx="20" cy="21" r="1"></circle>
+                  <path d="m1 1 4 4 2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                Add to Cart
+              </button>
+            <% } else { %>
+              <button class="btn-primary" disabled>
+                Out of Stock
+              </button>
+            <% } %>
+            <button class="btn-secondary" onclick="toggleWishlist(event, '<%= product._id %>')" id="wishlistBtn" data-product-id="<%= product._id %>">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
             </button>
           <% } %>
-          <button class="btn-secondary" onclick="toggleWishlist(event, '<%= product._id %>')" id="wishlistBtn" data-product-id="<%= product._id %>">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-            </svg>
-          </button>
         </div>
 
         <div class="seller-info">
@@ -1084,9 +1127,108 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="/js/cart-wishlist.js"></script>
   <script>
-    let currentZoom = 1;
-    let isDragging = false;
-    let startX, startY, translateX = 0, translateY = 0;
+    (function() {
+      let currentZoom = 1;
+      let isDragging = false;
+      let startX, startY, translateX = 0, translateY = 0;
+      const maxStock = <%= product.stock %>;
+
+      window.increaseQuantity = function() {
+        const input = document.getElementById('quantityInput');
+        if (!input) {
+          console.error('Quantity input not found');
+          return;
+        }
+        const currentValue = parseInt(input.value) || 1;
+        console.log('Increase clicked, current value:', currentValue, 'max:', maxStock);
+        if (currentValue < maxStock) {
+          input.value = currentValue + 1;
+          updateQuantityButtons();
+        } else {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Maximum Quantity',
+            text: `Only ${maxStock} items available in stock`,
+            confirmButtonColor: '#7A5C3E'
+          });
+        }
+      };
+
+      window.decreaseQuantity = function() {
+        const input = document.getElementById('quantityInput');
+        if (!input) {
+          console.error('Quantity input not found');
+          return;
+        }
+        const currentValue = parseInt(input.value) || 1;
+        console.log('Decrease clicked, current value:', currentValue);
+        if (currentValue > 1) {
+          input.value = currentValue - 1;
+          updateQuantityButtons();
+        }
+      };
+
+      function updateQuantityButtons() {
+        const input = document.getElementById('quantityInput');
+        if (!input) return;
+        const currentValue = parseInt(input.value) || 1;
+        const decreaseBtn = document.getElementById('decreaseBtn');
+        const increaseBtn = document.getElementById('increaseBtn');
+        
+        if (decreaseBtn) {
+          if (currentValue <= 1) {
+            decreaseBtn.style.opacity = '0.5';
+            decreaseBtn.style.cursor = 'not-allowed';
+          } else {
+            decreaseBtn.style.opacity = '1';
+            decreaseBtn.style.cursor = 'pointer';
+          }
+        }
+        
+        if (increaseBtn) {
+          if (currentValue >= maxStock) {
+            increaseBtn.style.opacity = '0.5';
+            increaseBtn.style.cursor = 'not-allowed';
+          } else {
+            increaseBtn.style.opacity = '1';
+            increaseBtn.style.cursor = 'pointer';
+          }
+        }
+      }
+
+      function initQuantityButtons() {
+        const decreaseBtn = document.getElementById('decreaseBtn');
+        const increaseBtn = document.getElementById('increaseBtn');
+        
+        console.log('Initializing quantity buttons');
+        console.log('Decrease button:', decreaseBtn);
+        console.log('Increase button:', increaseBtn);
+        
+        if (decreaseBtn) {
+          decreaseBtn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.decreaseQuantity();
+          };
+        }
+        
+        if (increaseBtn) {
+          increaseBtn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.increaseQuantity();
+          };
+        }
+        
+        updateQuantityButtons();
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initQuantityButtons);
+      } else {
+        initQuantityButtons();
+      }
+    })();
 
     function changeMainImage(imageSrc, thumbnail) {
       document.getElementById('mainImage').src = imageSrc;
@@ -1253,6 +1395,29 @@
     }
 
     const throttledAddToCart = debounce(async function(productId) {
+      const quantityInput = document.getElementById('quantityInput');
+      const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
+      
+      if (quantity < 1) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Invalid Quantity',
+          text: 'Please select at least 1 item',
+          confirmButtonColor: '#7A5C3E'
+        });
+        return;
+      }
+      
+      if (quantity > maxStock) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Insufficient Stock',
+          text: `Only ${maxStock} items available`,
+          confirmButtonColor: '#7A5C3E'
+        });
+        return;
+      }
+      
       try {
         const response = await fetch('/cart/add', {
           method: 'POST',
@@ -1261,7 +1426,7 @@
           },
           body: JSON.stringify({
             productId: productId,
-            quantity: 1
+            quantity: quantity
           })
         });
 
@@ -1271,12 +1436,15 @@
           Swal.fire({
             icon: 'success',
             title: 'Added to Cart!',
-            text: 'Item added to cart successfully',
+            text: `${quantity} item(s) added to cart successfully`,
             timer: 2000,
             showConfirmButton: false,
             timerProgressBar: true
           });
           updateCartCount();
+          if (quantityInput) {
+            quantityInput.value = 1;
+          }
         } else {
           if (response.status === 401) {
             Swal.fire({
