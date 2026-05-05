@@ -47,12 +47,10 @@ export const getShop = async (req, res) => {
       brands,
       currentPage_name: "shop",
       user: req.session.user || null,
+      error: req.query.error || null,
     });
   } catch (error) {
-    res.status(500).render("error/500", {
-      message: "An error occurred while loading products. Please try again later.",
-      user: req.session.user || null,
-    });
+    return res.redirect("/shop?error=" + encodeURIComponent("An error occurred while loading products. Please try again later."));
   }
 };
 
@@ -62,39 +60,19 @@ export const getProductDetail = async (req, res) => {
 
     if (!product) {
       const Product = (await import("../../shared/models/Product.js")).default;
-      const Category = (await import("../../shared/models/Category.js")).default;
-      
-      const blockedProduct = await Product.findById(req.params.id)
-        .select("isDeleted isListed title category")
-        .populate("category", "isListed");
+      const deletedProduct = await Product.findById(req.params.id).select(
+        "isDeleted isListed title",
+      );
 
-      if (blockedProduct) {
-        if (blockedProduct.isDeleted) {
-          return res.status(404).render("error/404", {
-            message: "This product has been permanently removed from our catalog and is no longer available for purchase.",
-            user: req.session.user || null,
-          });
-        }
-        
-        if (!blockedProduct.isListed) {
-          return res.status(404).render("error/404", {
-            message: "This product is currently unavailable. It may have been temporarily disabled by the seller or administrator.",
-            user: req.session.user || null,
-          });
-        }
-        
-        if (blockedProduct.category && !blockedProduct.category.isListed) {
-          return res.status(404).render("error/404", {
-            message: "This product is currently unavailable because its category has been disabled. Please check back later or browse other categories.",
-            user: req.session.user || null,
-          });
+      if (deletedProduct) {
+        if (deletedProduct.isDeleted) {
+          return res.redirect("/shop?error=" + encodeURIComponent("This product has been removed from our catalog."));
+        } else if (!deletedProduct.isListed) {
+          return res.redirect("/shop?error=" + encodeURIComponent("This product is currently unavailable."));
         }
       }
 
-      return res.status(404).render("error/404", {
-        message: "The product you are looking for does not exist or has been removed.",
-        user: req.session.user || null,
-      });
+      return res.redirect("/shop?error=" + encodeURIComponent("Product not found."));
     }
 
     const related = await productService.getRelatedProducts(
@@ -107,11 +85,9 @@ export const getProductDetail = async (req, res) => {
       related,
       currentPage_name: "shop",
       user: req.session.user || null,
+      userId: req.session.userId || null,
     });
   } catch (error) {
-    res.status(500).render("error/500", {
-      message: "An unexpected error occurred while loading the product. Please try again later.",
-      user: req.session.user || null,
-    });
+    return res.redirect("/shop?error=" + encodeURIComponent("An error occurred while loading the product. Please try again later."));
   }
 };

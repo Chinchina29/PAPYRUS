@@ -320,6 +320,24 @@
         confirmButtonColor: '#2d1f14'
       });
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      
+      if (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: decodeURIComponent(error),
+          confirmButtonColor: '#2d1f14'
+        }).then(() => {
+          const url = new URL(window.location);
+          url.searchParams.delete('error');
+          window.history.replaceState({}, '', url);
+        });
+      }
+    });
   </script>
 </body>
 </html>

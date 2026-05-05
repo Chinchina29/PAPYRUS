@@ -110,6 +110,17 @@ const orderSchema = new mongoose.Schema(
       type: String,
       maxlength: 500,
     },
+    returnedAt: {
+      type: Date,
+    },
+    returnReason: {
+      type: String,
+      maxlength: 500,
+    },
+    returnComments: {
+      type: String,
+      maxlength: 500,
+    },
   },
   {
     timestamps: true,

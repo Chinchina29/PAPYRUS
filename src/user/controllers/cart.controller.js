@@ -14,12 +14,10 @@ export const getCart = async (req, res) => {
       currentPage_name: "cart",
       user: req.session.user || null,
       appliedCoupon: req.session.appliedCoupon || null,
+      error: req.query.error || null,
     });
   } catch (error) {
-    res.status(500).render("error/500", {
-      message: "An error occurred while loading your cart. Please try again later.",
-      user: req.session.user || null,
-    });
+    return res.redirect("/cart?error=" + encodeURIComponent("An error occurred while loading your cart. Please try again later."));
   }
 };
 

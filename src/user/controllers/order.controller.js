@@ -16,12 +16,10 @@ export const getUserOrders = async (req, res) => {
       currentPage,
       currentPage_name: "orders",
       user: req.session.user || null,
+      error: req.query.error || null,
     });
   } catch (error) {
-    res.status(500).render("error/500", {
-      message: "An error occurred while loading your orders. Please try again later.",
-      user: req.session.user || null,
-    });
+    res.redirect("/home?error=An error occurred while loading your orders");
   }
 };
 
@@ -33,17 +31,11 @@ export const getOrderDetail = async (req, res) => {
     const order = await orderService.getOrderById(id);
 
     if (!order) {
-      return res.status(404).render("error/404", {
-        message: "Order not found. Please check your order history.",
-        user: req.session.user || null,
-      });
+      return res.redirect("/orders?error=Order not found. Please check your order history");
     }
 
     if (order.user._id.toString() !== userId.toString()) {
-      return res.status(403).render("error/403", {
-        message: "You do not have permission to view this order.",
-        user: req.session.user || null,
-      });
+      return res.redirect("/orders?error=You do not have permission to view this order");
     }
 
     res.render("user/order-detail", {
@@ -52,9 +44,6 @@ export const getOrderDetail = async (req, res) => {
       user: req.session.user || null,
     });
   } catch (error) {
-    res.status(500).render("error/500", {
-      message: "An error occurred while loading your order details. Please try again later.",
-      user: req.session.user || null,
-    });
+    res.redirect("/orders?error=An error occurred while loading your order details");
   }
 };

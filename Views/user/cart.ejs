@@ -463,9 +463,9 @@
                   </div>
                 <% } %>
                 <div class="quantity-controls">
-                  <button class="qty-btn" onclick="updateQuantity('<%= item.product._id %>', <%= item.quantity - 1 %>)" <%= item.quantity <= 1 ? 'disabled' : '' %>>−</button>
+                  <button class="qty-btn" onclick="updateQuantity('<%= item.product._id %>', <%= item.quantity - 1 %>)" <% if (item.quantity <= 1) { %>disabled<% } %>>−</button>
                   <span class="qty-display"><%= item.quantity %></span>
-                  <button class="qty-btn" onclick="updateQuantity('<%= item.product._id %>', <%= item.quantity + 1 %>)" <%= item.quantity >= item.product.stock ? 'disabled' : '' %>>+</button>
+                  <button class="qty-btn" onclick="updateQuantity('<%= item.product._id %>', <%= item.quantity + 1 %>)" <% if (item.quantity >= item.product.stock) { %>disabled<% } %>>+</button>
                 </div>
                 <button class="remove-link" onclick="removeFromCart('<%= item.product._id %>')">REMOVE</button>
               </div>
@@ -666,7 +666,7 @@
     }
 
     function proceedToCheckout() {
-      showNotification('Checkout functionality will be implemented soon!', 'info');
+      window.location.href = '/checkout';
     }
 
     async function applyCoupon() {
@@ -763,6 +763,22 @@
           if (e.key === 'Enter') {
             applyCoupon();
           }
+        });
+      }
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      
+      if (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: decodeURIComponent(error),
+          confirmButtonColor: '#2d1f14'
+        }).then(() => {
+          const url = new URL(window.location);
+          url.searchParams.delete('error');
+          window.history.replaceState({}, '', url);
         });
       }
     });

@@ -1495,6 +1495,22 @@
       updateWishlistCount();
       loadReviews();
       initReviewForm();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      
+      if (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: decodeURIComponent(error),
+          confirmButtonColor: '#7A5C3E'
+        }).then(() => {
+          const url = new URL(window.location);
+          url.searchParams.delete('error');
+          window.history.replaceState({}, '', url);
+        });
+      }
     });
 
     // Review functionality
