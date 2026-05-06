@@ -48,7 +48,7 @@
       border-bottom: 1px solid #e8dcc8; color: #3a3a3a;
     }
 
-    .form-group { margin-bottom: 18px; }
+    .form-group { margin-bottom: 18px; position: relative; }
     .form-group label {
       display: block; font-size: 13px; font-weight: 500;
       color: #3a3a3a; margin-bottom: 7px;
@@ -68,6 +68,20 @@
       border-color: #8b7355;
       box-shadow: 0 0 0 3px rgba(139,115,85,0.10);
       background: white;
+    }
+    .form-group input.error,
+    .form-group select.error,
+    .form-group textarea.error {
+      border-color: #c0392b;
+    }
+    .form-group .error-message {
+      display: none;
+      color: #c0392b;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .form-group .error-message.show {
+      display: block;
     }
 
     .form-row {
@@ -201,6 +215,7 @@
             <label>Book Title <span class="required">*</span></label>
             <input type="text" id="name" name="name"
               placeholder="e.g. The Great Gatsby"/>
+            <div class="error-message" id="nameError">Book title is required</div>
           </div>
 
           <div class="form-group">
@@ -217,6 +232,7 @@
                 <option value="<%= cat._id %>"><%= cat.name %></option>
               <% }) %>
             </select>
+            <div class="error-message" id="categoryError">Please select a category</div>
           </div>
 
           <div class="form-group">
@@ -229,6 +245,7 @@
               <option value="fair">Fair</option>
               <option value="poor">Poor</option>
             </select>
+            <div class="error-message" id="conditionError">Please select a condition</div>
           </div>
 
           <div class="form-group">
@@ -245,6 +262,7 @@
               <label>Selling Price (₹) <span class="required">*</span></label>
               <input type="number" id="price" name="price"
                 placeholder="299" min="0"/>
+              <div class="error-message" id="priceError">Price is required</div>
             </div>
             <div class="form-group">
               <label>Original Price (₹)</label>
@@ -257,6 +275,7 @@
             <label>Stock Quantity <span class="required">*</span></label>
             <input type="number" id="stock" name="stock"
               placeholder="10" min="0"/>
+            <div class="error-message" id="stockError">Stock quantity is required</div>
           </div>
 
           <div class="card-title" style="margin-top:20px">📚 Book Details</div>
@@ -435,6 +454,8 @@
       .addEventListener("submit", async (e) => {
         e.preventDefault();
 
+        clearAllErrors();
+
         const name          = document.getElementById("name").value.trim();
         const author        = document.getElementById("author").value.trim();
         const category      = document.getElementById("category").value;
@@ -446,36 +467,41 @@
         const isbn          = document.getElementById("isbn").value.trim();
         const publisher     = document.getElementById("publisher").value.trim();
 
-        const errorMsg  = document.getElementById("errorMsg");
-        const successMsg = document.getElementById("successMsg");
         const submitBtn = document.getElementById("submitBtn");
 
-        errorMsg.style.display  = "none";
-        successMsg.style.display = "none";
+        let hasError = false;
 
         if (!name) {
-          errorMsg.textContent   = "Book title is required";
-          errorMsg.style.display = "block";
-          return;
+          showFieldError("name", "Book title is required");
+          hasError = true;
         }
         if (!category) {
-          errorMsg.textContent   = "Please select a category";
-          errorMsg.style.display = "block";
-          return;
+          showFieldError("category", "Please select a category");
+          hasError = true;
         }
         if (!condition) {
-          errorMsg.textContent   = "Please select a condition";
-          errorMsg.style.display = "block";
-          return;
+          showFieldError("condition", "Please select a condition");
+          hasError = true;
         }
-        if (!price) {
-          errorMsg.textContent   = "Price is required";
-          errorMsg.style.display = "block";
-          return;
+        if (!price || price <= 0) {
+          showFieldError("price", "Please enter a valid price");
+          hasError = true;
+        }
+        if (!stock || stock < 0) {
+          showFieldError("stock", "Please enter a valid stock quantity");
+          hasError = true;
         }
         if (croppedImages.length < 3) {
-          errorMsg.textContent   = "Please upload at least 3 images";
-          errorMsg.style.display = "block";
+          Swal.fire({
+            icon: 'warning',
+            title: 'Images Required',
+            text: 'Please upload at least 3 images',
+            confirmButtonColor: '#8b7355'
+          });
+          hasError = true;
+        }
+
+        if (hasError) {
           return;
         }
 
@@ -496,22 +522,69 @@
           const data = await res.json();
 
           if (data.success) {
-            successMsg.textContent   = data.message;
-            successMsg.style.display = "block";
-            setTimeout(() => window.location.href = data.redirectUrl, 1500);
+            Swal.fire({
+              icon: 'success',
+              title: 'Product Added!',
+              text: data.message,
+              confirmButtonColor: '#8b7355',
+              timer: 2000,
+              showConfirmButton: false
+            }).then(() => {
+              window.location.href = data.redirectUrl;
+            });
           } else {
-            errorMsg.textContent   = data.message;
-            errorMsg.style.display = "block";
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message,
+              confirmButtonColor: '#8b7355'
+            });
             submitBtn.disabled     = false;
             submitBtn.textContent  = "Add Product";
           }
         } catch(err) {
-          errorMsg.textContent   = "Something went wrong. Please try again.";
-          errorMsg.style.display = "block";
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong. Please try again.',
+            confirmButtonColor: '#8b7355'
+          });
           submitBtn.disabled     = false;
           submitBtn.textContent  = "Add Product";
         }
       });
+
+    function showFieldError(fieldId, message) {
+      const field = document.getElementById(fieldId);
+      const errorDiv = document.getElementById(fieldId + "Error");
+      
+      if (field) {
+        field.classList.add("error");
+      }
+      if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.classList.add("show");
+      }
+    }
+
+    function clearAllErrors() {
+      document.querySelectorAll(".error-message").forEach(el => {
+        el.classList.remove("show");
+      });
+      document.querySelectorAll("input, select, textarea").forEach(el => {
+        el.classList.remove("error");
+      });
+    }
+
+    document.querySelectorAll("input, select, textarea").forEach(field => {
+      field.addEventListener("input", function() {
+        this.classList.remove("error");
+        const errorDiv = document.getElementById(this.id + "Error");
+        if (errorDiv) {
+          errorDiv.classList.remove("show");
+        }
+      });
+    });
   </script>
 </body>
 </html>

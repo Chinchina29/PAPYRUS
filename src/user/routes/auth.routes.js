@@ -31,12 +31,29 @@ router.get("/", (req, res) => {
   res.render("user/home-landing", { user: null });
 });
 
-router.get("/home", (req, res) => {
+router.get("/home", async (req, res) => {
   if (req.session && req.session.userId) {
     res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
     res.set("Pragma", "no-cache");
     res.set("Expires", "0");
-    return res.render("user/home", { user: req.session.user });
+    
+    const isNewUser = req.session.isNewUser || false;
+    let categories = [];
+    
+    if (isNewUser) {
+      try {
+        const categoryService = await import("../../admin/services/category.service.js");
+        categories = await categoryService.getMainCategories();
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    }
+    
+    return res.render("user/home", { 
+      user: req.session.user,
+      isNewUser,
+      categories
+    });
   }
   res.redirect("/");
 });
@@ -137,6 +154,9 @@ router.post("/set-password", authLimiter, setGooglePassword);
 router.get("/set-password/skip", skipSetPassword);
 
 router.get("/logout", authController.logout);
+
+router.post("/save-genre-preferences", authController.saveGenrePreferences);
+router.post("/skip-genre-selection", authController.skipGenreSelection);
 
 router.get("/shop", productController.getShop);
 router.get("/shop/:id", productController.getProductDetail);

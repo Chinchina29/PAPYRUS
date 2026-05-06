@@ -561,6 +561,96 @@
       color: #2d1f14;
     }
 
+    .autumn-leaf-falling {
+      position: fixed;
+      width: 30px;
+      height: 30px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%%23d4a574"><path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z"/></svg>') no-repeat center;
+      background-size: contain;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.7;
+    }
+
+    .autumn-leaf-reverse {
+      position: fixed;
+      width: 30px;
+      height: 30px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%%23c49a6c"><path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z"/></svg>') no-repeat center;
+      background-size: contain;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.6;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.7;
+      }
+      90% {
+        opacity: 0.7;
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes floatFromRight {
+      0% {
+        transform: translate(100vw, 0) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.6;
+      }
+      90% {
+        opacity: 0.6;
+      }
+      100% {
+        transform: translate(-100px, 100vh) rotate(-360deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes floatFromBottom {
+      0% {
+        transform: translate(0, 100vh) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.6;
+      }
+      90% {
+        opacity: 0.6;
+      }
+      100% {
+        transform: translate(50vw, -100px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes floatFromLeft {
+      0% {
+        transform: translate(-100px, 0) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.6;
+      }
+      90% {
+        opacity: 0.6;
+      }
+      100% {
+        transform: translate(100vw, 80vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
     @media (max-width: 968px) {
       .landing-header {
         padding: 20px 30px;
@@ -924,6 +1014,136 @@
         });
       }
     });
+
+    // Autumn leaves animation functions
+    function createAutumnLeaf() {
+      const leaf = document.createElement('div');
+      leaf.className = 'autumn-leaf-falling';
+      
+      const startX = Math.random() * window.innerWidth;
+      const duration = 8 + Math.random() * 7;
+      const size = 20 + Math.random() * 20;
+      
+      leaf.style.left = startX + 'px';
+      leaf.style.width = size + 'px';
+      leaf.style.height = size + 'px';
+      leaf.style.animation = `fall ${duration}s linear forwards`;
+      
+      const colors = ['%23d4a574', '%23c49a6c', '%23b8885d', '%23a67c52', '%238b6f47'];
+      const randomColor = colors[Math.floor(Math.random() * colors.length)];
+      leaf.style.background = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${randomColor}"><path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z"/></svg>') no-repeat center`;
+      leaf.style.backgroundSize = 'contain';
+      
+      document.body.appendChild(leaf);
+      
+      setTimeout(() => {
+        leaf.remove();
+      }, duration * 1000);
+    }
+
+    function createReverseLeafFromRight() {
+      const leaf = document.createElement('div');
+      leaf.className = 'autumn-leaf-reverse';
+      
+      const startY = Math.random() * (window.innerHeight * 0.7);
+      const duration = 10 + Math.random() * 8;
+      const size = 20 + Math.random() * 20;
+      
+      leaf.style.top = startY + 'px';
+      leaf.style.right = '-50px';
+      leaf.style.width = size + 'px';
+      leaf.style.height = size + 'px';
+      leaf.style.animation = `floatFromRight ${duration}s linear forwards`;
+      
+      const colors = ['%23d4a574', '%23c49a6c', '%23b8885d', '%23a67c52', '%238b6f47'];
+      const randomColor = colors[Math.floor(Math.random() * colors.length)];
+      leaf.style.background = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${randomColor}"><path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z"/></svg>') no-repeat center`;
+      leaf.style.backgroundSize = 'contain';
+      
+      document.body.appendChild(leaf);
+      
+      setTimeout(() => {
+        leaf.remove();
+      }, duration * 1000);
+    }
+
+    function createReverseLeafFromBottom() {
+      const leaf = document.createElement('div');
+      leaf.className = 'autumn-leaf-reverse';
+      
+      const startX = Math.random() * window.innerWidth;
+      const duration = 12 + Math.random() * 8;
+      const size = 20 + Math.random() * 20;
+      
+      leaf.style.left = startX + 'px';
+      leaf.style.bottom = '-50px';
+      leaf.style.width = size + 'px';
+      leaf.style.height = size + 'px';
+      leaf.style.animation = `floatFromBottom ${duration}s linear forwards`;
+      
+      const colors = ['%23d4a574', '%23c49a6c', '%23b8885d', '%23a67c52', '%238b6f47'];
+      const randomColor = colors[Math.floor(Math.random() * colors.length)];
+      leaf.style.background = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${randomColor}"><path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z"/></svg>') no-repeat center`;
+      leaf.style.backgroundSize = 'contain';
+      
+      document.body.appendChild(leaf);
+      
+      setTimeout(() => {
+        leaf.remove();
+      }, duration * 1000);
+    }
+
+    function createLeafFromLeft() {
+      const leaf = document.createElement('div');
+      leaf.className = 'autumn-leaf-reverse';
+      
+      const startY = Math.random() * window.innerHeight;
+      const duration = 9 + Math.random() * 6;
+      const size = 20 + Math.random() * 20;
+      
+      leaf.style.top = startY + 'px';
+      leaf.style.left = '-50px';
+      leaf.style.width = size + 'px';
+      leaf.style.height = size + 'px';
+      leaf.style.animation = `floatFromLeft ${duration}s linear forwards`;
+      
+      const colors = ['%23d4a574', '%23c49a6c', '%23b8885d', '%23a67c52', '%238b6f47'];
+      const randomColor = colors[Math.floor(Math.random() * colors.length)];
+      leaf.style.background = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${randomColor}"><path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z"/></svg>') no-repeat center`;
+      leaf.style.backgroundSize = 'contain';
+      
+      document.body.appendChild(leaf);
+      
+      setTimeout(() => {
+        leaf.remove();
+      }, duration * 1000);
+    }
+
+    // Initialize falling leaves from top
+    for (let i = 0; i < 20; i++) {
+      setTimeout(() => createAutumnLeaf(), i * 500);
+    }
+
+    // Initialize leaves floating from right
+    for (let i = 0; i < 12; i++) {
+      setTimeout(() => createReverseLeafFromRight(), i * 800);
+    }
+
+    // Initialize leaves rising from bottom
+    for (let i = 0; i < 10; i++) {
+      setTimeout(() => createReverseLeafFromBottom(), i * 1000);
+    }
+
+    // Initialize leaves from left
+    for (let i = 0; i < 12; i++) {
+      setTimeout(() => createLeafFromLeft(), i * 900);
+    }
+
+    // Continuous leaf generation
+    setInterval(() => createAutumnLeaf(), 2000);
+    setInterval(() => createReverseLeafFromRight(), 3000);
+    setInterval(() => createReverseLeafFromBottom(), 3500);
+    setInterval(() => createLeafFromLeft(), 2800);
   </script>
 </body>
 </html>

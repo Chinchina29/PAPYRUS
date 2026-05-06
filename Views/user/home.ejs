@@ -455,5 +455,339 @@
         });
       }
     </script>
+
+    <% if (isNewUser && categories && categories.length > 0) { %>
+    <div id="genreModal" class="genre-modal">
+      <div class="genre-modal-content">
+        <div class="genre-modal-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 32px; height: 32px; color: #2d5016;">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <h2>Personalize Your Library</h2>
+          <p>Select your favorite genres to help us curate your perfect collection of stories.</p>
+        </div>
+        
+        <div class="genre-grid">
+          <% categories.forEach(category => { %>
+            <div class="genre-card" data-genre-id="<%= category._id %>">
+              <div class="genre-icon">
+                <% if (category.name.toLowerCase().includes('fiction')) { %>
+                  📖
+                <% } else if (category.name.toLowerCase().includes('non-fiction')) { %>
+                  📚
+                <% } else if (category.name.toLowerCase().includes('fantasy')) { %>
+                  🧙
+                <% } else if (category.name.toLowerCase().includes('biography')) { %>
+                  👤
+                <% } else if (category.name.toLowerCase().includes('classic')) { %>
+                  📜
+                <% } else if (category.name.toLowerCase().includes('sci-fi') || category.name.toLowerCase().includes('science')) { %>
+                  🚀
+                <% } else if (category.name.toLowerCase().includes('mystery')) { %>
+                  🔍
+                <% } else if (category.name.toLowerCase().includes('poetry')) { %>
+                  ✍️
+                <% } else if (category.name.toLowerCase().includes('philosophy')) { %>
+                  💭
+                <% } else { %>
+                  📕
+                <% } %>
+              </div>
+              <span class="genre-name"><%= category.name %></span>
+              <div class="genre-checkmark">✓</div>
+            </div>
+          <% }) %>
+        </div>
+
+        <div class="genre-modal-footer">
+          <button class="btn-continue" onclick="saveGenrePreferences()">Continue to My Collection</button>
+          <button class="btn-skip" onclick="skipGenreSelection()">Skip for now</button>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      .genre-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        backdrop-filter: blur(4px);
+      }
+
+      .genre-modal-content {
+        background: white;
+        border-radius: 16px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      .genre-modal-header {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+
+      .genre-modal-header svg {
+        margin-bottom: 16px;
+      }
+
+      .genre-modal-header h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 28px;
+        color: #2d1f14;
+        margin-bottom: 12px;
+      }
+
+      .genre-modal-header p {
+        color: #666;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .genre-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 32px;
+      }
+
+      .genre-card {
+        position: relative;
+        border: 2px solid #e8dcc8;
+        border-radius: 12px;
+        padding: 20px 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+      }
+
+      .genre-card:hover {
+        border-color: #2d5016;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(45, 80, 22, 0.1);
+      }
+
+      .genre-card.selected {
+        border-color: #2d5016;
+        background: #f0f7ed;
+      }
+
+      .genre-icon {
+        font-size: 32px;
+        margin-bottom: 8px;
+      }
+
+      .genre-name {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: #2d1f14;
+      }
+
+      .genre-checkmark {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #2d5016;
+        color: white;
+        font-size: 12px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .genre-card.selected .genre-checkmark {
+        display: flex;
+      }
+
+      .genre-modal-footer {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .btn-continue {
+        width: 100%;
+        padding: 14px 24px;
+        background: #2d5016;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .btn-continue:hover {
+        background: #1f3810;
+      }
+
+      .btn-continue:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      .btn-skip {
+        width: 100%;
+        padding: 12px 24px;
+        background: transparent;
+        color: #666;
+        border: none;
+        font-size: 13px;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+
+      .btn-skip:hover {
+        color: #2d1f14;
+        text-decoration: underline;
+      }
+
+      @media (max-width: 768px) {
+        .genre-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .genre-modal-content {
+          padding: 24px;
+        }
+      }
+    </style>
+
+    <script>
+      const selectedGenres = new Set();
+
+      document.querySelectorAll('.genre-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const genreId = this.dataset.genreId;
+          
+          if (this.classList.contains('selected')) {
+            this.classList.remove('selected');
+            selectedGenres.delete(genreId);
+          } else {
+            this.classList.add('selected');
+            selectedGenres.add(genreId);
+          }
+        });
+      });
+
+      async function saveGenrePreferences() {
+        if (selectedGenres.size === 0) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'No Genres Selected',
+            text: 'Please select at least one genre to continue',
+            confirmButtonColor: '#2d5016'
+          });
+          return;
+        }
+
+        try {
+          const response = await fetch('/save-genre-preferences', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ genres: Array.from(selectedGenres) })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            document.getElementById('genreModal').style.display = 'none';
+            Swal.fire({
+              icon: 'success',
+              title: 'Preferences Saved!',
+              text: 'Your library has been personalized',
+              confirmButtonColor: '#2d5016',
+              timer: 2000,
+              showConfirmButton: false
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message || 'Failed to save preferences',
+              confirmButtonColor: '#2d5016'
+            });
+          }
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong. Please try again.',
+            confirmButtonColor: '#2d5016'
+          });
+        }
+      }
+
+      async function skipGenreSelection() {
+        try {
+          const response = await fetch('/skip-genre-selection', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            document.getElementById('genreModal').style.display = 'none';
+          }
+        } catch (error) {
+          console.error('Error skipping genre selection:', error);
+          document.getElementById('genreModal').style.display = 'none';
+        }
+      }
+    </script>
+    <% } %>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        const success = urlParams.get('success');
+        
+        if (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops!',
+            text: decodeURIComponent(error),
+            confirmButtonColor: '#5a4a3a'
+          }).then(() => {
+            const url = new URL(window.location);
+            url.searchParams.delete('error');
+            window.history.replaceState({}, '', url);
+          });
+        }
+        
+        if (success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: decodeURIComponent(success),
+            confirmButtonColor: '#5a4a3a',
+            timer: 3000
+          }).then(() => {
+            const url = new URL(window.location);
+            url.searchParams.delete('success');
+            window.history.replaceState({}, '', url);
+          });
+        }
+      });
+    </script>
   </body>
 </html>

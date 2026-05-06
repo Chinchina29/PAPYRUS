@@ -181,9 +181,10 @@ export const placeOrder = async (req, res) => {
       orderNumber: order.orderId,
     });
   } catch (error) {
+    console.error("Place order error:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to place order. Please try again later.",
+      message: error.message || "Failed to place order. Please try again later.",
     });
   }
 };

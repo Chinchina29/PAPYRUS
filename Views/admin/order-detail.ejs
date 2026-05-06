@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Order Details - Papyrus Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #d4c4b0;
+      color: #2d2d2d;
+      line-height: 1.5;
+    }
+
+    .admin-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .main-content {
+      margin-left: 240px;
+      flex: 1;
+      padding: 32px;
+      min-height: 100vh;
+    }
+
+    .content-wrapper {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      color: #2d2d2d;
+    }
+
+    .back-btn:hover {
+      background: #f3f4f6;
+      border-color: #8b6f47;
+    }
+
+    .page-header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: #2d2d2d;
+    }
+
+    .order-id {
+      color: #8b6f47;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 24px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #9ca3af;
+      margin-bottom: 16px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .info-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #9ca3af;
+      margin-bottom: 4px;
+    }
+
+    .info-value {
+      font-size: 14px;
+      color: #2d2d2d;
+      font-weight: 500;
+    }
+
+    .order-item {
+      display: flex;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .order-item:last-child {
+      border-bottom: none;
+    }
+
+    .item-image {
+      width: 60px;
+      height: 80px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #f5f1ed;
+      flex-shrink: 0;
+    }
+
+    .item-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .item-details {
+      flex: 1;
+    }
+
+    .item-title {
+      font-weight: 600;
+      font-size: 15px;
+      color: #2d2d2d;
+      margin-bottom: 4px;
+    }
+
+    .item-meta {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .item-qty {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .item-price {
+      font-weight: 600;
+      font-size: 15px;
+      color: #2d2d2d;
+      text-align: right;
+    }
+
+    .status-select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .status-select:focus {
+      outline: none;
+      border-color: #8b6f47;
+    }
+
+    .last-updated {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 12px;
+    }
+
+    .last-updated svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .payment-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 14px;
+    }
+
+    .payment-row.total {
+      border-top: 2px solid #e5e7eb;
+      padding-top: 12px;
+      margin-top: 8px;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .payment-method {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 12px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: #2d5016;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+      margin-bottom: 12px;
+    }
+
+    .btn-primary:hover {
+      background: #1f3810;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      color: #2d2d2d;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: #f3f4f6;
+      border-color: #8b6f47;
+    }
+
+    @media (max-width: 1024px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .main-content {
+        margin-left: 0;
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <%- include('../partials/admin-sidebar', { currentPage_name: 'orders' }) %>
+    
+    <div class="main-content">
+      <div class="content-wrapper">
+        <div class="page-header">
+          <a href="/admin/orders" class="back-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </a>
+          <h1>Order Details: <span class="order-id"><%= order.orderId %></span></h1>
+        </div>
+
+        <div class="content-grid">
+          <div>
+            <div class="card" style="margin-bottom: 24px;">
+              <div class="card-title">Shipping Information</div>
+              
+              <div class="info-row">
+                <div>
+                  <div class="info-label">Customer Name</div>
+                  <div class="info-value"><%= order.shippingAddress.fullName %></div>
+                </div>
+                <div style="text-align: right;">
+                  <div class="info-label">Phone Number</div>
+                  <div class="info-value"><%= order.shippingAddress.phone %></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="info-label">Shipping Address</div>
+                <div class="info-value">
+                  <%= order.shippingAddress.addressLine1 %><br>
+                  <% if (order.shippingAddress.addressLine2) { %>
+                    <%= order.shippingAddress.addressLine2 %><br>
+                  <% } %>
+                  <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.pincode %><br>
+                  <%= order.shippingAddress.country %>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">Order Items</div>
+              
+              <% order.items.forEach(item => { %>
+                <div class="order-item">
+                  <div class="item-image">
+                    <% if (item.product && item.product.images && item.product.images.length > 0) { %>
+                      <img src="<%= item.product.images[0].url %>" alt="<%= item.title %>">
+                    <% } else { %>
+                      <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 24px;">📚</div>
+                    <% } %>
+                  </div>
+                  <div class="item-details">
+                    <div class="item-title"><%= item.title %></div>
+                    <div class="item-meta">Hardcover</div>
+                    <div class="item-qty">Qty: <%= item.quantity %></div>
+                  </div>
+                  <div class="item-price">₹<%= item.subtotal.toFixed(2) %></div>
+                </div>
+              <% }) %>
+            </div>
+          </div>
+
+          <div>
+            <div class="card" style="margin-bottom: 24px;">
+              <div class="card-title">Order Status</div>
+              
+              <div class="info-label">Update Status</div>
+              <select class="status-select" id="orderStatus" onchange="updateOrderStatus()">
+                <option value="Pending" <%= order.orderStatus === 'Pending' ? 'selected' : '' %>>Pending</option>
+                <option value="Processing" <%= order.orderStatus === 'Processing' ? 'selected' : '' %>>Processing</option>
+                <option value="Shipped" <%= order.orderStatus === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                <option value="Delivered" <%= order.orderStatus === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                <option value="Cancelled" <%= order.orderStatus === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                <option value="Returned" <%= order.orderStatus === 'Returned' ? 'selected' : '' %>>Returned</option>
+              </select>
+
+              <div class="last-updated">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                Last updated: <%= new Date(order.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %> - <%= new Date(order.updatedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) %>
+              </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 24px;">
+              <div class="card-title">Payment Summary</div>
+              
+              <div class="payment-row">
+                <span>Subtotal</span>
+                <span>₹<%= order.subtotal.toFixed(2) %></span>
+              </div>
+              
+              <div class="payment-row">
+                <span>Shipping (Standard)</span>
+                <span>₹<%= order.shippingCharge.toFixed(2) %></span>
+              </div>
+              
+              <% if (order.discount > 0) { %>
+              <div class="payment-row">
+                <span>Discount</span>
+                <span>-₹<%= order.discount.toFixed(2) %></span>
+              </div>
+              <% } %>
+              
+              <div class="payment-row total">
+                <span>Total</span>
+                <span>₹<%= order.totalAmount.toFixed(2) %></span>
+              </div>
+
+              <div class="payment-method">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                  <line x1="1" y1="10" x2="23" y2="10"></line>
+                </svg>
+                Payment Method: <%= order.paymentMethod %> •••• 4242
+              </div>
+            </div>
+
+            <button class="btn-primary" onclick="printInvoice()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+              </svg>
+              Print Invoice
+            </button>
+
+            <button class="btn-secondary" onclick="emailReceipt()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              Email Receipt
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function updateOrderStatus() {
+      const newStatus = document.getElementById('orderStatus').value;
+      const orderId = '<%= order._id %>';
+
+      const result = await Swal.fire({
+        title: 'Update Order Status?',
+        text: `Change order status to ${newStatus}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#2d5016',
+        cancelButtonColor: '#999',
+        confirmButtonText: 'Yes, Update',
+        cancelButtonText: 'Cancel'
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(`/admin/orders/${orderId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Status Updated!',
+              text: data.message,
+              confirmButtonColor: '#2d5016'
+            }).then(() => location.reload());
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message,
+              confirmButtonColor: '#2d5016'
+            });
+          }
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to update status',
+            confirmButtonColor: '#2d5016'
+          });
+        }
+      } else {
+        location.reload();
+      }
+    }
+
+    function printInvoice() {
+      window.open('/orders/<%= order._id %>/invoice', '_blank');
+    }
+
+    function emailReceipt() {
+      Swal.fire({
+        icon: 'info',
+        title: 'Email Receipt',
+        text: 'Email receipt functionality will be implemented soon',
+        confirmButtonColor: '#2d5016'
+      });
+    }
+  </script>
+</body>
+</html>

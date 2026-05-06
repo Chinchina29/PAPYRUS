@@ -239,8 +239,8 @@
                                     <select id="favoriteGenres" name="favoriteGenres" multiple style="height: 120px;">
                                         <% if (categories && categories.length > 0) { %>
                                             <% categories.forEach(category => { %>
-                                                <option value="<%= category._id %>" 
-                                                    <%= user.favoriteGenres && user.favoriteGenres.includes(category._id.toString()) ? 'selected' : '' %>>
+                                                <option value="<%= category.name %>" 
+                                                    <%= user.favoriteGenres && user.favoriteGenres.includes(category.name) ? 'selected' : '' %>>
                                                     <%= category.name %>
                                                 </option>
                                             <% }) %>
@@ -894,6 +894,39 @@
                     if (errorMsg) errorMsg.remove();
                 }
             });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+          const urlParams = new URLSearchParams(window.location.search);
+          const error = urlParams.get('error');
+          const success = urlParams.get('success');
+          
+          if (error) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Oops!',
+              text: decodeURIComponent(error),
+              confirmButtonColor: '#5a4a3a'
+            }).then(() => {
+              const url = new URL(window.location);
+              url.searchParams.delete('error');
+              window.history.replaceState({}, '', url);
+            });
+          }
+          
+          if (success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Success!',
+              text: decodeURIComponent(success),
+              confirmButtonColor: '#5a4a3a',
+              timer: 3000
+            }).then(() => {
+              const url = new URL(window.location);
+              url.searchParams.delete('success');
+              window.history.replaceState({}, '', url);
+            });
+          }
         });
     </script>
 </body>

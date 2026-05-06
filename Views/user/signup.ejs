@@ -657,6 +657,39 @@
           window.history.pushState(null, null, window.location.href);
         });
       }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        const success = urlParams.get('success');
+        
+        if (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops!',
+            text: decodeURIComponent(error),
+            confirmButtonColor: '#2d5016'
+          }).then(() => {
+            const url = new URL(window.location);
+            url.searchParams.delete('error');
+            window.history.replaceState({}, '', url);
+          });
+        }
+        
+        if (success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: decodeURIComponent(success),
+            confirmButtonColor: '#2d5016',
+            timer: 3000
+          }).then(() => {
+            const url = new URL(window.location);
+            url.searchParams.delete('success');
+            window.history.replaceState({}, '', url);
+          });
+        }
+      });
     </script>
   </body>
 </html>

@@ -331,12 +331,12 @@
                       </span>
                     </td>
                     <td>
-                      <button class="action-btn" onclick="viewOrder('<%= order._id %>')" title="View Details">
+                      <a href="/admin/orders/<%= order._id %>" class="action-btn" title="View Details">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                           <circle cx="12" cy="12" r="3"></circle>
                         </svg>
-                      </button>
+                      </a>
                     </td>
                   </tr>
                   <% }) %>
@@ -375,15 +375,6 @@
     function filterByStatus(status) {
       const search = new URLSearchParams(window.location.search).get('search') || '';
       window.location.href = `/admin/orders?status=${status}&search=${search}`;
-    }
-
-    function viewOrder(orderId) {
-      Swal.fire({
-        icon: 'info',
-        title: 'Order Details',
-        text: 'Order detail page is not yet implemented. Please provide Figma design for the order detail view.',
-        confirmButtonColor: '#8b6f47'
-      });
     }
 
     const searchInput = document.querySelector('.search-input');

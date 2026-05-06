@@ -264,6 +264,7 @@ router.get(
 
 router.get("/orders", requireAuth, orderController.getUserOrders);
 router.get("/orders/:id", requireAuth, orderController.getOrderDetail);
+router.get("/orders/:id/invoice", requireAuth, orderController.downloadInvoice);
 router.post(
   "/orders/:orderId/cancel",
   requireAuth,

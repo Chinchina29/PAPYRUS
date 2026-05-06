@@ -169,7 +169,16 @@ app.use("/admin", preventUserFromAdminRoutes, adminRoutes);
 app.use("/", authRoutes);
 app.use("/", userRoutes);
 
-app.use((req, res) => res.status(404).render("error/404"));
+app.use((req, res) => {
+  const isAjax = req.xhr || req.headers.accept?.includes('application/json');
+  if (isAjax) {
+    return res.status(404).json({
+      success: false,
+      message: "The page you're looking for doesn't exist"
+    });
+  }
+  res.redirect('/?error=The page you\'re looking for doesn\'t exist. It might have been moved or deleted.');
+});
 
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
@@ -195,13 +204,16 @@ app.use((err, req, res, next) => {
           .json({ error: "Upload error", message: err.message });
     }
   }
-  res
-    .status(500)
-    .json({ error: "Internal server error", message: "Something went wrong." });
-});
-
-app.use((err, req, res, next) => {
-  res.status(500).render("error/500", { error: err });
+  
+  console.error('Server Error:', err);
+  const isAjax = req.xhr || req.headers.accept?.includes('application/json');
+  if (isAjax) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong on our end. Please try again later."
+    });
+  }
+  res.redirect('/?error=Something went wrong on our end. Our team has been notified and we\'re working on it.');
 });
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Order Details - Papyrus</title>
+  <link rel="stylesheet" href="/css/home.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    body { 
+      background-color: #f8f6f3;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    .order-detail-wrapper { max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
+    .breadcrumb-nav { font-size: 13px; color: #999; margin-bottom: 24px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .breadcrumb-nav a { color: #999; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb-nav a:hover { color: #5a4a3a; text-decoration: underline; }
+    .order-header { margin-bottom: 32px; }
+    .order-header h1 { font-size: 42px; font-weight: 400; color: #2d1f14; margin-bottom: 8px; }
+    .order-id { color: #8b7355; }
+    
+    .content-grid { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
+    
+    .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #e8dcc8; }
+    .card-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #9ca3af; margin-bottom: 16px; }
+    
+    .info-row { display: flex; justify-content: space-between; margin-bottom: 16px; }
+    .info-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #9ca3af; margin-bottom: 4px; }
+    .info-value { font-size: 14px; color: #2d1f14; font-weight: 500; }
+    
+    .order-item { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid #f3f4f6; }
+    .order-item:last-child { border-bottom: none; }
+    
+    .item-image { width: 60px; height: 80px; border-radius: 6px; overflow: hidden; background: #f5f1ed; flex-shrink: 0; }
+    .item-image img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .item-details { flex: 1; }
+    .item-title { font-weight: 600; font-size: 15px; color: #2d1f14; margin-bottom: 4px; }
+    .item-meta { font-size: 13px; color: #6b7280; margin-bottom: 8px; }
+    .item-qty { font-size: 13px; color: #6b7280; }
+    .item-price { font-weight: 600; font-size: 15px; color: #2d1f14; text-align: right; }
+    
+    .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+    .status-pending { background: #fff3e0; color: #f57c00; }
+    .status-processing { background: #e3f2fd; color: #1976d2; }
+    .status-shipped { background: #e8f5e9; color: #388e3c; }
+    .status-delivered { background: #c8e6c9; color: #2e7d32; }
+    .status-cancelled { background: #ffebee; color: #d32f2f; }
+    .status-returned { background: #f3e5f5; color: #7b1fa2; }
+    
+    .payment-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+    .payment-row.total { border-top: 2px solid #e5e7eb; padding-top: 12px; margin-top: 8px; font-weight: 700; font-size: 18px; }
+    
+    .payment-method { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6b7280; margin-top: 12px; }
+    
+    .btn { padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-block; border: none; }
+    .btn-primary { background: #2d1f14; color: white; width: 100%; margin-bottom: 12px; }
+    .btn-primary:hover { background: #1a1209; }
+    .btn-secondary { background: white; color: #2d1f14; border: 1.5px solid #2d1f14; width: 100%; }
+    .btn-secondary:hover { background: #2d1f14; color: white; }
+    
+    .action-buttons { display: flex; gap: 12px; margin-top: 24px; }
+    .action-buttons .btn { flex: 1; text-align: center; }
+    
+    @media (max-width: 1024px) {
+      .content-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <div class="order-detail-wrapper">
+    <div class="breadcrumb-nav">
+      <a href="/home">HOME</a> / <a href="/orders">MY ORDERS</a> / <span>ORDER DETAILS</span>
+    </div>
+
+    <div class="order-header">
+      <h1>Order Details: <span class="order-id"><%= order.orderId %></span></h1>
+    </div>
+
+    <div class="content-grid">
+      <div>
+        <div class="card">
+          <div class="card-title">Shipping Information</div>
+          
+          <div class="info-row">
+            <div>
+              <div class="info-label">Customer Name</div>
+              <div class="info-value"><%= order.shippingAddress.fullName %></div>
+            </div>
+            <div style="text-align: right;">
+              <div class="info-label">Phone Number</div>
+              <div class="info-value"><%= order.shippingAddress.phone %></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="info-label">Shipping Address</div>
+            <div class="info-value">
+              <%= order.shippingAddress.addressLine1 %><br>
+              <% if (order.shippingAddress.addressLine2) { %>
+                <%= order.shippingAddress.addressLine2 %><br>
+              <% } %>
+              <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.pincode %><br>
+              <%= order.shippingAddress.country %>
+            </div>
+          </div>
+
+          <% if (order.trackingNumber) { %>
+          <div style="margin-top: 16px;">
+            <div class="info-label">Tracking Number</div>
+            <div class="info-value"><%= order.trackingNumber %></div>
+          </div>
+          <% } %>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Order Items (<%= order.items.length %>)</div>
+          
+          <% order.items.forEach(item => { %>
+            <div class="order-item">
+              <div class="item-image">
+                <% if (item.product && item.product.images && item.product.images.length > 0) { %>
+                  <img src="<%= item.product.images[0].url %>" alt="<%= item.title %>">
+                <% } else { %>
+                  <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 24px;">📚</div>
+                <% } %>
+              </div>
+              <div class="item-details">
+                <div class="item-title"><%= item.title %></div>
+                <div class="item-meta">Hardcover • New</div>
+                <div class="item-qty">Qty: <%= item.quantity %></div>
+              </div>
+              <div class="item-price">₹<%= item.subtotal.toFixed(2) %></div>
+            </div>
+          <% }) %>
+        </div>
+
+        <% if (order.orderStatus === 'Pending' || order.orderStatus === 'Processing') { %>
+        <div class="action-buttons">
+          <button class="btn btn-secondary" onclick="cancelOrder('<%= order._id %>')">Cancel Order</button>
+          <a href="/orders/<%= order._id %>/invoice" target="_blank" class="btn btn-secondary">Download Invoice</a>
+        </div>
+        <% } else if (order.orderStatus === 'Delivered') { %>
+        <div class="action-buttons">
+          <button class="btn btn-secondary" onclick="returnOrder('<%= order._id %>')">Return Order</button>
+          <a href="/orders/<%= order._id %>/invoice" target="_blank" class="btn btn-secondary">Download Invoice</a>
+        </div>
+        <% } else { %>
+        <div class="action-buttons">
+          <a href="/orders/<%= order._id %>/invoice" target="_blank" class="btn btn-secondary">Download Invoice</a>
+        </div>
+        <% } %>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-title">Order Status</div>
+          
+          <div style="margin-bottom: 16px;">
+            <span class="status-badge status-<%= order.orderStatus.toLowerCase() %>"><%= order.orderStatus %></span>
+          </div>
+
+          <div class="info-label">Order Date</div>
+          <div class="info-value" style="margin-bottom: 12px;">
+            <%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %>
+          </div>
+
+          <% if (order.shippedAt) { %>
+          <div class="info-label">Shipped Date</div>
+          <div class="info-value" style="margin-bottom: 12px;">
+            <%= new Date(order.shippedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %>
+          </div>
+          <% } %>
+
+          <% if (order.deliveredAt) { %>
+          <div class="info-label">Delivered Date</div>
+          <div class="info-value" style="margin-bottom: 12px;">
+            <%= new Date(order.deliveredAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %>
+          </div>
+          <% } %>
+
+          <% if (order.cancelledAt) { %>
+          <div class="info-label">Cancelled Date</div>
+          <div class="info-value" style="margin-bottom: 12px;">
+            <%= new Date(order.cancelledAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %>
+          </div>
+          <% if (order.cancellationReason) { %>
+          <div class="info-label">Cancellation Reason</div>
+          <div class="info-value" style="margin-bottom: 12px;">
+            <%= order.cancellationReason %>
+          </div>
+          <% } %>
+          <% } %>
+
+          <% if (order.returnedAt) { %>
+          <div class="info-label">Returned Date</div>
+          <div class="info-value" style="margin-bottom: 12px;">
+            <%= new Date(order.returnedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %>
+          </div>
+          <% if (order.returnReason) { %>
+          <div class="info-label">Return Reason</div>
+          <div class="info-value" style="margin-bottom: 12px;">
+            <%= order.returnReason %>
+          </div>
+          <% } %>
+          <% } %>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Payment Summary</div>
+          
+          <div class="payment-row">
+            <span>Subtotal</span>
+            <span>₹<%= order.subtotal.toFixed(2) %></span>
+          </div>
+          
+          <div class="payment-row">
+            <span>Shipping (Standard)</span>
+            <span>₹<%= order.shippingCharge.toFixed(2) %></span>
+          </div>
+          
+          <% if (order.discount > 0) { %>
+          <div class="payment-row">
+            <span>Discount</span>
+            <span>-₹<%= order.discount.toFixed(2) %></span>
+          </div>
+          <% } %>
+          
+          <div class="payment-row total">
+            <span>Total</span>
+            <span>₹<%= order.totalAmount.toFixed(2) %></span>
+          </div>
+
+          <div class="payment-method">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+              <line x1="1" y1="10" x2="23" y2="10"></line>
+            </svg>
+            Payment Method: <%= order.paymentMethod %>
+          </div>
+        </div>
+
+        <div style="text-align: center; padding: 16px; color: #666; font-size: 13px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px; margin-bottom: 8px;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <p>Need help with this order?</p>
+          <a href="#" style="color: #2d1f14; text-decoration: underline;">Contact Support</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function cancelOrder(orderId) {
+      const result = await Swal.fire({
+        title: 'Cancel Your Order',
+        html: `
+          <p style="color: #666; font-size: 14px; margin-bottom: 20px;">We're sorry to see you go. Please let us know the reason for your cancellation.</p>
+          <div style="text-align: left; margin-bottom: 20px;">
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="cancelReason" value="Found a better price elsewhere" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Found a better price elsewhere</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="cancelReason" value="Mistakenly ordered" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Mistakenly ordered</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="cancelReason" value="Long expected delivery time" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Long expected delivery time</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="cancelReason" value="Changed my mind" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Changed my mind</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="cancelReason" value="Other" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Other</span>
+            </label>
+          </div>
+          <div style="text-align: left;">
+            <label style="display: block; font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Additional Comments (Optional)</label>
+            <textarea id="cancelComments" class="swal2-textarea" placeholder="Please provide any additional details..." style="width: 100%; min-height: 80px; padding: 12px; border: 1px solid #e8dcc8; border-radius: 6px; font-size: 14px; resize: vertical;"></textarea>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonColor: '#2d1f14',
+        cancelButtonColor: '#999',
+        confirmButtonText: 'Confirm Cancellation',
+        cancelButtonText: 'Keep My Order',
+        width: '500px',
+        preConfirm: () => {
+          const selectedReason = document.querySelector('input[name="cancelReason"]:checked');
+          if (!selectedReason) {
+            Swal.showValidationMessage('Please select a reason for cancellation');
+            return false;
+          }
+          return {
+            reason: selectedReason.value,
+            comments: document.getElementById('cancelComments').value
+          };
+        }
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(`/orders/${orderId}/cancel`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              reason: result.value.reason,
+              comments: result.value.comments
+            })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Order Cancelled',
+              text: data.message,
+              confirmButtonColor: '#2d1f14'
+            }).then(() => location.reload());
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message,
+              confirmButtonColor: '#2d1f14'
+            });
+          }
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to cancel order',
+            confirmButtonColor: '#2d1f14'
+          });
+        }
+      }
+    }
+
+    async function returnOrder(orderId) {
+      const result = await Swal.fire({
+        title: 'Return Your Order',
+        html: `
+          <p style="color: #666; font-size: 14px; margin-bottom: 20px;">We are sorry the book wasn't a perfect fit. Please let us know the reason for your return.</p>
+          <div style="text-align: left; margin-bottom: 20px;">
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="returnReason" value="Item damaged upon arrival" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Item damaged upon arrival</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="returnReason" value="Incorrect book received" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Incorrect book received</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="returnReason" value="Quality not as described" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Quality not as described</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="returnReason" value="Changed my mind" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Changed my mind</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="returnReason" value="Other" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Other</span>
+            </label>
+          </div>
+          <div style="text-align: left;">
+            <label style="display: block; font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Additional Comments (Optional)</label>
+            <textarea id="returnComments" class="swal2-textarea" placeholder="Please provide any additional details..." style="width: 100%; min-height: 80px; padding: 12px; border: 1px solid #e8dcc8; border-radius: 6px; font-size: 14px; resize: vertical;"></textarea>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonColor: '#2d1f14',
+        cancelButtonColor: '#999',
+        confirmButtonText: 'Initiate Return',
+        cancelButtonText: 'Keep My Order',
+        width: '500px',
+        preConfirm: () => {
+          const selectedReason = document.querySelector('input[name="returnReason"]:checked');
+          if (!selectedReason) {
+            Swal.showValidationMessage('Please select a reason for return');
+            return false;
+          }
+          return {
+            reason: selectedReason.value,
+            comments: document.getElementById('returnComments').value
+          };
+        }
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(`/orders/${orderId}/return`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(result.value)
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Return Initiated',
+              text: data.message,
+              confirmButtonColor: '#2d1f14'
+            }).then(() => location.reload());
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message,
+              confirmButtonColor: '#2d1f14'
+            });
+          }
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to process return request',
+            confirmButtonColor: '#2d1f14'
+          });
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      const success = urlParams.get('success');
+      
+      if (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops!',
+          text: decodeURIComponent(error),
+          confirmButtonColor: '#2d1f14'
+        }).then(() => {
+          const url = new URL(window.location);
+          url.searchParams.delete('error');
+          window.history.replaceState({}, '', url);
+        });
+      }
+      
+      if (success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: decodeURIComponent(success),
+          confirmButtonColor: '#2d1f14',
+          timer: 3000
+        }).then(() => {
+          const url = new URL(window.location);
+          url.searchParams.delete('success');
+          window.history.replaceState({}, '', url);
+        });
+      }
+    });
+  </script>
+</body>
+</html>

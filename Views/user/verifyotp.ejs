@@ -366,6 +366,37 @@
             });
           }
         });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        const success = urlParams.get('success');
+        
+        if (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops!',
+            text: decodeURIComponent(error),
+            confirmButtonColor: '#7A5C3E'
+          }).then(() => {
+            const url = new URL(window.location);
+            url.searchParams.delete('error');
+            window.history.replaceState({}, '', url);
+          });
+        }
+        
+        if (success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: decodeURIComponent(success),
+            confirmButtonColor: '#7A5C3E',
+            timer: 3000
+          }).then(() => {
+            const url = new URL(window.location);
+            url.searchParams.delete('success');
+            window.history.replaceState({}, '', url);
+          });
+        }
       });
     </script>
   </body>

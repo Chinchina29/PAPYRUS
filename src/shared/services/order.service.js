@@ -47,16 +47,34 @@ export const getOrderByOrderId = async (orderId) => {
     .populate("items.product", "title images");
 };
 
-export const getUserOrders = async (userId, { page = 1, limit = 10 }) => {
+export const getUserOrders = async (userId, { page = 1, limit = 10, sort = 'newest', search = '', status = '' }) => {
   const skip = (page - 1) * limit;
 
+  const query = { user: userId };
+  
+  if (status) {
+    query.orderStatus = status;
+  }
+  
+  if (search) {
+    query.$or = [
+      { orderId: { $regex: search, $options: 'i' } },
+      { 'items.title': { $regex: search, $options: 'i' } }
+    ];
+  }
+
+  let sortOption = { createdAt: -1 };
+  if (sort === 'oldest') sortOption = { createdAt: 1 };
+  else if (sort === 'amount-high') sortOption = { totalAmount: -1 };
+  else if (sort === 'amount-low') sortOption = { totalAmount: 1 };
+
   const [orders, total] = await Promise.all([
-    Order.find({ user: userId })
+    Order.find(query)
       .populate("items.product", "title images")
-      .sort({ createdAt: -1 })
+      .sort(sortOption)
       .skip(skip)
       .limit(limit),
-    Order.countDocuments({ user: userId }),
+    Order.countDocuments(query),
   ]);
 
   return {

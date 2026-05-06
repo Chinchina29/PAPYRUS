@@ -31,7 +31,6 @@ const orderSchema = new mongoose.Schema(
   {
     orderId: {
       type: String,
-      required: true,
       unique: true,
     },
     user: {
@@ -133,9 +132,9 @@ orderSchema.index({ orderStatus: 1 });
 orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ createdAt: -1 });
 
-orderSchema.pre('save', function() {
+orderSchema.pre('validate', function() {
   if (!this.orderId) {
-    this.orderId = `#PY-${Date.now().toString().slice(-6)}`;
+    this.orderId = `PY-${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 1000)}`;
   }
 });
 

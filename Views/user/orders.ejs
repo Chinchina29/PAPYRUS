@@ -64,6 +64,20 @@
     .page-btn.active { background: #2d1f14; color: white; }
     .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
+  <style>
+    .cancel-order-popup label:hover,
+    .return-order-popup label:hover {
+      background: #f5f1ed !important;
+    }
+    .swal2-popup {
+      border-radius: 12px !important;
+    }
+    .swal2-title {
+      font-family: 'Playfair Display', serif !important;
+      font-size: 24px !important;
+      color: #2d1f14 !important;
+    }
+  </style>
 </head>
 <body>
   <%- include('../partials/header') %>
@@ -141,6 +155,16 @@
             <div class="order-total">Total: ₹<%= order.totalAmount.toFixed(2) %></div>
             <div class="order-actions">
               <a href="/orders/<%= order._id %>" class="btn btn-primary">View Details</a>
+              <% if (order.orderStatus === 'Delivered' || order.orderStatus === 'Shipped') { %>
+                <a href="/orders/<%= order._id %>/invoice" target="_blank" class="btn btn-secondary" title="Download Invoice">
+                  <svg style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  Invoice
+                </a>
+              <% } %>
               <% if (order.orderStatus === 'Pending' || order.orderStatus === 'Processing') { %>
                 <button class="btn btn-danger" onclick="cancelOrder('<%= order._id %>')">Cancel Order</button>
               <% } %>
@@ -206,15 +230,56 @@
 
     async function cancelOrder(orderId) {
       const result = await Swal.fire({
-        title: 'Cancel Order?',
-        text: 'Are you sure you want to cancel this order?',
-        icon: 'warning',
-        input: 'textarea',
-        inputPlaceholder: 'Reason for cancellation (optional)',
+        title: 'Cancel Your Order',
+        html: `
+          <p style="color: #666; font-size: 14px; margin-bottom: 20px;">We're sorry to see you go. Please let us know the reason for your cancellation.</p>
+          <div style="text-align: left; margin-bottom: 20px;">
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="cancelReason" value="Found a better price elsewhere" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Found a better price elsewhere</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="cancelReason" value="Mistakenly ordered" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Mistakenly ordered</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="cancelReason" value="Long expected delivery time" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Long expected delivery time</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="cancelReason" value="Changed my mind" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Changed my mind</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="cancelReason" value="Other" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Other</span>
+            </label>
+          </div>
+          <div style="text-align: left;">
+            <label style="display: block; font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Additional Comments (Optional)</label>
+            <textarea id="cancelComments" class="swal2-textarea" placeholder="Please provide any additional details..." style="width: 100%; min-height: 80px; padding: 12px; border: 1px solid #e8dcc8; border-radius: 6px; font-size: 14px; resize: vertical;"></textarea>
+          </div>
+        `,
         showCancelButton: true,
-        confirmButtonColor: '#d32f2f',
+        confirmButtonColor: '#2d1f14',
         cancelButtonColor: '#999',
-        confirmButtonText: 'Yes, Cancel Order'
+        confirmButtonText: 'Confirm Cancellation',
+        cancelButtonText: 'Keep My Order',
+        width: '500px',
+        customClass: {
+          popup: 'cancel-order-popup'
+        },
+        preConfirm: () => {
+          const selectedReason = document.querySelector('input[name="cancelReason"]:checked');
+          if (!selectedReason) {
+            Swal.showValidationMessage('Please select a reason for cancellation');
+            return false;
+          }
+          return {
+            reason: selectedReason.value,
+            comments: document.getElementById('cancelComments').value
+          };
+        }
       });
 
       if (result.isConfirmed) {
@@ -222,39 +287,91 @@
           const response = await fetch(`/orders/${orderId}/cancel`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ reason: result.value })
+            body: JSON.stringify({ 
+              reason: result.value.reason,
+              comments: result.value.comments
+            })
           });
 
           const data = await response.json();
 
           if (data.success) {
-            Swal.fire('Cancelled!', data.message, 'success').then(() => location.reload());
+            Swal.fire({
+              icon: 'success',
+              title: 'Order Cancelled',
+              text: data.message,
+              confirmButtonColor: '#2d1f14'
+            }).then(() => location.reload());
           } else {
-            Swal.fire('Error', data.message, 'error');
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message,
+              confirmButtonColor: '#2d1f14'
+            });
           }
         } catch (error) {
-          Swal.fire('Error', 'Failed to cancel order', 'error');
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to cancel order',
+            confirmButtonColor: '#2d1f14'
+          });
         }
       }
     }
 
     async function returnOrder(orderId) {
       const result = await Swal.fire({
-        title: 'Return Order',
+        title: 'Return Your Order',
         html: `
-          <textarea id="returnReason" class="swal2-textarea" placeholder="Reason for return (required)" style="height: 80px;"></textarea>
-          <textarea id="returnComments" class="swal2-textarea" placeholder="Additional comments (optional)" style="height: 60px; margin-top: 10px;"></textarea>
+          <p style="color: #666; font-size: 14px; margin-bottom: 20px;">We are sorry the book wasn't a perfect fit. Please let us know the reason for your return.</p>
+          <div style="text-align: left; margin-bottom: 20px;">
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="returnReason" value="Item damaged upon arrival" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Item damaged upon arrival</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="returnReason" value="Incorrect book received" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Incorrect book received</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="returnReason" value="Quality not as described" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Quality not as described</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="returnReason" value="Changed my mind" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Changed my mind</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="returnReason" value="Other" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Other</span>
+            </label>
+          </div>
+          <div style="text-align: left;">
+            <label style="display: block; font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Additional Comments (Optional)</label>
+            <textarea id="returnComments" class="swal2-textarea" placeholder="Please provide any additional details..." style="width: 100%; min-height: 80px; padding: 12px; border: 1px solid #e8dcc8; border-radius: 6px; font-size: 14px; resize: vertical;"></textarea>
+          </div>
         `,
         showCancelButton: true,
         confirmButtonColor: '#2d1f14',
         cancelButtonColor: '#999',
-        confirmButtonText: 'Submit Return Request',
+        confirmButtonText: 'Initiate Return',
+        cancelButtonText: 'Keep My Order',
+        width: '500px',
+        customClass: {
+          popup: 'return-order-popup'
+        },
         preConfirm: () => {
-          const reason = document.getElementById('returnReason').value;
-          if (!reason) {
-            Swal.showValidationMessage('Please provide a reason for return');
+          const selectedReason = document.querySelector('input[name="returnReason"]:checked');
+          if (!selectedReason) {
+            Swal.showValidationMessage('Please select a reason for return');
+            return false;
           }
-          return { reason, comments: document.getElementById('returnComments').value };
+          return {
+            reason: selectedReason.value,
+            comments: document.getElementById('returnComments').value
+          };
         }
       });
 
@@ -269,12 +386,27 @@
           const data = await response.json();
 
           if (data.success) {
-            Swal.fire('Success!', data.message, 'success').then(() => location.reload());
+            Swal.fire({
+              icon: 'success',
+              title: 'Return Initiated',
+              text: data.message,
+              confirmButtonColor: '#2d1f14'
+            }).then(() => location.reload());
           } else {
-            Swal.fire('Error', data.message, 'error');
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message,
+              confirmButtonColor: '#2d1f14'
+            });
           }
         } catch (error) {
-          Swal.fire('Error', 'Failed to process return request', 'error');
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to process return request',
+            confirmButtonColor: '#2d1f14'
+          });
         }
       }
     }

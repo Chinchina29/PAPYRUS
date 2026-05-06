@@ -5,6 +5,7 @@ import * as productController from "../controllers/product.controller.js";
 import * as submissionController from "../controllers/submission.controller.js";
 import * as orderController from "../controllers/order.controller.js";
 import * as couponController from "../controllers/coupon.controller.js";
+import { migrateUserGenres } from "../../shared/utils/migrateGenres.js";
 import {
   isAdmin,
   isAdminNotAuthenticated,
@@ -25,6 +26,15 @@ const router = express.Router();
 router.use(noCache);
 
 router.use(preventUserFromAdminRoutes);
+
+router.get("/migrate-genres", blockUserFromAdmin, isAdmin, async (req, res) => {
+  try {
+    const result = await migrateUserGenres();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 router.get("/signin", isAdminNotAuthenticated, (req, res) => {
   res.render("admin/adminsignin", { error: req.query.error || null });

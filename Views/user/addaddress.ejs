@@ -112,7 +112,11 @@
                   </div>
                   <div class="form-group">
                     <label for="phone">Phone Number</label>
-                    <input type="tel" id="phone" name="phone" placeholder="9876543210" maxlength="15">
+                    <div style="display: flex; gap: 8px;">
+                      <input type="text" value="+91" readonly style="width: 60px; background: #f5f1ed; color: #666; cursor: not-allowed;">
+                      <input type="tel" id="phone" name="phone" placeholder="9876543210" maxlength="10" pattern="[6-9][0-9]{9}" style="flex: 1;">
+                    </div>
+                    <small style="color: #666; font-size: 11px; margin-top: 4px; display: block;">Enter 10-digit Indian mobile number</small>
                   </div>
                 </div>
                 <div class="form-group">
@@ -235,9 +239,11 @@
           return;
         }
         if (!/^[6-9]\d{9}$/.test(data.phone)) {
-          Swal.fire({ title: "Invalid Phone!", text: "Please enter a valid Indian phone number", icon: "error", confirmButtonColor: "#5a4a3a" });
+          Swal.fire({ title: "Invalid Phone!", text: "Please enter a valid 10-digit Indian mobile number starting with 6-9", icon: "error", confirmButtonColor: "#5a4a3a" });
           return;
         }
+        
+        data.phone = '+91' + data.phone;
         if (!/^\d{6}$/.test(data.postalCode)) {
           Swal.fire({ title: "Invalid Postal Code!", text: "Please enter a valid 6-digit postal code", icon: "error", confirmButtonColor: "#5a4a3a" });
           return;
@@ -270,6 +276,39 @@
       history.pushState(null, null, location.href);
       window.onpopstate = function () { history.go(1); };
       window.addEventListener("beforeunload", function () { history.replaceState(null, null, location.href); });
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        const success = urlParams.get('success');
+        
+        if (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops!',
+            text: decodeURIComponent(error),
+            confirmButtonColor: '#5a4a3a'
+          }).then(() => {
+            const url = new URL(window.location);
+            url.searchParams.delete('error');
+            window.history.replaceState({}, '', url);
+          });
+        }
+        
+        if (success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: decodeURIComponent(success),
+            confirmButtonColor: '#5a4a3a',
+            timer: 3000
+          }).then(() => {
+            const url = new URL(window.location);
+            url.searchParams.delete('success');
+            window.history.replaceState({}, '', url);
+          });
+        }
+      });
     </script>
   </body>
 </html>

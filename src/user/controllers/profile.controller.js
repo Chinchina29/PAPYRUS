@@ -21,10 +21,6 @@ export const showProfile = async (req, res) => {
     }
 
     const addresses = await addressService.getUserAddresses(userId);
-    
-    if (user.favoriteGenres && user.favoriteGenres.length > 0) {
-      await user.populate('favoriteGenres');
-    }
 
     res.render("user/profile", {
       user,
