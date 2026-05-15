@@ -363,20 +363,20 @@
               <div class="pagination-info">Showing <%= ((currentPage - 1) * 10) + 1 %>-<%= Math.min(currentPage * 10, total) %> of <%= total %> recent orders</div>
               <div class="pagination-btns">
                 <% if (currentPage > 1) { %>
-                  <a href="?page=1&search=<%= search %>&status=<%= status %>" class="page-btn">‹</a>
+                  <a href="?page=1&search=<%= search %>&status=<%= status %>&sort=<%= sort %>" class="page-btn">‹</a>
                 <% } %>
                 
                 <% for (let i = 1; i <= Math.min(totalPages, 3); i++) { %>
-                  <a href="?page=<%= i %>&search=<%= search %>&status=<%= status %>" class="page-btn <%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+                  <a href="?page=<%= i %>&search=<%= search %>&status=<%= status %>&sort=<%= sort %>" class="page-btn <%= i === currentPage ? 'active' : '' %>"><%= i %></a>
                 <% } %>
                 
                 <% if (totalPages > 3) { %>
                   <span class="page-btn">...</span>
-                  <a href="?page=<%= totalPages %>&search=<%= search %>&status=<%= status %>" class="page-btn <%= totalPages === currentPage ? 'active' : '' %>"><%= totalPages %></a>
+                  <a href="?page=<%= totalPages %>&search=<%= search %>&status=<%= status %>&sort=<%= sort %>" class="page-btn <%= totalPages === currentPage ? 'active' : '' %>"><%= totalPages %></a>
                 <% } %>
                 
                 <% if (currentPage < totalPages) { %>
-                  <a href="?page=<%= totalPages %>&search=<%= search %>&status=<%= status %>" class="page-btn">›</a>
+                  <a href="?page=<%= totalPages %>&search=<%= search %>&status=<%= status %>&sort=<%= sort %>" class="page-btn">›</a>
                 <% } %>
               </div>
             </div>

@@ -8,227 +8,51 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #f8f6f3;
-            color: #2d2d2d;
-            line-height: 1.5;
-        }
-
-        .admin-layout {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .main-content {
-            margin-left: 240px;
-            flex: 1;
-            padding: 32px;
-            min-height: 100vh;
-        }
-
-        .content-wrapper {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-        }
-
-        .header-left h1 {
-            font-size: 28px;
-            font-weight: 600;
-            color: #2d2d2d;
-            margin-bottom: 4px;
-        }
-
-        .header-subtitle {
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .page-actions {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: #8b6f47;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #6b5a48;
-            color: white;
-            text-decoration: none;
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #6b7280;
-            border: 1px solid #d1d5db;
-        }
-
-        .btn-secondary:hover {
-            background: #f9fafb;
-            color: #374151;
-            text-decoration: none;
-        }
-
-        .btn-danger {
-            background: #dc2626;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #b91c1c;
-            color: white;
-            text-decoration: none;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            border: 1px solid #e5e7eb;
-            margin-bottom: 24px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: inherit;
-            background: white;
-            transition: border-color 0.2s;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #8b6f47;
-            box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1);
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-            margin: -24px;
-            margin-top: 0;
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        .table th,
-        .table td {
-            padding: 12px 24px;
-            text-align: left;
-            border-bottom: 1px solid #f3f4f6;
-        }
-
-        .table th {
-            background: #f9fafb;
-            font-weight: 600;
-            color: #374151;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .table tbody tr:hover {
-            background: #f9fafb;
-        }
-
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-active {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .status-inactive {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            margin-top: 24px;
-        }
-
-        .pagination a,
-        .pagination span {
-            padding: 8px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            text-decoration: none;
-            color: #374151;
-            font-size: 14px;
-        }
-
-        .pagination a:hover {
-            background: #f3f4f6;
-            text-decoration: none;
-        }
-
-        .pagination .active {
-            background: #8b6f47;
-            color: white;
-            border-color: #8b6f47;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                margin-left: 0;
-                padding: 16px;
-            }
-        }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f6f3; color: #2d2d2d; line-height: 1.5; }
+        .admin-layout { display: flex; min-height: 100vh; }
+        .main-content { margin-left: 240px; flex: 1; padding: 32px; min-height: 100vh; }
+        .content-wrapper { max-width: 1400px; margin: 0 auto; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .header-left h1 { font-size: 28px; font-weight: 600; color: #2d2d2d; margin-bottom: 4px; }
+        .header-subtitle { color: #6b7280; font-size: 14px; }
+        .page-actions { display: flex; gap: 12px; margin-bottom: 24px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: #8b6f47; color: white; }
+        .btn-primary:hover { background: #6b5a48; color: white; text-decoration: none; }
+        .btn-secondary { background: white; color: #6b7280; border: 1px solid #d1d5db; }
+        .btn-secondary:hover { background: #f9fafb; color: #374151; text-decoration: none; }
+        .btn-danger { background: #dc2626; color: white; }
+        .btn-danger:hover { background: #b91c1c; color: white; text-decoration: none; }
+        .card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 24px; overflow: hidden; }
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: inherit; background: white; transition: border-color 0.2s; }
+        .form-control:focus { outline: none; border-color: #8b6f47; box-shadow: 0 0 0 3px rgba(139,111,71,0.1); }
+        .table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .table th, .table td { padding: 12px 24px; text-align: left; border-bottom: 1px solid #f3f4f6; }
+        .table th { background: #f9fafb; font-weight: 600; color: #374151; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .table tbody tr:hover { background: #f9fafb; }
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-active { background: #d1fae5; color: #065f46; }
+        .status-inactive { background: #fee2e2; color: #991b1b; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #6b7280; }
+        .empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.4; }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 0; }
+        .pagination a, .pagination span { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; text-decoration: none; color: #374151; font-size: 14px; }
+        .pagination a:hover { background: #f3f4f6; text-decoration: none; }
+        .pagination .active { background: #8b6f47; color: white; border-color: #8b6f47; }
         .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 14px; }
         .breadcrumb a { color: #8b6f47; text-decoration: none; transition: color 0.2s; }
-        .breadcrumb a:hover { color: #6b5a48; text-decoration: underline; cursor: pointer; }
+        .breadcrumb a:hover { color: #6b5a48; text-decoration: underline; }
         .breadcrumb span { color: #9ca3af; }
+        @media (max-width: 768px) { .main-content { margin-left: 0; padding: 16px; } }
     </style>
 </head>
 <body>
     <div class="admin-layout">
         <%- include('../../partials/admin-sidebar', { currentPage_name: 'categories' }) %>
-        
+
         <div class="main-content">
             <div class="content-wrapper">
+
                 <div class="breadcrumb">
                     <a href="/admin/dashboard">DASHBOARD</a>
                     <span>/</span>
@@ -254,57 +78,57 @@
 
                 <div class="card">
                     <form method="GET" action="/admin/categories" id="filterForm">
-                      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 16px 20px; border-bottom: 1px solid #f3f4f6;">
-                        <div style="position: relative; flex: 1; min-width: 200px; max-width: 360px;">
-                            <input type="text" name="search" id="searchInput" class="form-control" placeholder="Search categories..." value="<%= search %>" style="padding-right: 32px;"/>
-                            <button type="button" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #8b6f47; font-size: 16px; display: <%= search ? 'block' : 'none' %>;" id="clearBtn">✕</button>
+                        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 16px 20px; border-bottom: 1px solid #f3f4f6;">
+                            <div style="position: relative; flex: 1; min-width: 200px; max-width: 360px;">
+                                <input type="text" name="search" id="searchInput" class="form-control"
+                                    placeholder="Search categories..." value="<%= search %>" style="padding-right: 32px;"/>
+                                <button type="button" id="clearBtn"
+                                    style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #8b6f47; font-size: 16px; display: <%= search ? 'block' : 'none' %>;">✕</button>
+                            </div>
+
+                            <select name="isSubcategory" onchange="this.form.submit()" class="form-control" style="width: auto; min-width: 150px;">
+                                <option value="">All Types</option>
+                                <option value="false" <%= isSubcategory === 'false' ? 'selected' : '' %>>Main Categories</option>
+                                <option value="true" <%= isSubcategory === 'true' ? 'selected' : '' %>>Subcategories</option>
+                            </select>
+
+                            <select name="status" onchange="this.form.submit()" class="form-control" style="width: auto; min-width: 140px;">
+                                <option value="">All Statuses</option>
+                                <option value="listed" <%= status === 'listed' ? 'selected' : '' %>>Listed</option>
+                                <option value="unlisted" <%= status === 'unlisted' ? 'selected' : '' %>>Unlisted</option>
+                            </select>
+
+                            <select name="sort" onchange="this.form.submit()" class="form-control" style="width: auto; min-width: 170px;">
+                                <option value="">Sort By</option>
+                                <option value="date-desc" <%= sort === 'date-desc' ? 'selected' : '' %>>Date: Newest First</option>
+                                <option value="date-asc" <%= sort === 'date-asc' ? 'selected' : '' %>>Date: Oldest First</option>
+                                <option value="name-asc" <%= sort === 'name-asc' ? 'selected' : '' %>>Name: A to Z</option>
+                                <option value="name-desc" <%= sort === 'name-desc' ? 'selected' : '' %>>Name: Z to A</option>
+                            </select>
+
+                            <button type="submit" class="btn btn-primary">Search</button>
+
+                            <% if (search || isSubcategory || status || sort) { %>
+                                <a href="/admin/categories" class="btn btn-secondary" style="color: #c0392b; border-color: #fca5a5; background: #fee2e2;">✕ Clear</a>
+                            <% } %>
                         </div>
-
-                        <select name="isSubcategory" onchange="this.form.submit()" class="form-control" style="width: auto; min-width: 150px;">
-                          <option value="">All Types</option>
-                          <option value="false" <%= isSubcategory === 'false' ? 'selected' : '' %>>Main Categories</option>
-                          <option value="true" <%= isSubcategory === 'true' ? 'selected' : '' %>>Subcategories</option>
-                        </select>
-
-                        <select name="status" onchange="this.form.submit()" class="form-control" style="width: auto; min-width: 140px;">
-                          <option value="">All Statuses</option>
-                          <option value="listed" <%= status === 'listed' ? 'selected' : '' %>>Listed</option>
-                          <option value="unlisted" <%= status === 'unlisted' ? 'selected' : '' %>>Unlisted</option>
-                        </select>
-
-                        <select name="sort" onchange="this.form.submit()" class="form-control" style="width: auto; min-width: 170px;">
-                          <option value="">Sort By</option>
-                          <option value="date-desc" <%= sort === 'date-desc' ? 'selected' : '' %>>Date: Newest First</option>
-                          <option value="date-asc" <%= sort === 'date-asc' ? 'selected' : '' %>>Date: Oldest First</option>
-                          <option value="name-asc" <%= sort === 'name-asc' ? 'selected' : '' %>>Name: A to Z</option>
-                          <option value="name-desc" <%= sort === 'name-desc' ? 'selected' : '' %>>Name: Z to A</option>
-                        </select>
-
-                        <button type="submit" class="btn btn-primary">Search</button>
-
-                        <% const hasFilters = search || isSubcategory || status || sort; %>
-                        <% if (hasFilters) { %>
-                          <a href="/admin/categories" class="btn btn-secondary" style="color: #c0392b; border-color: #fca5a5; background: #fee2e2;">✕ Clear</a>
-                        <% } %>
-                      </div>
                     </form>
 
-                <div class="card">
                     <div style="padding: 16px 20px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #6b7280;">
                         Showing <%= categories.length %> of <%= total %> categories
-                        <% if (search) { %>
-                            — Results for "<strong><%= search %></strong>"
-                        <% } %>
+                        <% if (search) { %> — Results for "<strong><%= search %></strong>"<% } %>
                     </div>
-                        <div style="text-align: center; padding: 60px 20px; color: #6b7280;">
-                            <svg style="width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.4;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+
+                    <% if (categories.length === 0) { %>
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                                 <circle cx="11" cy="11" r="8"/>
                                 <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                             </svg>
                             <p>No categories found<% if (search) { %> for "<%= search %>"<% } %></p>
                         </div>
                     <% } else { %>
-                        <div class="table-responsive">
+                        <div style="overflow-x: auto;">
                             <table class="table">
                                 <thead>
                                     <tr>
@@ -335,14 +159,14 @@
                                         <td>
                                             <% if (cat.subcategories && cat.subcategories.length > 0) { %>
                                                 <div style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 200px;">
-                                                    <% cat.subcategories.forEach(sub => { %>
+                                                    <% cat.subcategories.forEach(function(sub) { %>
                                                         <span style="display: inline-block; padding: 2px 8px; background: #f3f4f6; color: #374151; border-radius: 20px; font-size: 11px; font-weight: 500;">
                                                             <%= typeof sub === 'object' ? sub.name : sub %>
                                                         </span>
                                                     <% }); %>
                                                 </div>
                                             <% } else { %>
-                                                <span style="color:#9ca3af;font-size:13px;">—</span>
+                                                <span style="color: #9ca3af; font-size: 13px;">—</span>
                                             <% } %>
                                         </td>
                                         <td>
@@ -359,9 +183,9 @@
                                         <td>
                                             <div style="display: flex; gap: 8px; align-items: center;">
                                                 <label style="position: relative; width: 42px; height: 22px; cursor: pointer;">
-                                                    <input type="checkbox" <%= cat.isListed ? 'checked' : '' %> 
-                                                           style="opacity: 0; width: 0; height: 0;"
-                                                           onchange="toggleCategory('<%= cat._id %>', this)"/>
+                                                    <input type="checkbox" <%= cat.isListed ? 'checked' : '' %>
+                                                        style="opacity: 0; width: 0; height: 0;"
+                                                        onchange="toggleCategory('<%= cat._id %>', this)"/>
                                                     <span style="position: absolute; inset: 0; background: <%= cat.isListed ? '#059669' : '#d1d5db' %>; border-radius: 22px; transition: 0.3s;">
                                                         <span style="position: absolute; width: 16px; height: 16px; left: <%= cat.isListed ? '23px' : '3px' %>; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s;"></span>
                                                     </span>
@@ -372,12 +196,13 @@
                                                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                                     </svg>
                                                 </a>
-                                                <button class="btn btn-danger" style="padding: 6px 8px; font-size: 12px;" title="Delete" onclick="deleteCategory('<%= cat._id %>', '<%= cat.name %>')">
+                                                <button class="btn btn-danger" style="padding: 6px 8px; font-size: 12px;" title="Delete"
+                                                    onclick="deleteCategory('<%= cat._id %>', '<%= cat.name %>')">
                                                     <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                         <polyline points="3 6 5 6 21 6"/>
                                                         <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
                                                         <path d="M10 11v6M14 11v6"/>
-                                                        <path d="M9 6V4a1 1 0 0 1 1 1h4a1 1 0 0 1 1 1v2"/>
+                                                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
                                                     </svg>
                                                 </button>
                                             </div>
@@ -393,15 +218,16 @@
                             <div style="font-size: 13px; color: #6b7280;">Page <%= currentPage %> of <%= totalPages %></div>
                             <div class="pagination">
                                 <% if (currentPage > 1) { %>
-                                    <a href="?page=<%= currentPage-1 %>&search=<%= search %>">‹</a>
+                                    <a href="?page=<%= currentPage-1 %>&search=<%= search %>&isSubcategory=<%= isSubcategory %>&status=<%= status %>&sort=<%= sort %>">‹</a>
                                 <% } else { %>
                                     <span style="opacity: 0.4; pointer-events: none;">‹</span>
                                 <% } %>
                                 <% for (let i = 1; i <= totalPages; i++) { %>
-                                    <a href="?page=<%= i %>&search=<%= search %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+                                    <a href="?page=<%= i %>&search=<%= search %>&isSubcategory=<%= isSubcategory %>&status=<%= status %>&sort=<%= sort %>"
+                                        class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
                                 <% } %>
                                 <% if (currentPage < totalPages) { %>
-                                    <a href="?page=<%= currentPage+1 %>&search=<%= search %>">›</a>
+                                    <a href="?page=<%= currentPage+1 %>&search=<%= search %>&isSubcategory=<%= isSubcategory %>&status=<%= status %>&sort=<%= sort %>">›</a>
                                 <% } else { %>
                                     <span style="opacity: 0.4; pointer-events: none;">›</span>
                                 <% } %>
@@ -410,6 +236,7 @@
                         <% } %>
                     <% } %>
                 </div>
+
             </div>
         </div>
     </div>
@@ -417,86 +244,72 @@
     <script>
         const searchInput = document.getElementById('searchInput');
         const clearBtn = document.getElementById('clearBtn');
-        
-        searchInput.addEventListener('input', function() { 
-            clearBtn.style.display = this.value ? 'block' : 'none'; 
+
+        searchInput.addEventListener('input', function() {
+            clearBtn.style.display = this.value ? 'block' : 'none';
         });
-        
-        clearBtn.addEventListener('click', function() { 
-            searchInput.value = ''; 
-            clearBtn.style.display = 'none'; 
-            window.location.href = '/admin/categories'; 
+
+        clearBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            window.location.href = '/admin/categories';
         });
 
         async function toggleCategory(id, checkbox) {
             try {
-                const res = await fetch(`/admin/categories/toggle/${id}`, { 
-                    method: 'PATCH', 
-                    headers: { 'Content-Type': 'application/json' } 
+                const res = await fetch(`/admin/categories/toggle/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' }
                 });
                 const data = await res.json();
-                
+
                 if (data.success) {
                     const row = checkbox.closest('tr');
                     const badge = row.querySelector('.status-badge');
                     const slider = checkbox.nextElementSibling;
                     const knob = slider.firstElementChild;
-                    
+
                     badge.className = `status-badge ${data.isListed ? 'status-active' : 'status-inactive'}`;
                     badge.textContent = data.isListed ? 'Listed' : 'Unlisted';
                     slider.style.background = data.isListed ? '#059669' : '#d1d5db';
                     knob.style.left = data.isListed ? '23px' : '3px';
-                    
-                    Swal.fire({ 
-                        toast: true, 
-                        position: 'top-end', 
-                        icon: 'success', 
-                        title: data.message, 
-                        showConfirmButton: false, 
-                        timer: 2000 
-                    });
+
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: data.message, showConfirmButton: false, timer: 2000 });
                 } else {
                     checkbox.checked = !checkbox.checked;
                     Swal.fire('Error', data.message, 'error');
                 }
-            } catch(err) { 
-                checkbox.checked = !checkbox.checked; 
-                Swal.fire('Error', 'Something went wrong', 'error'); 
+            } catch (err) {
+                checkbox.checked = !checkbox.checked;
+                Swal.fire('Error', 'Something went wrong', 'error');
             }
         }
 
         async function deleteCategory(id, name) {
-            const result = await Swal.fire({ 
-                title: `Delete "${name}"?`, 
-                text: 'This category will be hidden from the store.', 
-                icon: 'warning', 
-                showCancelButton: true, 
-                confirmButtonColor: '#dc2626', 
-                cancelButtonColor: '#8b6f47', 
-                confirmButtonText: 'Yes, delete it' 
+            const result = await Swal.fire({
+                title: `Delete "${name}"?`,
+                text: 'This category will be hidden from the store.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#8b6f47',
+                confirmButtonText: 'Yes, delete it'
             });
-            
+
             if (!result.isConfirmed) return;
-            
+
             try {
                 const res = await fetch(`/admin/categories/delete/${id}`, { method: 'DELETE' });
                 const data = await res.json();
-                
+
                 if (data.success) {
                     document.querySelector(`tr[data-id="${id}"]`).remove();
-                    Swal.fire({ 
-                        toast: true, 
-                        position: 'top-end', 
-                        icon: 'success', 
-                        title: 'Category deleted', 
-                        showConfirmButton: false, 
-                        timer: 2000 
-                    });
-                } else { 
-                    Swal.fire('Error', data.message, 'error'); 
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Category deleted', showConfirmButton: false, timer: 2000 });
+                } else {
+                    Swal.fire('Error', data.message, 'error');
                 }
-            } catch(err) { 
-                Swal.fire('Error', 'Something went wrong', 'error'); 
+            } catch (err) {
+                Swal.fire('Error', 'Something went wrong', 'error');
             }
         }
     </script>

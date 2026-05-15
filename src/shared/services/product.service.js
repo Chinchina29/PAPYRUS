@@ -1,6 +1,18 @@
 import Product from "../models/Product.js";
 
-export const getAllProducts = async ({ search = "", page = 1, limit = 10, showDeleted = false, sort = "", category = "", minPrice = "", maxPrice = "", condition = "", status = "", stock = "" }) => {
+export const getAllProducts = async ({
+  search = "",
+  page = 1,
+  limit = 10,
+  showDeleted = false,
+  sort = "",
+  category = "",
+  minPrice = "",
+  maxPrice = "",
+  condition = "",
+  status = "",
+  stock = "",
+}) => {
   const query = {
     ...(showDeleted ? {} : { isDeleted: false }),
     ...(search && {
@@ -63,8 +75,9 @@ export const getProductById = async (id) => {
 };
 
 export const productTitleExists = async (title, excludeId = null) => {
+  const escapedTitle = title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const query = {
-    title: { $regex: `^${title}$`, $options: "i" },
+    title: { $regex: `^${escapedTitle}$`, $options: "i" },
     isDeleted: false,
   };
   if (excludeId) query._id = { $ne: excludeId };
@@ -77,14 +90,14 @@ export const createProduct = async (data) => {
 };
 
 export const updateProduct = async (id, data) => {
-  return await Product.findByIdAndUpdate(id, data, { returnDocument: 'after' });
+  return await Product.findByIdAndUpdate(id, data, { returnDocument: "after" });
 };
 
 export const softDeleteProduct = async (id) => {
   return await Product.findByIdAndUpdate(
     id,
     { isDeleted: true },
-    { returnDocument: 'after' },
+    { returnDocument: "after" }
   );
 };
 
@@ -123,7 +136,7 @@ export const getListedProducts = async ({
         { description: { $regex: search, $options: "i" } },
       ],
     }),
-    ...(category && { category }),
+    ...(category && { $or: [{ category }, { subcategory: category }] }),
     ...(condition && { condition }),
     ...(brand && { brand: { $regex: brand, $options: "i" } }),
     ...(minPrice || maxPrice
@@ -152,18 +165,18 @@ export const getListedProducts = async ({
       .populate({
         path: "category",
         select: "name isListed",
-        match: { isListed: true, isDeleted: false } 
+        match: { isListed: true, isDeleted: false },
       })
       .populate({
         path: "subcategory",
         select: "name isListed",
-        match: { isListed: true, isDeleted: false } 
+        match: { isListed: true, isDeleted: false },
       })
       .populate("seller", "name email")
       .sort(sortOptions[sort] || { createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .then(products => products.filter(p => p.category !== null)),  
+      .then((products) => products.filter((p) => p.category !== null)),
     Product.countDocuments(query),
   ]);
 
@@ -184,18 +197,16 @@ export const getListedProductById = async (id) => {
     .populate({
       path: "category",
       select: "name isListed",
-      match: { isListed: true, isDeleted: false }
+      match: { isListed: true, isDeleted: false },
     })
     .populate({
       path: "subcategory",
       select: "name isListed",
-      match: { isListed: true, isDeleted: false }
+      match: { isListed: true, isDeleted: false },
     })
     .populate("seller", "name email");
 
-  if (product && !product.category) {
-    return null;
-  }
+  if (product && !product.category) return null;
 
   if (product) {
     await Product.findByIdAndUpdate(id, { $inc: { views: 1 } });
@@ -215,15 +226,17 @@ export const getRelatedProducts = async (categoryId, excludeId, limit = 4) => {
     .populate({
       path: "category",
       select: "name isListed",
-      match: { isListed: true, isDeleted: false }
+      match: { isListed: true, isDeleted: false },
     })
     .populate("seller", "name")
     .sort({ createdAt: -1 });
-  
-  return products.filter(p => p.category !== null);
+
+  return products.filter((p) => p.category !== null);
 };
 
-
 export const getAllBrands = async () => {
-  return await Product.distinct("brand", { isDeleted: false, brand: { $ne: null, $ne: "" } });
+  return await Product.distinct("brand", {
+    isDeleted: false,
+    brand: { $exists: true, $ne: null, $ne: "" },
+  });
 };
