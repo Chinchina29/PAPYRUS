@@ -366,18 +366,18 @@
 
         <div class="filter-group">
           <label>Category</label>
-          <select name="category" class="filter-select">
+          <select name="category" class="filter-select" id="categorySelect">
   <option value="">All Categories</option>
 
   <% categories.forEach(cat => { %>
 
-    <option value="<%= cat._id %>">
+    <option value="<%= cat._id %>" <%= String(category) === String(cat._id) ? 'selected' : '' %>>
       <%= cat.name %>
     </option>
 
     <% if (cat.subcategories && cat.subcategories.length > 0) { %>
       <% cat.subcategories.forEach(sub => { %>
-        <option value="<%= sub._id %>">
+        <option value="<%= sub._id %>" <%= String(category) === String(sub._id) ? 'selected' : '' %>>
           └ <%= sub.name %>
         </option>
       <% }) %>
@@ -389,7 +389,7 @@
 
         <div class="filter-group">
           <label>Condition</label>
-          <select name="condition" class="filter-select">
+          <select name="condition" class="filter-select" id="conditionSelect">
             <option value="">All Conditions</option>
             <option value="new" <%= condition === 'new' ? 'selected' : '' %>>New</option>
             <option value="like-new" <%= condition === 'like-new' ? 'selected' : '' %>>Like New</option>
@@ -401,7 +401,7 @@
 
         <div class="filter-group">
           <label>Sort By</label>
-          <select name="sort" class="filter-select">
+          <select name="sort" class="filter-select" id="sortSelect">
             <option value="newest"     <%= sort === 'newest'     ? 'selected' : '' %>>Newest First</option>
             <option value="popular"    <%= sort === 'popular'    ? 'selected' : '' %>>Most Popular</option>
             <option value="price-low"  <%= sort === 'price-low'  ? 'selected' : '' %>>Price: Low to High</option>
@@ -413,13 +413,13 @@
 
         <div class="filter-group">
           <label>Min Price (₹)</label>
-          <input type="number" name="minPrice" class="price-input"
+          <input type="number" name="minPrice" class="price-input" id="minPriceInput"
             placeholder="0" value="<%= minPrice %>" min="0"/>
         </div>
 
         <div class="filter-group">
           <label>Max Price (₹)</label>
-          <input type="number" name="maxPrice" class="price-input"
+          <input type="number" name="maxPrice" class="price-input" id="maxPriceInput"
             placeholder="Any" value="<%= maxPrice %>" min="0"/>
         </div>
 
@@ -557,6 +557,16 @@
     });
 
     clearAll.addEventListener("click", function() {
+      // Reset all form fields
+      searchInput.value = "";
+      document.getElementById("categorySelect").value = "";
+      document.getElementById("conditionSelect").value = "";
+      document.getElementById("sortSelect").value = "newest";
+      document.getElementById("minPriceInput").value = "";
+      document.getElementById("maxPriceInput").value = "";
+      clearSearch.style.display = "none";
+      
+      // Redirect to clean shop page
       window.location.href = "/shop";
     });
 

@@ -39,6 +39,7 @@
     .badge-unlisted { background: #fff3e0; color: #e65100; }
     .badge-new { background: #e3f2fd; color: #1976d2; }
     .badge-good { background: #fff3e0; color: #f57c00; }
+    .badge-like-new { background: #e8f5e9; color: #2e7d32; }
     .badge-fair { background: #fce4ec; color: #c2185b; }
     .badge-poor { background: #ffebee; color: #d32f2f; }
     .badge-deleted { background: #f5f5f5; color: #757575; border: 1px dashed #bdbdbd; }
@@ -97,11 +98,67 @@
           <input type="text" name="search" id="searchInput" placeholder="Search products..." value="<%= search %>"/>
           <button type="button" class="search-clear" id="clearBtn">✕</button>
         </div>
+        <select name="sort" onchange="this.form.submit()" style="padding: 10px 16px; border: 1.5px solid #e8dcc8; border-radius: 8px; font-size: 14px; background: white; outline: none; cursor: pointer; color: #5a4d42;">
+          <option value="">Sort By</option>
+          <option value="date-desc" <%= sort === 'date-desc' ? 'selected' : '' %>>Date: Newest First</option>
+          <option value="date-asc" <%= sort === 'date-asc' ? 'selected' : '' %>>Date: Oldest First</option>
+          <option value="price-asc" <%= sort === 'price-asc' ? 'selected' : '' %>>Price: Low to High</option>
+          <option value="price-desc" <%= sort === 'price-desc' ? 'selected' : '' %>>Price: High to Low</option>
+          <option value="title-asc" <%= sort === 'title-asc' ? 'selected' : '' %>>Title: A to Z</option>
+          <option value="title-desc" <%= sort === 'title-desc' ? 'selected' : '' %>>Title: Z to A</option>
+          <option value="stock-asc" <%= sort === 'stock-asc' ? 'selected' : '' %>>Stock: Low to High</option>
+          <option value="stock-desc" <%= sort === 'stock-desc' ? 'selected' : '' %>>Stock: High to Low</option>
+        </select>
         <button type="submit" class="btn-search">Search</button>
         <label style="display: flex; align-items: center; gap: 8px; margin-left: 12px; cursor: pointer; font-size: 14px; color: #5a4d42;">
           <input type="checkbox" name="showDeleted" value="true" <%= showDeleted ? 'checked' : '' %> onchange="this.form.submit()" style="width: 16px; height: 16px; cursor: pointer;"/>
           Show Deleted
         </label>
+      </div>
+
+      <%# Filter row %>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; align-items: center;">
+        <select name="category" onchange="this.form.submit()" style="padding: 9px 14px; border: 1.5px solid #e8dcc8; border-radius: 8px; font-size: 13px; background: white; color: #5a4d42; cursor: pointer; outline: none;">
+          <option value="">All Categories</option>
+          <% if (typeof categories !== 'undefined') { categories.forEach(cat => { %>
+            <option value="<%= cat._id %>" <%= category === cat._id.toString() ? 'selected' : '' %>><%= cat.name %></option>
+          <% }) } %>
+        </select>
+
+        <select name="condition" onchange="this.form.submit()" style="padding: 9px 14px; border: 1.5px solid #e8dcc8; border-radius: 8px; font-size: 13px; background: white; color: #5a4d42; cursor: pointer; outline: none;">
+          <option value="">All Conditions</option>
+          <option value="new" <%= condition === 'new' ? 'selected' : '' %>>New</option>
+          <option value="like-new" <%= condition === 'like-new' ? 'selected' : '' %>>Like New</option>
+          <option value="good" <%= condition === 'good' ? 'selected' : '' %>>Good</option>
+          <option value="fair" <%= condition === 'fair' ? 'selected' : '' %>>Fair</option>
+          <option value="poor" <%= condition === 'poor' ? 'selected' : '' %>>Poor</option>
+        </select>
+
+        <select name="status" onchange="this.form.submit()" style="padding: 9px 14px; border: 1.5px solid #e8dcc8; border-radius: 8px; font-size: 13px; background: white; color: #5a4d42; cursor: pointer; outline: none;">
+          <option value="">All Statuses</option>
+          <option value="listed" <%= status === 'listed' ? 'selected' : '' %>>Listed</option>
+          <option value="unlisted" <%= status === 'unlisted' ? 'selected' : '' %>>Unlisted</option>
+        </select>
+
+        <select name="stock" onchange="this.form.submit()" style="padding: 9px 14px; border: 1.5px solid #e8dcc8; border-radius: 8px; font-size: 13px; background: white; color: #5a4d42; cursor: pointer; outline: none;">
+          <option value="">All Stock</option>
+          <option value="in-stock" <%= stock === 'in-stock' ? 'selected' : '' %>>In Stock</option>
+          <option value="out-of-stock" <%= stock === 'out-of-stock' ? 'selected' : '' %>>Out of Stock</option>
+          <option value="low-stock" <%= stock === 'low-stock' ? 'selected' : '' %>>Low Stock (≤5)</option>
+        </select>
+
+        <input type="number" name="minPrice" placeholder="Min Price" value="<%= minPrice %>" min="0"
+          style="width: 110px; padding: 9px 12px; border: 1.5px solid #e8dcc8; border-radius: 8px; font-size: 13px; background: white; color: #5a4d42; outline: none;"
+          onblur="this.form.submit()"/>
+
+        <input type="number" name="maxPrice" placeholder="Max Price" value="<%= maxPrice %>" min="0"
+          style="width: 110px; padding: 9px 12px; border: 1.5px solid #e8dcc8; border-radius: 8px; font-size: 13px; background: white; color: #5a4d42; outline: none;"
+          onblur="this.form.submit()"/>
+
+        <% const hasFilters = category || condition || status || stock || minPrice || maxPrice || search || sort; %>
+        <% if (hasFilters) { %>
+          <a href="/admin/products<%= showDeleted ? '?showDeleted=true' : '' %>" style="padding: 9px 14px; background: #fee2e2; color: #c0392b; border-radius: 8px; font-size: 13px; font-weight: 500; text-decoration: none; border: 1px solid #fca5a5;">✕ Clear Filters</a>
+        <% } %>
       </div>
     </form>
 
@@ -197,11 +254,11 @@
         <div class="pagination">
           <div class="pagination-info">Page <%= currentPage %> of <%= totalPages %></div>
           <div class="pagination-btns">
-            <a href="?page=<%= currentPage-1 %>&search=<%= search %>&showDeleted=<%= showDeleted %>" class="page-btn <%= currentPage === 1 ? 'disabled' : '' %>">‹</a>
+            <a href="?page=<%= currentPage-1 %>&search=<%= encodeURIComponent(search) %>&showDeleted=<%= showDeleted %>&sort=<%= sort %>&category=<%= category %>&condition=<%= condition %>&status=<%= status %>&stock=<%= stock %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>" class="page-btn <%= currentPage === 1 ? 'disabled' : '' %>">‹</a>
             <% for (let i = 1; i <= totalPages; i++) { %>
-              <a href="?page=<%= i %>&search=<%= search %>&showDeleted=<%= showDeleted %>" class="page-btn <%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+              <a href="?page=<%= i %>&search=<%= encodeURIComponent(search) %>&showDeleted=<%= showDeleted %>&sort=<%= sort %>&category=<%= category %>&condition=<%= condition %>&status=<%= status %>&stock=<%= stock %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>" class="page-btn <%= i === currentPage ? 'active' : '' %>"><%= i %></a>
             <% } %>
-            <a href="?page=<%= currentPage+1 %>&search=<%= search %>&showDeleted=<%= showDeleted %>" class="page-btn <%= currentPage === totalPages ? 'disabled' : '' %>">›</a>
+            <a href="?page=<%= currentPage+1 %>&search=<%= encodeURIComponent(search) %>&showDeleted=<%= showDeleted %>&sort=<%= sort %>&category=<%= category %>&condition=<%= condition %>&status=<%= status %>&stock=<%= stock %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>" class="page-btn <%= currentPage === totalPages ? 'disabled' : '' %>">›</a>
           </div>
         </div>
         <% } %>
@@ -214,7 +271,11 @@
     const clearBtn = document.getElementById('clearBtn');
     clearBtn.style.display = searchInput.value ? 'block' : 'none';
     searchInput.addEventListener('input', function() { clearBtn.style.display = this.value ? 'block' : 'none'; });
-    clearBtn.addEventListener('click', function() { searchInput.value = ''; clearBtn.style.display = 'none'; window.location.href = '/admin/products'; });
+    clearBtn.addEventListener('click', function() {
+      searchInput.value = '';
+      clearBtn.style.display = 'none';
+      document.getElementById('searchForm').submit();
+    });
 
     async function toggleProduct(id, checkbox) {
       try {

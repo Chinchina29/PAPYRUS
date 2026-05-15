@@ -1,6 +1,6 @@
 import * as orderService from "../../shared/services/order.service.js";
 import Product from "../../shared/models/Product.js";
-import { generateInvoiceHTML } from "../../shared/utils/invoiceGenerator.js";
+import { generateInvoicePDF } from "../../shared/utils/invoiceGenerator.js";
 
 export const getUserOrders = async (req, res) => {
   try {
@@ -189,6 +189,20 @@ export const returnOrder = async (req, res) => {
       });
     }
 
+    if (order.returnRequestStatus === "Requested") {
+      return res.status(400).json({
+        success: false,
+        message: "Return request already submitted and pending approval",
+      });
+    }
+
+    if (order.returnRequestStatus === "Approved") {
+      return res.status(400).json({
+        success: false,
+        message: "Return request already approved",
+      });
+    }
+
     const daysSinceDelivery = Math.floor(
       (new Date() - new Date(order.deliveredAt)) / (1000 * 60 * 60 * 24),
     );
@@ -200,15 +214,15 @@ export const returnOrder = async (req, res) => {
       });
     }
 
-    order.orderStatus = "Returned";
-    order.returnedAt = new Date();
+    order.returnRequestStatus = "Requested";
+    order.returnRequestedAt = new Date();
     order.returnReason = reason.trim();
     order.returnComments = comments?.trim() || "";
     await order.save();
 
     res.json({
       success: true,
-      message: "Return request submitted successfully",
+      message: "Return request submitted successfully. Awaiting admin approval.",
     });
   } catch (error) {
     res.status(500).json({
@@ -239,11 +253,7 @@ export const downloadInvoice = async (req, res) => {
       });
     }
 
-    const invoiceHTML = generateInvoiceHTML(order);
-    
-    res.setHeader('Content-Type', 'text/html');
-    res.setHeader('Content-Disposition', `inline; filename=invoice-${order.orderId}.html`);
-    res.send(invoiceHTML);
+    generateInvoicePDF(order, res);
   } catch (error) {
     res.status(500).json({
       success: false,

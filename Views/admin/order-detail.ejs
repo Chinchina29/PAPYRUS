@@ -347,15 +347,74 @@
             <div class="card" style="margin-bottom: 24px;">
               <div class="card-title">Order Status</div>
               
+              <% if (order.returnRequestStatus === 'Requested') { %>
+                <div style="background: #fef3c7; border: 1px solid #fbbf24; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" style="width: 20px; height: 20px;">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                      <line x1="12" y1="9" x2="12" y2="13"></line>
+                      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    <strong style="color: #92400e; font-size: 14px;">Return Request Pending</strong>
+                  </div>
+                  <div style="font-size: 13px; color: #78350f; margin-bottom: 12px;">
+                    <strong>Reason:</strong> <%= order.returnReason %><br>
+                    <% if (order.returnComments) { %>
+                      <strong>Comments:</strong> <%= order.returnComments %><br>
+                    <% } %>
+                    <strong>Requested:</strong> <%= new Date(order.returnRequestedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <button onclick="approveReturn()" style="flex: 1; padding: 10px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                      ✓ Approve Return
+                    </button>
+                    <button onclick="rejectReturn()" style="flex: 1; padding: 10px; background: #ef4444; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                      ✕ Reject Return
+                    </button>
+                  </div>
+                </div>
+              <% } else if (order.returnRequestStatus === 'Approved') { %>
+                <div style="background: #d1fae5; border: 1px solid #10b981; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                  <div style="display: flex; align-items: center; gap: 8px; color: #065f46; font-size: 13px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <strong>Return Approved</strong> - <%= new Date(order.returnApprovedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                  </div>
+                </div>
+              <% } else if (order.returnRequestStatus === 'Rejected') { %>
+                <div style="background: #fee2e2; border: 1px solid #ef4444; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                  <div style="color: #991b1b; font-size: 13px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                      </svg>
+                      <strong>Return Rejected</strong>
+                    </div>
+                    <strong>Reason:</strong> <%= order.returnRejectionReason %><br>
+                    <strong>Rejected:</strong> <%= new Date(order.returnRejectedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                  </div>
+                </div>
+              <% } %>
+              
               <div class="info-label">Update Status</div>
-              <select class="status-select" id="orderStatus" onchange="updateOrderStatus()">
+              <select class="status-select" id="orderStatus" onchange="updateOrderStatus()" <%= (order.orderStatus === 'Cancelled' || order.orderStatus === 'Delivered' || order.orderStatus === 'Returned') ? 'disabled' : '' %> style="<%= (order.orderStatus === 'Cancelled' || order.orderStatus === 'Delivered' || order.orderStatus === 'Returned') ? 'background: #f3f4f6; cursor: not-allowed; opacity: 0.6;' : '' %>">
                 <option value="Pending" <%= order.orderStatus === 'Pending' ? 'selected' : '' %>>Pending</option>
                 <option value="Processing" <%= order.orderStatus === 'Processing' ? 'selected' : '' %>>Processing</option>
                 <option value="Shipped" <%= order.orderStatus === 'Shipped' ? 'selected' : '' %>>Shipped</option>
                 <option value="Delivered" <%= order.orderStatus === 'Delivered' ? 'selected' : '' %>>Delivered</option>
                 <option value="Cancelled" <%= order.orderStatus === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
-                <option value="Returned" <%= order.orderStatus === 'Returned' ? 'selected' : '' %>>Returned</option>
+                <% if (order.orderStatus === 'Returned') { %>
+                  <option value="Returned" selected>Returned</option>
+                <% } %>
               </select>
+              <% if (order.orderStatus === 'Cancelled' || order.orderStatus === 'Delivered' || order.orderStatus === 'Returned') { %>
+                <p style="font-size: 12px; color: #6b7280; margin-top: 8px; font-style: italic;">
+                  Status cannot be changed once order is <%= order.orderStatus.toLowerCase() %>
+                </p>
+              <% } %>
 
               <div class="last-updated">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -402,20 +461,13 @@
 
             <button class="btn-primary" onclick="printInvoice()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
-                <polyline points="6 9 6 2 18 2 18 9"></polyline>
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                <rect x="6" y="14" width="12" height="8"></rect>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
               </svg>
-              Print Invoice
+              Download Invoice (PDF)
             </button>
 
-            <button class="btn-secondary" onclick="emailReceipt()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                <polyline points="22,6 12,13 2,6"></polyline>
-              </svg>
-              Email Receipt
-            </button>
           </div>
         </div>
       </div>
@@ -476,17 +528,117 @@
       }
     }
 
-    function printInvoice() {
-      window.open('/orders/<%= order._id %>/invoice', '_blank');
+    async function approveReturn() {
+      const orderId = '<%= order._id %>';
+
+      const result = await Swal.fire({
+        title: 'Approve Return Request?',
+        text: 'This will change the order status to Returned and process the refund.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#999',
+        confirmButtonText: 'Yes, Approve',
+        cancelButtonText: 'Cancel'
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(`/admin/orders/${orderId}/return/approve`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Return Approved!',
+              text: data.message,
+              confirmButtonColor: '#2d5016'
+            }).then(() => location.reload());
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message,
+              confirmButtonColor: '#2d5016'
+            });
+          }
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to approve return request',
+            confirmButtonColor: '#2d5016'
+          });
+        }
+      }
     }
 
-    function emailReceipt() {
-      Swal.fire({
-        icon: 'info',
-        title: 'Email Receipt',
-        text: 'Email receipt functionality will be implemented soon',
-        confirmButtonColor: '#2d5016'
+    async function rejectReturn() {
+      const orderId = '<%= order._id %>';
+
+      const { value: reason } = await Swal.fire({
+        title: 'Reject Return Request',
+        input: 'textarea',
+        inputLabel: 'Rejection Reason',
+        inputPlaceholder: 'Enter the reason for rejecting this return request...',
+        inputAttributes: {
+          'aria-label': 'Enter rejection reason',
+          'maxlength': 500
+        },
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#999',
+        confirmButtonText: 'Reject Return',
+        cancelButtonText: 'Cancel',
+        inputValidator: (value) => {
+          if (!value || !value.trim()) {
+            return 'Rejection reason is required!';
+          }
+        }
       });
+
+      if (reason) {
+        try {
+          const response = await fetch(`/admin/orders/${orderId}/return/reject`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason: reason.trim() })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Return Rejected!',
+              text: data.message,
+              confirmButtonColor: '#2d5016'
+            }).then(() => location.reload());
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message,
+              confirmButtonColor: '#2d5016'
+            });
+          }
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to reject return request',
+            confirmButtonColor: '#2d5016'
+          });
+        }
+      }
+    }
+
+    function printInvoice() {
+      window.location.href = '/admin/orders/<%= order._id %>/invoice';
     }
   </script>
 </body>

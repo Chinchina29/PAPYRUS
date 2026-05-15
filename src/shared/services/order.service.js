@@ -5,7 +5,7 @@ export const createOrder = async (data) => {
   return await order.save();
 };
 
-export const getAllOrders = async ({ search = "", page = 1, limit = 10, status = "" }) => {
+export const getAllOrders = async ({ search = "", page = 1, limit = 10, status = "", sort = "" }) => {
   const query = {
     ...(search && {
       $or: [
@@ -16,12 +16,19 @@ export const getAllOrders = async ({ search = "", page = 1, limit = 10, status =
     ...(status && { orderStatus: status }),
   };
 
+  const sortOptions = {
+    "date-desc": { createdAt: -1 },
+    "date-asc": { createdAt: 1 },
+    "amount-high": { totalAmount: -1 },
+    "amount-low": { totalAmount: 1 },
+  };
+
   const skip = (page - 1) * limit;
 
   const [orders, total] = await Promise.all([
     Order.find(query)
       .populate("user", "firstName lastName email")
-      .sort({ createdAt: -1 })
+      .sort(sortOptions[sort] || { createdAt: -1 })
       .skip(skip)
       .limit(limit),
     Order.countDocuments(query),

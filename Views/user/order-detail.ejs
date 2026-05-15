@@ -140,16 +140,16 @@
         <% if (order.orderStatus === 'Pending' || order.orderStatus === 'Processing') { %>
         <div class="action-buttons">
           <button class="btn btn-secondary" onclick="cancelOrder('<%= order._id %>')">Cancel Order</button>
-          <a href="/orders/<%= order._id %>/invoice" target="_blank" class="btn btn-secondary">Download Invoice</a>
+          <a href="/orders/<%= order._id %>/invoice" class="btn btn-secondary">Download Invoice (PDF)</a>
         </div>
-        <% } else if (order.orderStatus === 'Delivered') { %>
+        <% } else if (order.orderStatus === 'Delivered' && order.returnRequestStatus === 'None') { %>
         <div class="action-buttons">
-          <button class="btn btn-secondary" onclick="returnOrder('<%= order._id %>')">Return Order</button>
-          <a href="/orders/<%= order._id %>/invoice" target="_blank" class="btn btn-secondary">Download Invoice</a>
+          <button class="btn btn-secondary" onclick="returnOrder('<%= order._id %>')">Request Return</button>
+          <a href="/orders/<%= order._id %>/invoice" class="btn btn-secondary">Download Invoice (PDF)</a>
         </div>
         <% } else { %>
         <div class="action-buttons">
-          <a href="/orders/<%= order._id %>/invoice" target="_blank" class="btn btn-secondary">Download Invoice</a>
+          <a href="/orders/<%= order._id %>/invoice" class="btn btn-secondary">Download Invoice (PDF)</a>
         </div>
         <% } %>
       </div>
@@ -157,6 +157,51 @@
       <div>
         <div class="card">
           <div class="card-title">Order Status</div>
+          
+          <% if (order.returnRequestStatus === 'Requested') { %>
+            <div style="background: #fef3c7; border: 1px solid #fbbf24; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" style="width: 20px; height: 20px;">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <strong style="color: #92400e; font-size: 14px;">Return Request Pending</strong>
+              </div>
+              <p style="font-size: 13px; color: #78350f; margin: 0;">
+                Your return request is being reviewed by our team. We'll notify you once it's processed.
+              </p>
+            </div>
+          <% } else if (order.returnRequestStatus === 'Approved') { %>
+            <div style="background: #d1fae5; border: 1px solid #10b981; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" style="width: 20px; height: 20px;">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <strong style="color: #065f46; font-size: 14px;">Return Request Approved</strong>
+              </div>
+              <p style="font-size: 13px; color: #047857; margin: 0;">
+                Your return request has been approved. Please ship the item back to us.
+              </p>
+            </div>
+          <% } else if (order.returnRequestStatus === 'Rejected') { %>
+            <div style="background: #fee2e2; border: 1px solid #ef4444; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" style="width: 20px; height: 20px;">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="15" y1="9" x2="9" y2="15"></line>
+                  <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                <strong style="color: #991b1b; font-size: 14px;">Return Request Rejected</strong>
+              </div>
+              <p style="font-size: 13px; color: #7f1d1d; margin: 0 0 8px 0;">
+                <strong>Reason:</strong> <%= order.returnRejectionReason %>
+              </p>
+              <p style="font-size: 12px; color: #991b1b; margin: 0;">
+                If you have questions, please contact our support team.
+              </p>
+            </div>
+          <% } %>
           
           <div style="margin-bottom: 16px;">
             <span class="status-badge status-<%= order.orderStatus.toLowerCase() %>"><%= order.orderStatus %></span>

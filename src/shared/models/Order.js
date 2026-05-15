@@ -120,6 +120,24 @@ const orderSchema = new mongoose.Schema(
       type: String,
       maxlength: 500,
     },
+    returnRequestStatus: {
+      type: String,
+      enum: ["None", "Requested", "Approved", "Rejected"],
+      default: "None",
+    },
+    returnRequestedAt: {
+      type: Date,
+    },
+    returnApprovedAt: {
+      type: Date,
+    },
+    returnRejectedAt: {
+      type: Date,
+    },
+    returnRejectionReason: {
+      type: String,
+      maxlength: 500,
+    },
   },
   {
     timestamps: true,

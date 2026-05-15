@@ -5,11 +5,22 @@ export const getAllCategories = async ({
   page = 1,
   limit = 10,
   isSubcategory = "",
+  status = "",
+  sort = "",
 }) => {
   const query = {
     isDeleted: false,
     ...(search && { name: { $regex: search, $options: "i" } }),
     ...(isSubcategory !== "" && { isSubcategory: isSubcategory === "true" }),
+    ...(status === "listed" && { isListed: true }),
+    ...(status === "unlisted" && { isListed: false }),
+  };
+
+  const sortOptions = {
+    "name-asc": { name: 1 },
+    "name-desc": { name: -1 },
+    "date-desc": { createdAt: -1 },
+    "date-asc": { createdAt: 1 },
   };
 
   const skip = (page - 1) * limit;
@@ -18,7 +29,7 @@ export const getAllCategories = async ({
     Category.find(query)
       .populate('parentCategory', 'name')
       .populate('subcategories', 'name')
-      .sort({ createdAt: -1 })
+      .sort(sortOptions[sort] || { createdAt: -1 })
       .skip(skip)
       .limit(limit),
     Category.countDocuments(query),
@@ -185,6 +196,11 @@ export const toggleCategoryListed = async (id) => {
 
 export const getMainCategories = async () => {
   return await Category.find({ isSubcategory: false, isDeleted: false, isListed: true })
+    .populate({
+      path: 'subcategories',
+      match: { isDeleted: false, isListed: true },
+      select: 'name'
+    })
     .sort({ sortOrder: 1, name: 1 });
 };
 

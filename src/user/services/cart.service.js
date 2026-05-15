@@ -3,7 +3,7 @@ import Product from "../../shared/models/Product.js";
 import { debounceAsync } from "../../shared/utils/asyncThrottle.js";
 import * as wishlistService from "../../shared/services/wishlist.service.js";
 
-export const getOrCreateCart = async (userId) => {
+export const getOrCreateCart = async (userId, session = null) => {
   try {
     if (!userId) {
       throw new Error("User ID is required");
@@ -24,6 +24,7 @@ export const getOrCreateCart = async (userId) => {
       await cart.save();
     } else {
       let needsUpdate = false;
+      const outOfStockItems = [];
       const validItems = cart.items.filter((item) => {
         if (!item.product || !item.product.category || item.product.isDeleted || !item.product.isListed) {
           needsUpdate = true;
@@ -36,6 +37,11 @@ export const getOrCreateCart = async (userId) => {
         }
 
         if (item.product.stock === 0) {
+          outOfStockItems.push({
+            title: item.product.title,
+            author: item.product.author,
+            quantity: item.quantity
+          });
           needsUpdate = true;
           return false;
         }
@@ -62,6 +68,16 @@ export const getOrCreateCart = async (userId) => {
             match: { isListed: true, isDeleted: false }
           },
         });
+
+        // Persist out-of-stock items in session so they survive redirects and reloads
+        if (outOfStockItems.length > 0) {
+          if (session) {
+            // Merge with any existing session notifications
+            const existing = session.outOfStockItems || [];
+            session.outOfStockItems = [...existing, ...outOfStockItems];
+          }
+          cart.outOfStockItems = outOfStockItems;
+        }
       }
     }
 

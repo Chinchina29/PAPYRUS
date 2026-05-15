@@ -268,20 +268,35 @@
 
         <div class="page-header">
           <h1>Order Management</h1>
-          <select class="filter-btn" onchange="filterByStatus(this.value)" aria-label="Filter orders by status">
-            <option value="">All Statuses</option>
-            <option value="Pending" <%= status === 'Pending' ? 'selected' : '' %>>Pending</option>
-            <option value="Processing" <%= status === 'Processing' ? 'selected' : '' %>>Processing</option>
-            <option value="Shipped" <%= status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-            <option value="Delivered" <%= status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-            <option value="Cancelled" <%= status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
-          </select>
+          <form method="GET" action="/admin/orders" id="filterForm" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <input type="hidden" name="search" id="hiddenSearch" value="<%= search %>">
+            <select name="status" onchange="document.getElementById('filterForm').submit()" style="padding: 10px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; color: #374151; outline: none;">
+              <option value="">All Statuses</option>
+              <option value="Pending" <%= status === 'Pending' ? 'selected' : '' %>>Pending</option>
+              <option value="Processing" <%= status === 'Processing' ? 'selected' : '' %>>Processing</option>
+              <option value="Shipped" <%= status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+              <option value="Delivered" <%= status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+              <option value="Cancelled" <%= status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+              <option value="Returned" <%= status === 'Returned' ? 'selected' : '' %>>Returned</option>
+            </select>
+            <select name="sort" onchange="document.getElementById('filterForm').submit()" style="padding: 10px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; color: #374151; outline: none;">
+              <option value="">Sort By</option>
+              <option value="date-desc" <%= sort === 'date-desc' ? 'selected' : '' %>>Date: Newest First</option>
+              <option value="date-asc" <%= sort === 'date-asc' ? 'selected' : '' %>>Date: Oldest First</option>
+              <option value="amount-high" <%= sort === 'amount-high' ? 'selected' : '' %>>Amount: High to Low</option>
+              <option value="amount-low" <%= sort === 'amount-low' ? 'selected' : '' %>>Amount: Low to High</option>
+            </select>
+            <% if (status || sort) { %>
+              <a href="/admin/orders<%= search ? '?search=' + search : '' %>" style="padding: 10px 14px; background: #fee2e2; color: #c0392b; border-radius: 8px; font-size: 13px; font-weight: 500; text-decoration: none; border: 1px solid #fca5a5; white-space: nowrap;">✕ Clear</a>
+            <% } %>
+          </form>
         </div>
 
         <div class="card">
           <div class="search-bar">
             <form method="GET" action="/admin/orders" id="searchForm">
               <input type="hidden" name="status" value="<%= status %>">
+              <input type="hidden" name="sort" value="<%= sort %>">
               <label for="orderSearch" style="position: absolute; left: -9999px;">Search orders</label>
               <input 
                 type="text" 
@@ -372,13 +387,11 @@
   </div>
 
   <script>
-    function filterByStatus(status) {
-      const search = new URLSearchParams(window.location.search).get('search') || '';
-      window.location.href = `/admin/orders?status=${status}&search=${search}`;
-    }
-
+    // Sync search input with the filter form's hidden field and submit
     const searchInput = document.querySelector('.search-input');
+    const hiddenSearch = document.getElementById('hiddenSearch');
     let searchTimeout;
+
     searchInput.addEventListener('input', function() {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() => {

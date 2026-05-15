@@ -46,6 +46,91 @@
       letter-spacing: -0.5px;
     }
 
+    .out-of-stock-alert {
+      background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+      border: 2px solid #ffc107;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 32px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+      animation: slideDown 0.4s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .alert-icon {
+      font-size: 32px;
+      flex-shrink: 0;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #856404;
+      margin: 0 0 8px 0;
+    }
+
+    .alert-message {
+      font-size: 14px;
+      color: #856404;
+      margin: 0 0 12px 0;
+      line-height: 1.5;
+    }
+
+    .out-of-stock-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .out-of-stock-list li {
+      padding: 8px 0;
+      font-size: 14px;
+      color: #664d03;
+      border-bottom: 1px solid rgba(255, 193, 7, 0.3);
+    }
+
+    .out-of-stock-list li:last-child {
+      border-bottom: none;
+    }
+
+    .out-of-stock-list strong {
+      font-weight: 600;
+      color: #664d03;
+    }
+
+    .removed-qty {
+      color: #856404;
+      font-size: 13px;
+      margin-left: 8px;
+    }
+
     .cart-content {
       display: grid;
       grid-template-columns: 1fr 320px;
@@ -333,6 +418,27 @@
   <div class="cart-wrapper">
     <h1 class="cart-title">Shopping Cart</h1>
 
+    <% if (outOfStockItems && outOfStockItems.length > 0) { %>
+      <div class="out-of-stock-alert">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-content">
+          <h3 class="alert-title">Items Removed - Out of Stock</h3>
+          <p class="alert-message">The following items were removed from your cart because they are no longer available:</p>
+          <ul class="out-of-stock-list">
+            <% outOfStockItems.forEach(item => { %>
+              <li>
+                <strong><%= item.title %></strong>
+                <% if (item.author) { %>
+                  by <%= item.author %>
+                <% } %>
+                <span class="removed-qty">(Quantity: <%= item.quantity %>)</span>
+              </li>
+            <% }) %>
+          </ul>
+        </div>
+      </div>
+    <% } %>
+
     <% if (!cart || !cart.items || cart.items.length === 0) { %>
       <div class="empty-cart">
         <div class="empty-cart-icon">🛒</div>
@@ -599,7 +705,54 @@
           window.history.replaceState({}, '', url);
         });
       }
+
+      // Check for stock updates every 30 seconds
+      setInterval(checkStockUpdates, 30000);
     });
+
+    async function checkStockUpdates() {
+      try {
+        const cartItems = document.querySelectorAll('.cart-item');
+        if (cartItems.length === 0) return;
+
+        const productIds = Array.from(cartItems).map(item => item.dataset.productId);
+        
+        const response = await fetch('/cart/check-stock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productIds })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.hasChanges) {
+            // Build a detailed message listing removed items
+            let itemsList = '';
+            if (data.outOfStockItems && data.outOfStockItems.length > 0) {
+              itemsList = '<ul style="text-align:left; margin: 12px 0 0 0; padding-left: 20px;">';
+              data.outOfStockItems.forEach(item => {
+                itemsList += `<li style="margin-bottom:6px;"><strong>${item.title}</strong>${item.author ? ' by ' + item.author : ''} <span style="color:#856404;">(qty: ${item.quantity})</span></li>`;
+              });
+              itemsList += '</ul>';
+            }
+
+            Swal.fire({
+              icon: 'warning',
+              title: '⚠️ Items Out of Stock',
+              html: `<p>The following item(s) were removed from your cart because they went out of stock:</p>${itemsList}`,
+              confirmButtonColor: '#2d1f14',
+              confirmButtonText: 'OK, refresh cart',
+              allowOutsideClick: false
+            }).then(() => {
+              location.reload();
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Stock check error:', error);
+      }
+    }
 
     function showNotification(message, type = 'info') {
       const notification = document.createElement('div');

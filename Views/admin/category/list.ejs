@@ -253,14 +253,41 @@
                 </div>
 
                 <div class="card">
-                    <form method="GET" action="/admin/categories" style="display: flex; align-items: center; gap: 10px; margin-bottom: 0;">
-                        <div style="position: relative; flex: 1; max-width: 400px;">
-                            <input type="text" name="search" id="searchInput" class="form-control" placeholder="Search categories..." value="<%= search %>"/>
+                    <form method="GET" action="/admin/categories" id="filterForm">
+                      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 16px 20px; border-bottom: 1px solid #f3f4f6;">
+                        <div style="position: relative; flex: 1; min-width: 200px; max-width: 360px;">
+                            <input type="text" name="search" id="searchInput" class="form-control" placeholder="Search categories..." value="<%= search %>" style="padding-right: 32px;"/>
                             <button type="button" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #8b6f47; font-size: 16px; display: <%= search ? 'block' : 'none' %>;" id="clearBtn">✕</button>
                         </div>
+
+                        <select name="isSubcategory" onchange="this.form.submit()" class="form-control" style="width: auto; min-width: 150px;">
+                          <option value="">All Types</option>
+                          <option value="false" <%= isSubcategory === 'false' ? 'selected' : '' %>>Main Categories</option>
+                          <option value="true" <%= isSubcategory === 'true' ? 'selected' : '' %>>Subcategories</option>
+                        </select>
+
+                        <select name="status" onchange="this.form.submit()" class="form-control" style="width: auto; min-width: 140px;">
+                          <option value="">All Statuses</option>
+                          <option value="listed" <%= status === 'listed' ? 'selected' : '' %>>Listed</option>
+                          <option value="unlisted" <%= status === 'unlisted' ? 'selected' : '' %>>Unlisted</option>
+                        </select>
+
+                        <select name="sort" onchange="this.form.submit()" class="form-control" style="width: auto; min-width: 170px;">
+                          <option value="">Sort By</option>
+                          <option value="date-desc" <%= sort === 'date-desc' ? 'selected' : '' %>>Date: Newest First</option>
+                          <option value="date-asc" <%= sort === 'date-asc' ? 'selected' : '' %>>Date: Oldest First</option>
+                          <option value="name-asc" <%= sort === 'name-asc' ? 'selected' : '' %>>Name: A to Z</option>
+                          <option value="name-desc" <%= sort === 'name-desc' ? 'selected' : '' %>>Name: Z to A</option>
+                        </select>
+
                         <button type="submit" class="btn btn-primary">Search</button>
+
+                        <% const hasFilters = search || isSubcategory || status || sort; %>
+                        <% if (hasFilters) { %>
+                          <a href="/admin/categories" class="btn btn-secondary" style="color: #c0392b; border-color: #fca5a5; background: #fee2e2;">✕ Clear</a>
+                        <% } %>
+                      </div>
                     </form>
-                </div>
 
                 <div class="card">
                     <div style="padding: 16px 20px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #6b7280;">
@@ -269,8 +296,6 @@
                             — Results for "<strong><%= search %></strong>"
                         <% } %>
                     </div>
-
-                    <% if (categories.length === 0) { %>
                         <div style="text-align: center; padding: 60px 20px; color: #6b7280;">
                             <svg style="width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.4;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                                 <circle cx="11" cy="11" r="8"/>

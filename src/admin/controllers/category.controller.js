@@ -4,6 +4,8 @@ export const getCategories = async (req, res) => {
   try {
     const search = req.query.search?.trim() || "";
     const isSubcategory = req.query.isSubcategory || "";
+    const status = req.query.status || "";
+    const sort = req.query.sort || "";
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
 
@@ -13,6 +15,8 @@ export const getCategories = async (req, res) => {
         page,
         limit,
         isSubcategory,
+        status,
+        sort,
       });
 
     const hierarchy = await categoryService.getCategoryHierarchy();
@@ -24,6 +28,8 @@ export const getCategories = async (req, res) => {
       currentPage,
       search,
       isSubcategory,
+      status,
+      sort,
       hierarchy,
       currentPage_name: "categories",
       user: req.session.adminUser,

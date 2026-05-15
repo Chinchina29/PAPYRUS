@@ -6,10 +6,19 @@ export const getProducts = async (req, res) => {
     const search = req.query.search?.trim() || "";
     const page = parseInt(req.query.page) || 1;
     const showDeleted = req.query.showDeleted === "true";
+    const sort = req.query.sort || "";
+    const category = req.query.category || "";
+    const minPrice = req.query.minPrice || "";
+    const maxPrice = req.query.maxPrice || "";
+    const condition = req.query.condition || "";
+    const status = req.query.status || "";
+    const stock = req.query.stock || "";
     const limit = 10;
 
     const { products, total, totalPages, currentPage } =
-      await productService.getAllProducts({ search, page, limit, showDeleted });
+      await productService.getAllProducts({ search, page, limit, showDeleted, sort, category, minPrice, maxPrice, condition, status, stock });
+
+    const { categories } = await categoryService.getAllCategories({ page: 1, limit: 100 });
 
     res.render("admin/product/list", {
       products,
@@ -18,6 +27,14 @@ export const getProducts = async (req, res) => {
       currentPage,
       search,
       showDeleted,
+      sort,
+      category,
+      minPrice,
+      maxPrice,
+      condition,
+      status,
+      stock,
+      categories,
       currentPage_name: "inventory",
       user: req.session.adminUser,
     });

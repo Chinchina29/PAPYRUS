@@ -186,6 +186,12 @@ router.post(
   generalApiLimiter,
   cartController.removeCoupon,
 );
+router.post(
+  "/cart/check-stock",
+  requireAuth,
+  generalApiLimiter,
+  cartController.checkStock,
+);
 
 router.get("/sell", requireAuth, sellerController.getSellPage);
 router.post("/sell", requireAuth, sellerController.submitBook);

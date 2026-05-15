@@ -1,6 +1,6 @@
 import Product from "../models/Product.js";
 
-export const getAllProducts = async ({ search = "", page = 1, limit = 10, showDeleted = false }) => {
+export const getAllProducts = async ({ search = "", page = 1, limit = 10, showDeleted = false, sort = "", category = "", minPrice = "", maxPrice = "", condition = "", status = "", stock = "" }) => {
   const query = {
     ...(showDeleted ? {} : { isDeleted: false }),
     ...(search && {
@@ -9,6 +9,30 @@ export const getAllProducts = async ({ search = "", page = 1, limit = 10, showDe
         { author: { $regex: search, $options: "i" } },
       ],
     }),
+    ...(category && { category }),
+    ...(condition && { condition }),
+    ...(status === "listed" && { isListed: true }),
+    ...(status === "unlisted" && { isListed: false }),
+    ...((minPrice || maxPrice) && {
+      price: {
+        ...(minPrice && { $gte: parseFloat(minPrice) }),
+        ...(maxPrice && { $lte: parseFloat(maxPrice) }),
+      },
+    }),
+    ...(stock === "in-stock" && { stock: { $gt: 0 } }),
+    ...(stock === "out-of-stock" && { stock: 0 }),
+    ...(stock === "low-stock" && { stock: { $gt: 0, $lte: 5 } }),
+  };
+
+  const sortOptions = {
+    "date-desc": { createdAt: -1 },
+    "date-asc": { createdAt: 1 },
+    "price-asc": { price: 1 },
+    "price-desc": { price: -1 },
+    "title-asc": { title: 1 },
+    "title-desc": { title: -1 },
+    "stock-asc": { stock: 1 },
+    "stock-desc": { stock: -1 },
   };
 
   const skip = (page - 1) * limit;
@@ -17,7 +41,7 @@ export const getAllProducts = async ({ search = "", page = 1, limit = 10, showDe
     Product.find(query)
       .populate("category", "name")
       .populate("seller", "firstName lastName email")
-      .sort({ createdAt: -1 })
+      .sort(sortOptions[sort] || { createdAt: -1 })
       .skip(skip)
       .limit(limit),
     Product.countDocuments(query),

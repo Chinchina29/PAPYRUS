@@ -1,14 +1,16 @@
 import * as orderService from "../../shared/services/order.service.js";
+import { generateInvoicePDF } from "../../shared/utils/invoiceGenerator.js";
 
 export const getOrders = async (req, res) => {
   try {
     const search = req.query.search?.trim() || "";
     const status = req.query.status || "";
+    const sort = req.query.sort || "";
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
 
     const { orders, total, totalPages, currentPage } =
-      await orderService.getAllOrders({ search, page, limit, status });
+      await orderService.getAllOrders({ search, page, limit, status, sort });
 
     res.render("admin/orders", {
       orders: orders || [],
@@ -17,6 +19,7 @@ export const getOrders = async (req, res) => {
       currentPage: currentPage || 1,
       search: search || "",
       status: status || "",
+      sort: sort || "",
       currentPage_name: "orders",
       user: req.session.adminUser,
     });
@@ -28,6 +31,7 @@ export const getOrders = async (req, res) => {
       currentPage: 1,
       search: "",
       status: "",
+      sort: "",
       currentPage_name: "orders",
       user: req.session.adminUser,
     });
@@ -129,5 +133,103 @@ export const cancelOrder = async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+
+export const approveReturnRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const order = await orderService.getOrderById(id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (order.returnRequestStatus !== "Requested") {
+      return res.status(400).json({
+        success: false,
+        message: "No pending return request for this order",
+      });
+    }
+
+    order.returnRequestStatus = "Approved";
+    order.returnApprovedAt = new Date();
+    order.orderStatus = "Returned";
+    order.returnedAt = new Date();
+    await order.save();
+
+    return res.json({
+      success: true,
+      message: "Return request approved successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to approve return request",
+    });
+  }
+};
+
+export const rejectReturnRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    if (!reason || !reason.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Rejection reason is required",
+      });
+    }
+
+    const order = await orderService.getOrderById(id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (order.returnRequestStatus !== "Requested") {
+      return res.status(400).json({
+        success: false,
+        message: "No pending return request for this order",
+      });
+    }
+
+    order.returnRequestStatus = "Rejected";
+    order.returnRejectedAt = new Date();
+    order.returnRejectionReason = reason.trim();
+    await order.save();
+
+    return res.json({
+      success: true,
+      message: "Return request rejected successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to reject return request",
+    });
+  }
+};
+
+export const downloadInvoice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await orderService.getOrderById(id);
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    generateInvoicePDF(order, res);
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to generate invoice" });
   }
 };

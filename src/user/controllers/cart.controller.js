@@ -7,13 +7,19 @@ export const getCart = async (req, res) => {
       return res.redirect("/login?message=Please log in to access your cart");
     }
 
-    const cart = await cartService.getOrCreateCart(req.session.userId);
+    const cart = await cartService.getOrCreateCart(req.session.userId, req.session);
+
+    // Read out-of-stock items from session (survives redirects & reloads)
+    // then immediately clear so it only shows once
+    const outOfStockItems = req.session.outOfStockItems || cart.outOfStockItems || [];
+    req.session.outOfStockItems = null;
 
     res.render("user/cart", {
       cart,
       currentPage_name: "cart",
       user: req.session.user || null,
       error: req.query.error || null,
+      outOfStockItems,
     });
   } catch (error) {
     return res.redirect("/cart?error=" + encodeURIComponent("An error occurred while loading your cart. Please try again later."));
@@ -273,6 +279,40 @@ export const removeCoupon = async (req, res) => {
     res.status(400).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+export const checkStock = async (req, res) => {
+  try {
+    const { productIds } = req.body;
+    
+    if (!productIds || !Array.isArray(productIds)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid request",
+      });
+    }
+
+    const cart = await cartService.getOrCreateCart(req.session.userId, req.session);
+    
+    // Check if any items were removed due to stock issues
+    const currentProductIds = cart.items.map(item => item.product._id.toString());
+    const removedItems = productIds.filter(id => !currentProductIds.includes(id));
+    
+    // Check if there are out-of-stock items (now also stored in session)
+    const hasChanges = removedItems.length > 0 || (cart.outOfStockItems && cart.outOfStockItems.length > 0);
+
+    res.json({
+      success: true,
+      hasChanges,
+      removedCount: removedItems.length,
+      outOfStockItems: cart.outOfStockItems || [],
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to check stock",
     });
   }
 };
