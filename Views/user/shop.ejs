@@ -524,30 +524,14 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="/js/cart-wishlist.js"></script>
   <script>
-    function debounce(func, delay) {
-      let timeoutId;
-      return function (...args) {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => func.apply(this, args), delay);
-      };
-    }
-
     const searchInput = document.getElementById("searchInput");
     const clearSearch = document.getElementById("clearSearch");
-    const clearAll    = document.getElementById("clearAll");
     const filterForm  = document.getElementById("filterForm");
 
     clearSearch.style.display = searchInput.value ? "block" : "none";
 
-    const debouncedSearch = debounce(function() {
-      filterForm.submit();
-    }, 800);
-
     searchInput.addEventListener("input", function() {
       clearSearch.style.display = this.value ? "block" : "none";
-      if (this.value.length >= 2 || this.value.length === 0) {
-        debouncedSearch();
-      }
     });
 
     clearSearch.addEventListener("click", function() {
@@ -555,174 +539,16 @@
       clearSearch.style.display = "none";
       filterForm.submit();
     });
-
-    clearAll.addEventListener("click", function() {
-      // Reset all form fields
-      searchInput.value = "";
-      document.getElementById("categorySelect").value = "";
-      document.getElementById("conditionSelect").value = "";
-      document.getElementById("sortSelect").value = "newest";
-      document.getElementById("minPriceInput").value = "";
-      document.getElementById("maxPriceInput").value = "";
-      clearSearch.style.display = "none";
-      
-      // Redirect to clean shop page
+    document.getElementById("clearAll").addEventListener("click", function() {
       window.location.href = "/shop";
     });
 
-    const throttledAddToCart = debounce(async function(productId, event) {
-      event.preventDefault();
-      event.stopPropagation();
-
-      try {
-        const response = await fetch('/cart/add', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            productId: productId,
-            quantity: 1
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Added to Cart!',
-            text: 'Item added to cart successfully',
-            timer: 2000,
-            showConfirmButton: false,
-            timerProgressBar: true
-          });
-          updateCartCount();
-        } else {
-          if (response.status === 401) {
-            Swal.fire({
-              icon: 'warning',
-              title: 'Login Required',
-              text: 'Please login to add items to your cart',
-              confirmButtonColor: '#7A5C3E',
-              confirmButtonText: 'Go to Login'
-            }).then((result) => {
-              if (result.isConfirmed) {
-                window.location.href = '/login';
-              }
-            });
-          } else if (data.message && (data.message.toLowerCase().includes('out of stock') || data.message.toLowerCase().includes('stock') && data.message.includes('0'))) {
-            Swal.fire({
-              icon: 'error',
-              title: 'Out of Stock',
-              text: 'Sorry, this product is currently out of stock',
-              confirmButtonColor: '#7A5C3E'
-            });
-          } else if (data.message && data.message.toLowerCase().includes('insufficient stock')) {
-            Swal.fire({
-              icon: 'warning',
-              title: 'Insufficient Stock',
-              text: data.message,
-              confirmButtonColor: '#7A5C3E'
-            });
-          } else {
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: data.message || 'Failed to add item to cart',
-              confirmButtonColor: '#7A5C3E'
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Add to cart error:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Something went wrong. Please try again.',
-          confirmButtonColor: '#7A5C3E'
-        });
-      }
-    }, 1000);
-
-    function addToCart(productId, event) {
-      throttledAddToCart(productId, event);
-    }
-
-    async function updateCartCount() {
-      try {
-        const response = await fetch('/cart/count');
-        const data = await response.json();
-        
-        if (data.success) {
-          const cartCountElement = document.querySelector('.cart-count');
-          if (cartCountElement) {
-            cartCountElement.textContent = data.count;
-            cartCountElement.style.display = data.count > 0 ? 'flex' : 'none';
-          }
-        }
-      } catch (error) {
-        // Silently fail for cart count
-      }
-    }
-
-    function showNotification(message, type = 'info') {
-      const notification = document.createElement('div');
-      notification.className = `notification notification-${type}`;
-      notification.innerHTML = `
-        <div class="notification-content">
-          <span>${message}</span>
-          <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: inherit; font-size: 18px; cursor: pointer; margin-left: 10px;">&times;</button>
-        </div>
-      `;
-      
-      notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 12px 20px;
-        border-radius: 8px;
-        color: white;
-        font-weight: 500;
-        z-index: 10000;
-        max-width: 300px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        animation: slideIn 0.3s ease-out;
-      `;
-      
-      if (type === 'success') {
-        notification.style.backgroundColor = '#4caf50';
-      } else if (type === 'error') {
-        notification.style.backgroundColor = '#f44336';
-      } else {
-        notification.style.backgroundColor = '#2196f3';
-      }
-      
-      const style = document.createElement('style');
-      style.textContent = `
-        @keyframes slideIn {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-      `;
-      document.head.appendChild(style);
-      
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        if (notification.parentElement) {
-          notification.remove();
-        }
-      }, 3000);
-    }
-
-    // Update cart count on page load
     document.addEventListener('DOMContentLoaded', function() {
-      updateCartCount();
+      CartWishlist.updateCartCount();
 
       const urlParams = new URLSearchParams(window.location.search);
       const error = urlParams.get('error');
-      
+
       if (error) {
         Swal.fire({
           icon: 'error',

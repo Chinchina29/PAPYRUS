@@ -7,11 +7,13 @@ export const getCart = async (req, res) => {
       return res.redirect("/login?message=Please log in to access your cart");
     }
 
-    const cart = await cartService.getOrCreateCart(req.session.userId, req.session);
+    const cart = await cartService.getOrCreateCart(
+      req.session.userId,
+      req.session,
+    );
 
-    // Read out-of-stock items from session (survives redirects & reloads)
-    // then immediately clear so it only shows once
-    const outOfStockItems = req.session.outOfStockItems || cart.outOfStockItems || [];
+    const outOfStockItems =
+      req.session.outOfStockItems || cart.outOfStockItems || [];
     req.session.outOfStockItems = null;
 
     res.render("user/cart", {
@@ -22,7 +24,12 @@ export const getCart = async (req, res) => {
       outOfStockItems,
     });
   } catch (error) {
-    return res.redirect("/cart?error=" + encodeURIComponent("An error occurred while loading your cart. Please try again later."));
+    return res.redirect(
+      "/cart?error=" +
+        encodeURIComponent(
+          "An error occurred while loading your cart. Please try again later.",
+        ),
+    );
   }
 };
 
@@ -62,9 +69,13 @@ export const addToCart = async (req, res) => {
     });
   } catch (error) {
     let userMessage = error.message;
-    
-    if (error.message.includes("not found") || error.message.includes("not available")) {
-      userMessage = "This product is no longer available. It may have been removed or is out of stock.";
+
+    if (
+      error.message.includes("not found") ||
+      error.message.includes("not available")
+    ) {
+      userMessage =
+        "This product is no longer available. It may have been removed or is out of stock.";
     } else if (error.message.includes("out of stock")) {
       userMessage = "Sorry, this product is currently out of stock.";
     } else if (error.message.includes("Insufficient stock")) {
@@ -74,7 +85,8 @@ export const addToCart = async (req, res) => {
     } else if (error.message.includes("own submitted product")) {
       userMessage = "You cannot purchase your own listed products.";
     } else if (error.message.includes("category")) {
-      userMessage = "This product is unavailable because its category has been disabled.";
+      userMessage =
+        "This product is unavailable because its category has been disabled.";
     }
 
     res.status(400).json({
@@ -112,7 +124,7 @@ export const updateCartItem = async (req, res) => {
     });
   } catch (error) {
     let userMessage = error.message;
-    
+
     if (error.message.includes("not found")) {
       userMessage = "Product not found in your cart.";
     } else if (error.message.includes("out of stock")) {
@@ -150,8 +162,8 @@ export const removeFromCart = async (req, res) => {
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error.message.includes("not found") 
-        ? "Item not found in your cart." 
+      message: error.message.includes("not found")
+        ? "Item not found in your cart."
         : "Failed to remove item from cart. Please try again.",
     });
   }
@@ -247,7 +259,7 @@ export const validateCoupon = async (req, res) => {
     });
   } catch (error) {
     let userMessage = error.message;
-    
+
     if (error.message.includes("not found")) {
       userMessage = "Invalid coupon code. Please check and try again.";
     } else if (error.message.includes("expired")) {
@@ -286,7 +298,7 @@ export const removeCoupon = async (req, res) => {
 export const checkStock = async (req, res) => {
   try {
     const { productIds } = req.body;
-    
+
     if (!productIds || !Array.isArray(productIds)) {
       return res.status(400).json({
         success: false,
@@ -294,14 +306,21 @@ export const checkStock = async (req, res) => {
       });
     }
 
-    const cart = await cartService.getOrCreateCart(req.session.userId, req.session);
-    
-    // Check if any items were removed due to stock issues
-    const currentProductIds = cart.items.map(item => item.product._id.toString());
-    const removedItems = productIds.filter(id => !currentProductIds.includes(id));
-    
-    // Check if there are out-of-stock items (now also stored in session)
-    const hasChanges = removedItems.length > 0 || (cart.outOfStockItems && cart.outOfStockItems.length > 0);
+    const cart = await cartService.getOrCreateCart(
+      req.session.userId,
+      req.session,
+    );
+
+    const currentProductIds = cart.items.map((item) =>
+      item.product._id.toString(),
+    );
+    const removedItems = productIds.filter(
+      (id) => !currentProductIds.includes(id),
+    );
+
+    const hasChanges =
+      removedItems.length > 0 ||
+      (cart.outOfStockItems && cart.outOfStockItems.length > 0);
 
     res.json({
       success: true,

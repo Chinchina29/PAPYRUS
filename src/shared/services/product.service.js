@@ -97,7 +97,7 @@ export const softDeleteProduct = async (id) => {
   return await Product.findByIdAndUpdate(
     id,
     { isDeleted: true },
-    { returnDocument: "after" }
+    { returnDocument: "after" },
   );
 };
 
@@ -123,31 +123,38 @@ export const getListedProducts = async ({
   const query = {
     isDeleted: false,
     isListed: true,
-    ...(userId && {
-      $or: [
-        { hideFromSeller: false },
-        { seller: { $ne: userId } },
-      ],
-    }),
-    ...(search && {
+  };
+
+  if (userId) {
+    query.seller = { $ne: userId };
+  }
+
+  if (search) {
+    query.$and = query.$and || [];
+    query.$and.push({
       $or: [
         { title: { $regex: search, $options: "i" } },
         { author: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } },
       ],
-    }),
-    ...(category && { $or: [{ category }, { subcategory: category }] }),
-    ...(condition && { condition }),
-    ...(brand && { brand: { $regex: brand, $options: "i" } }),
-    ...(minPrice || maxPrice
-      ? {
-          price: {
-            ...(minPrice && { $gte: parseFloat(minPrice) }),
-            ...(maxPrice && { $lte: parseFloat(maxPrice) }),
-          },
-        }
-      : {}),
-  };
+    });
+  }
+
+  if (category) {
+    query.$and = query.$and || [];
+    query.$and.push({
+      $or: [{ category }, { subcategory: category }],
+    });
+  }
+
+  if (condition) query.condition = condition;
+  if (brand) query.brand = { $regex: brand, $options: "i" };
+  if (minPrice || maxPrice) {
+    query.price = {
+      ...(minPrice && { $gte: parseFloat(minPrice) }),
+      ...(maxPrice && { $lte: parseFloat(maxPrice) }),
+    };
+  }
 
   const sortOptions = {
     newest: { createdAt: -1 },
@@ -160,7 +167,7 @@ export const getListedProducts = async ({
 
   const skip = (page - 1) * limit;
 
-  const [products, total] = await Promise.all([
+  const [rawProducts, total] = await Promise.all([
     Product.find(query)
       .populate({
         path: "category",
@@ -175,15 +182,16 @@ export const getListedProducts = async ({
       .populate("seller", "name email")
       .sort(sortOptions[sort] || { createdAt: -1 })
       .skip(skip)
-      .limit(limit)
-      .then((products) => products.filter((p) => p.category !== null)),
+      .limit(limit),
     Product.countDocuments(query),
   ]);
 
+  const products = rawProducts.filter((p) => p.category !== null);
+
   return {
     products,
-    total: products.length,
-    totalPages: Math.ceil(products.length / limit),
+    total,
+    totalPages: Math.ceil(total / limit),
     currentPage: page,
   };
 };
@@ -237,6 +245,6 @@ export const getRelatedProducts = async (categoryId, excludeId, limit = 4) => {
 export const getAllBrands = async () => {
   return await Product.distinct("brand", {
     isDeleted: false,
-    brand: { $exists: true, $ne: null, $ne: "" },
+    brand: { $exists: true, $ne: "" },
   });
 };

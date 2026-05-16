@@ -1,5 +1,5 @@
 export const otpEmailTemplate = (firstName, otp) => {
-    return `
+  return `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="background: #7A5C3E; color: white; padding: 20px; text-align: center;">
                 <h1>📚 Papyrus</h1>
@@ -17,7 +17,7 @@ export const otpEmailTemplate = (firstName, otp) => {
 };
 
 export const emailChangeOTPTemplate = (firstName, otp, newEmail) => {
-    return `
+  return `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="background: #7A5C3E; color: white; padding: 20px; text-align: center;">
                 <h1>📚 Papyrus</h1>
@@ -37,7 +37,7 @@ export const emailChangeOTPTemplate = (firstName, otp, newEmail) => {
 };
 
 export const passwordResetTemplate = (firstName, otp) => {
-    return `
+  return `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="background: #7A5C3E; color: white; padding: 20px; text-align: center;">
                 <h1>📚 Papyrus</h1>
@@ -53,8 +53,6 @@ export const passwordResetTemplate = (firstName, otp) => {
         </div>
     `;
 };
-
-// ── Order notification templates ────────────────────────────────────────────
 
 const baseLayout = (content) => `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
@@ -75,20 +73,20 @@ const baseLayout = (content) => `
 const orderInfoBox = (order) => `
   <div style="background: white; border: 1px solid #e8dcc8; border-radius: 8px; padding: 16px; margin: 20px 0; font-size: 14px; color: #5a4a3a;">
     <strong>Order ID:</strong> ${order.orderId}<br>
-    <strong>Date:</strong> ${new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}<br>
+    <strong>Date:</strong> ${new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}<br>
     <strong>Total:</strong> ₹${order.totalAmount.toFixed(2)}
   </div>
 `;
 
 export const orderStatusUpdateTemplate = (firstName, order, newStatus) => {
   const statusColors = {
-    Processing: '#1976d2',
-    Shipped: '#388e3c',
-    Delivered: '#2e7d32',
-    Cancelled: '#d32f2f',
-    Returned: '#7b1fa2',
+    Processing: "#1976d2",
+    Shipped: "#388e3c",
+    Delivered: "#2e7d32",
+    Cancelled: "#d32f2f",
+    Returned: "#7b1fa2",
   };
-  const color = statusColors[newStatus] || '#7A5C3E';
+  const color = statusColors[newStatus] || "#7A5C3E";
 
   return baseLayout(`
     <h2 style="color: #2d1f14; margin: 0 0 8px;">Hello ${firstName}!</h2>
@@ -100,23 +98,29 @@ export const orderStatusUpdateTemplate = (firstName, order, newStatus) => {
       </span>
     </div>
     <p style="color: #5a4a3a; font-size: 14px; text-align: center;">
-      <a href="${process.env.APP_URL || 'http://localhost:3000'}/orders/${order._id}" style="color: #7A5C3E; font-weight: 600;">View Order Details →</a>
+      <a href="${process.env.APP_URL || "http://localhost:3000"}/orders/${order._id}" style="color: #7A5C3E; font-weight: 600;">View Order Details →</a>
     </p>
   `);
 };
 
-export const orderCancelledByAdminTemplate = (firstName, order, reason) => baseLayout(`
+export const orderCancelledByAdminTemplate = (firstName, order, reason) =>
+  baseLayout(`
   <h2 style="color: #2d1f14; margin: 0 0 8px;">Hello ${firstName},</h2>
   <p style="color: #5a4a3a; margin: 0 0 4px;">We're sorry to inform you that your order has been <strong style="color: #d32f2f;">cancelled</strong> by our team.</p>
   ${orderInfoBox(order)}
-  ${reason ? `
+  ${
+    reason
+      ? `
   <div style="background: #fff3f3; border-left: 4px solid #d32f2f; padding: 14px 16px; border-radius: 4px; margin: 16px 0; font-size: 14px; color: #5a4a3a;">
     <strong>Reason:</strong> ${reason}
-  </div>` : ''}
+  </div>`
+      : ""
+  }
   <p style="color: #5a4a3a; font-size: 14px;">If you have any questions, please contact our support team at <a href="mailto:support@papyrus.com" style="color: #7A5C3E;">support@papyrus.com</a>.</p>
 `);
 
-export const returnApprovedTemplate = (firstName, order) => baseLayout(`
+export const returnApprovedTemplate = (firstName, order) =>
+  baseLayout(`
   <h2 style="color: #2d1f14; margin: 0 0 8px;">Hello ${firstName}!</h2>
   <p style="color: #5a4a3a; margin: 0 0 4px;">Great news — your return request has been <strong style="color: #2e7d32;">approved</strong>.</p>
   ${orderInfoBox(order)}
@@ -126,26 +130,35 @@ export const returnApprovedTemplate = (firstName, order) => baseLayout(`
   <p style="color: #5a4a3a; font-size: 14px;">For shipping instructions, contact us at <a href="mailto:support@papyrus.com" style="color: #7A5C3E;">support@papyrus.com</a>.</p>
 `);
 
-export const returnRejectedTemplate = (firstName, order, reason) => baseLayout(`
+export const returnRejectedTemplate = (firstName, order, reason) =>
+  baseLayout(`
   <h2 style="color: #2d1f14; margin: 0 0 8px;">Hello ${firstName},</h2>
   <p style="color: #5a4a3a; margin: 0 0 4px;">We're sorry, but your return request has been <strong style="color: #d32f2f;">rejected</strong>.</p>
   ${orderInfoBox(order)}
-  ${reason ? `
+  ${
+    reason
+      ? `
   <div style="background: #fff3f3; border-left: 4px solid #d32f2f; padding: 14px 16px; border-radius: 4px; margin: 16px 0; font-size: 14px; color: #5a4a3a;">
     <strong>Reason:</strong> ${reason}
-  </div>` : ''}
+  </div>`
+      : ""
+  }
   <p style="color: #5a4a3a; font-size: 14px;">If you believe this is a mistake, please contact us at <a href="mailto:support@papyrus.com" style="color: #7A5C3E;">support@papyrus.com</a>.</p>
 `);
 
 export const cartOutOfStockTemplate = (firstName, removedItems) => {
-  const itemRows = removedItems.map(item => `
+  const itemRows = removedItems
+    .map(
+      (item) => `
     <tr>
       <td style="padding: 10px 12px; border-bottom: 1px solid #f0ebe3; font-size: 14px; color: #2d1f14;">
-        <strong>${item.title}</strong>${item.author ? `<br><span style="font-size: 12px; color: #8b7355;">by ${item.author}</span>` : ''}
+        <strong>${item.title}</strong>${item.author ? `<br><span style="font-size: 12px; color: #8b7355;">by ${item.author}</span>` : ""}
       </td>
       <td style="padding: 10px 12px; border-bottom: 1px solid #f0ebe3; font-size: 14px; color: #5a4a3a; text-align: center;">${item.quantity}</td>
     </tr>
-  `).join('');
+  `,
+    )
+    .join("");
 
   return baseLayout(`
     <h2 style="color: #2d1f14; margin: 0 0 8px;">Hello ${firstName},</h2>
@@ -160,7 +173,7 @@ export const cartOutOfStockTemplate = (firstName, removedItems) => {
       <tbody>${itemRows}</tbody>
     </table>
     <p style="color: #5a4a3a; font-size: 14px; margin-top: 20px;">
-      <a href="${process.env.APP_URL || 'http://localhost:3000'}/shop" style="color: #7A5C3E; font-weight: 600;">Browse available books →</a>
+      <a href="${process.env.APP_URL || "http://localhost:3000"}/shop" style="color: #7A5C3E; font-weight: 600;">Browse available books →</a>
     </p>
   `);
 };

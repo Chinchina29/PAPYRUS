@@ -81,12 +81,10 @@ export const addCategory = async (req, res) => {
       }
 
       if (parent.isSubcategory) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "Cannot create subcategory under another subcategory",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "Cannot create subcategory under another subcategory",
+        });
       }
 
       isSubcategory = true;
@@ -100,7 +98,12 @@ export const addCategory = async (req, res) => {
       isSubcategory,
     });
 
-    if (subcategories && Array.isArray(subcategories) && subcategories.length > 0 && !isSubcategory) {
+    if (
+      subcategories &&
+      Array.isArray(subcategories) &&
+      subcategories.length > 0 &&
+      !isSubcategory
+    ) {
       for (const subName of subcategories) {
         if (subName?.trim()) {
           try {
@@ -110,7 +113,6 @@ export const addCategory = async (req, res) => {
               isSubcategory: true,
             });
           } catch (subError) {
-            // Skip duplicate subcategories but continue with others
             console.log(`Skipping duplicate subcategory: ${subName}`);
           }
         }
@@ -123,17 +125,16 @@ export const addCategory = async (req, res) => {
       redirectUrl: "/admin/categories",
     });
   } catch (error) {
-    // Handle duplicate category error
-    if (error.message.includes('already exists')) {
-      return res.status(409).json({ 
-        success: false, 
-        message: error.message 
+    if (error.message.includes("already exists")) {
+      return res.status(409).json({
+        success: false,
+        message: error.message,
       });
     }
-    
-    return res.status(500).json({ 
-      success: false, 
-      message: "Failed to add category. Please try again." 
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to add category. Please try again.",
     });
   }
 };
@@ -148,11 +149,11 @@ export const getEditCategory = async (req, res) => {
         message: "Category not found",
       });
     }
-    
+
     const allCategories = await categoryService.getAllCategories({
       limit: 1000,
     });
-    
+
     const availableParents = allCategories.categories.filter(
       (cat) =>
         cat._id.toString() !== id &&
@@ -177,7 +178,8 @@ export const getEditCategory = async (req, res) => {
 export const editCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, isListed, parentCategory, subcategories } = req.body;
+    const { name, description, isListed, parentCategory, subcategories } =
+      req.body;
 
     if (!name?.trim()) {
       return res.status(400).json({
@@ -221,7 +223,12 @@ export const editCategory = async (req, res) => {
     });
 
     const category = await categoryService.getCategoryById(id);
-    if (subcategories && Array.isArray(subcategories) && subcategories.length > 0 && !category.isSubcategory) {
+    if (
+      subcategories &&
+      Array.isArray(subcategories) &&
+      subcategories.length > 0 &&
+      !category.isSubcategory
+    ) {
       for (const subName of subcategories) {
         if (subName?.trim()) {
           try {
@@ -231,7 +238,6 @@ export const editCategory = async (req, res) => {
               isSubcategory: true,
             });
           } catch (subError) {
-            // Skip duplicate subcategories but continue with others
             console.log(`Skipping duplicate subcategory: ${subName}`);
           }
         }
@@ -244,14 +250,13 @@ export const editCategory = async (req, res) => {
       redirectUrl: "/admin/categories",
     });
   } catch (error) {
-    // Handle duplicate category error
-    if (error.message.includes('already exists')) {
-      return res.status(409).json({ 
-        success: false, 
-        message: error.message 
+    if (error.message.includes("already exists")) {
+      return res.status(409).json({
+        success: false,
+        message: error.message,
       });
     }
-    
+
     return res.status(500).json({
       success: false,
       message: "Failed to update category. Please try again.",
