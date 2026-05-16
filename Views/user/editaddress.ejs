@@ -110,7 +110,7 @@
                     <label for="phone">Phone Number</label>
                     <div style="display: flex; gap: 8px;">
                       <input type="text" value="+91" readonly style="width: 60px; background: #f5f1ed; color: #666; cursor: not-allowed;">
-                      <input type="tel" id="phone" name="phone" value="<%= address.phone.replace('+91', '') %>" maxlength="10" pattern="[6-9][0-9]{9}" style="flex: 1;">
+                      <input type="tel" id="phone" name="phone" value="<%= address.phone ? address.phone.replace(/\D/g, '').slice(-10) : '' %>" maxlength="10" style="flex: 1;" placeholder="9876543210">
                     </div>
                     <small style="color: #666; font-size: 11px; margin-top: 4px; display: block;">Enter 10-digit Indian mobile number</small>
                   </div>
@@ -230,7 +230,7 @@
         }
         
         // Validate phone number (10 digits, starting with 6-9)
-        const phoneDigits = data.phone.replace(/\D/g, '');
+        const phoneDigits = data.phone.replace(/\D/g, '').slice(-10);
         if (phoneDigits.length !== 10) {
           Swal.fire({ title: 'Invalid Phone!', text: 'Please enter exactly 10 digits', icon: 'error', confirmButtonColor: '#5a4a3a' });
           return;

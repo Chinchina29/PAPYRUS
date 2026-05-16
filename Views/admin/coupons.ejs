@@ -427,12 +427,6 @@
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
                             <div>
-                                <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Usage Limit</label>
-                                <input type="number" id="usageLimit" name="usageLimit" min="1"
-                                    style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;"
-                                    placeholder="Unlimited">
-                            </div>
-                            <div>
                                 <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Per User Limit</label>
                                 <input type="number" id="perUserLimit" name="perUserLimit" min="1" value="1"
                                     style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
@@ -466,7 +460,6 @@
                     const discountValue = document.getElementById('discountValue').value;
                     const minPurchaseAmount = document.getElementById('minPurchaseAmount').value;
                     const maxDiscountAmount = document.getElementById('maxDiscountAmount').value;
-                    const usageLimit = document.getElementById('usageLimit').value;
                     const perUserLimit = document.getElementById('perUserLimit').value;
                     const validFrom = document.getElementById('validFrom').value;
                     const validUntil = document.getElementById('validUntil').value;
@@ -488,7 +481,6 @@
                         discountValue,
                         minPurchaseAmount,
                         maxDiscountAmount,
-                        usageLimit,
                         perUserLimit,
                         validFrom,
                         validUntil

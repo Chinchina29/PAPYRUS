@@ -62,12 +62,16 @@ export const addAddress = async (req, res) => {
         message: "All required fields must be filled",
       });
     }
-    if (!/^[6-9]\d{9}$/.test(phone)) {
+
+    const phoneDigits = phone.replace(/\D/g, "").slice(-10);
+    if (phoneDigits.length !== 10 || !/^[6-9]/.test(phoneDigits)) {
       return res.status(400).json({
         success: false,
-        message: "Please enter a valid Indian phone number",
+        message: "Please enter a valid 10-digit Indian phone number",
       });
     }
+    const normalizedPhone = "+91" + phoneDigits;
+
     if (!/^\d{6}$/.test(postalCode)) {
       return res.status(400).json({
         success: false,
@@ -78,7 +82,7 @@ export const addAddress = async (req, res) => {
     const addressData = {
       userId,
       fullName: fullName.trim(),
-      phone: phone.trim(),
+      phone: normalizedPhone,
       addressLine1: addressLine1.trim(),
       addressLine2: addressLine2 ? addressLine2.trim() : "",
       city: city.trim(),
@@ -139,12 +143,15 @@ export const updateAddress = async (req, res) => {
         message: "All required fields must be filled",
       });
     }
-    if (!/^[6-9]\d{9}$/.test(phone)) {
+    const phoneDigits = phone.replace(/\D/g, "").slice(-10);
+    if (phoneDigits.length !== 10 || !/^[6-9]/.test(phoneDigits)) {
       return res.status(400).json({
         success: false,
-        message: "Please enter a valid Indian phone number",
+        message: "Please enter a valid 10-digit Indian phone number",
       });
     }
+    const normalizedPhone = "+91" + phoneDigits;
+
     if (!/^\d{6}$/.test(postalCode)) {
       return res.status(400).json({
         success: false,
@@ -154,7 +161,7 @@ export const updateAddress = async (req, res) => {
 
     const updateData = {
       fullName: fullName.trim(),
-      phone: phone.trim(),
+      phone: normalizedPhone,
       addressLine1: addressLine1.trim(),
       addressLine2: addressLine2 ? addressLine2.trim() : "",
       city: city.trim(),
