@@ -15,6 +15,32 @@ export const getCheckout = async (req, res) => {
       return res.redirect("/cart");
     }
 
+    const stockIssues = [];
+    for (const item of cart.items) {
+      const product = await Product.findById(item.product._id)
+        .select("stock isListed isDeleted title category")
+        .populate({
+          path: "category",
+          select: "isListed isDeleted",
+          match: { isListed: true, isDeleted: false },
+        });
+
+      if (
+        !product ||
+        product.isDeleted ||
+        !product.isListed ||
+        !product.category
+      ) {
+        stockIssues.push(`"${item.product.title}" is no longer available`);
+      } else if (product.stock === 0) {
+        stockIssues.push(`"${item.product.title}" is out of stock`);
+      } else if (product.stock < item.quantity) {
+        stockIssues.push(
+          `"${item.product.title}" — only ${product.stock} left (you have ${item.quantity} in cart)`,
+        );
+      }
+    }
+
     const addresses = await addressService.getUserAddresses(userId);
     const defaultAddress =
       addresses.find((addr) => addr.isDefault) || addresses[0];
@@ -32,14 +58,14 @@ export const getCheckout = async (req, res) => {
       validUntil: { $gte: now },
       $or: [
         { usageLimit: { $exists: false } },
-        { $expr: { $lt: ["$usageCount", "$usageLimit"] } }
+        { $expr: { $lt: ["$usageCount", "$usageLimit"] } },
       ],
-      minPurchaseAmount: { $lte: subtotal }
+      minPurchaseAmount: { $lte: subtotal },
     })
-    .populate("applicableCategories", "name")
-    .populate("applicableProducts", "title")
-    .sort({ discountValue: -1 })
-    .limit(10);
+      .populate("applicableCategories", "name")
+      .populate("applicableProducts", "title")
+      .sort({ discountValue: -1 })
+      .limit(10);
 
     res.render("user/checkout", {
       cart,
@@ -51,6 +77,7 @@ export const getCheckout = async (req, res) => {
       totalAmount,
       appliedCoupon: req.session.appliedCoupon || null,
       availableCoupons: availableCoupons || [],
+      stockIssues,
       currentPage_name: "checkout",
       user: req.session.user || null,
     });
@@ -184,7 +211,8 @@ export const placeOrder = async (req, res) => {
     console.error("Place order error:", error);
     res.status(500).json({
       success: false,
-      message: error.message || "Failed to place order. Please try again later.",
+      message:
+        error.message || "Failed to place order. Please try again later.",
     });
   }
 };
@@ -201,7 +229,9 @@ export const getOrderSuccess = async (req, res) => {
     }
 
     if (order.user._id.toString() !== userId.toString()) {
-      return res.redirect("/orders?error=You do not have permission to view this order");
+      return res.redirect(
+        "/orders?error=You do not have permission to view this order",
+      );
     }
 
     res.render("user/order-success", {

@@ -51,15 +51,20 @@ export const getShop = async (req, res) => {
       error: req.query.error || null,
     });
   } catch (error) {
-    return res.redirect("/shop?error=" + encodeURIComponent("An error occurred while loading products. Please try again later."));
+    return res.redirect(
+      "/shop?error=" +
+        encodeURIComponent(
+          "An error occurred while loading products. Please try again later.",
+        ),
+    );
   }
 };
 
 export const getProductDetail = async (req, res) => {
   try {
-    const fromMyListings = req.query.from === 'my-listings';
+    const fromMyListings = req.query.from === "my-listings";
     let product;
-    
+
     if (fromMyListings) {
       product = await Product.findOne({
         _id: req.params.id,
@@ -69,7 +74,7 @@ export const getProductDetail = async (req, res) => {
         .populate("category", "name isListed")
         .populate("subcategory", "name isListed")
         .populate("seller", "name email");
-      
+
       if (product) {
         await Product.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
       }
@@ -78,20 +83,46 @@ export const getProductDetail = async (req, res) => {
     }
 
     if (!product) {
-      const Product = (await import("../../shared/models/Product.js")).default;
-      const deletedProduct = await Product.findById(req.params.id).select(
-        "isDeleted isListed title",
-      );
+      const rawProduct = await Product.findById(req.params.id)
+        .select("isDeleted isListed title author images category")
+        .populate("category", "name isListed isDeleted");
 
-      if (deletedProduct) {
-        if (deletedProduct.isDeleted) {
-          return res.redirect("/shop?error=" + encodeURIComponent("This product has been removed from our catalog."));
-        } else if (!deletedProduct.isListed) {
-          return res.redirect("/shop?error=" + encodeURIComponent("This product is currently unavailable."));
+      if (rawProduct) {
+        if (rawProduct.isDeleted) {
+          return res.render("user/product-unavailable", {
+            reason: "removed",
+            title: rawProduct.title,
+            user: req.session.user || null,
+            currentPage_name: "shop",
+          });
+        }
+        if (!rawProduct.isListed) {
+          return res.render("user/product-unavailable", {
+            reason: "unlisted",
+            title: rawProduct.title,
+            user: req.session.user || null,
+            currentPage_name: "shop",
+          });
+        }
+        if (
+          rawProduct.category &&
+          (!rawProduct.category.isListed || rawProduct.category.isDeleted)
+        ) {
+          return res.render("user/product-unavailable", {
+            reason: "category",
+            title: rawProduct.title,
+            user: req.session.user || null,
+            currentPage_name: "shop",
+          });
         }
       }
 
-      return res.redirect("/shop?error=" + encodeURIComponent("Product not found."));
+      return res.render("user/product-unavailable", {
+        reason: "notfound",
+        title: null,
+        user: req.session.user || null,
+        currentPage_name: "shop",
+      });
     }
 
     const related = await productService.getRelatedProducts(
@@ -108,6 +139,11 @@ export const getProductDetail = async (req, res) => {
       from: req.query.from || null,
     });
   } catch (error) {
-    return res.redirect("/shop?error=" + encodeURIComponent("An error occurred while loading the product. Please try again later."));
+    return res.redirect(
+      "/shop?error=" +
+        encodeURIComponent(
+          "An error occurred while loading the product. Please try again later.",
+        ),
+    );
   }
 };
