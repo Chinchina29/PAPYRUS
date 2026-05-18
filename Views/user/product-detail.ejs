@@ -893,10 +893,10 @@
         <div style="margin-bottom: 24px;">
           <label style="display: block; font-weight: 600; color: #2d1f14; margin-bottom: 8px;">Quantity</label>
           <div style="display: flex; align-items: center; gap: 12px;">
-            <button type="button" id="decreaseBtn" class="quantity-btn" style="width: 40px; height: 40px; border: 2px solid #7A5C3E; background: white; color: #7A5C3E; border-radius: 8px; font-size: 20px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">−</button>
-            <input type="number" id="quantityInput" value="1" min="1" max="<%= product.stock %>" readonly style="width: 80px; height: 40px; text-align: center; border: 2px solid #e8dcc8; border-radius: 8px; font-size: 16px; font-weight: 600; color: #2d1f14;">
-            <button type="button" id="increaseBtn" class="quantity-btn" style="width: 40px; height: 40px; border: 2px solid #7A5C3E; background: white; color: #7A5C3E; border-radius: 8px; font-size: 20px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">+</button>
-            <span style="color: #666; font-size: 14px;">Max: <%= product.stock %></span>
+            <button type="button" id="decreaseBtn" class="quantity-btn" onclick="decreaseQuantity()" style="width: 40px; height: 40px; border: 2px solid #7A5C3E; background: white; color: #7A5C3E; border-radius: 8px; font-size: 20px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">−</button>
+            <input type="number" id="quantityInput" value="1" min="1" max="<%= Math.min(product.stock, product.maxQuantityPerOrder || 10) %>" readonly style="width: 80px; height: 40px; text-align: center; border: 2px solid #e8dcc8; border-radius: 8px; font-size: 16px; font-weight: 600; color: #2d1f14;">
+            <button type="button" id="increaseBtn" class="quantity-btn" onclick="increaseQuantity()" style="width: 40px; height: 40px; border: 2px solid #7A5C3E; background: white; color: #7A5C3E; border-radius: 8px; font-size: 20px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">+</button>
+            <span style="color: #666; font-size: 14px;">Max: <%= Math.min(product.stock, product.maxQuantityPerOrder || 10) %> <% if ((product.maxQuantityPerOrder || 10) < product.stock) { %>(per order limit)<% } %></span>
           </div>
         </div>
         <% } %>
@@ -1132,23 +1132,25 @@
       let isDragging = false;
       let startX, startY, translateX = 0, translateY = 0;
       const maxStock = <%= product.stock %>;
+      const maxQuantityPerOrder = <%= product.maxQuantityPerOrder || 10 %>;
+      const effectiveMax = Math.min(maxStock, maxQuantityPerOrder);
 
       window.increaseQuantity = function() {
         const input = document.getElementById('quantityInput');
-        if (!input) {
-          console.error('Quantity input not found');
-          return;
-        }
+        if (!input) return;
+        
         const currentValue = parseInt(input.value) || 1;
-        console.log('Increase clicked, current value:', currentValue, 'max:', maxStock);
-        if (currentValue < maxStock) {
+        if (currentValue < effectiveMax) {
           input.value = currentValue + 1;
           updateQuantityButtons();
         } else {
+          const limitReason = maxQuantityPerOrder < maxStock 
+            ? `Maximum ${maxQuantityPerOrder} items allowed per order for this product`
+            : `Only ${maxStock} items available in stock`;
           Swal.fire({
             icon: 'warning',
             title: 'Maximum Quantity',
-            text: `Only ${maxStock} items available in stock`,
+            text: limitReason,
             confirmButtonColor: '#7A5C3E'
           });
         }
@@ -1156,12 +1158,9 @@
 
       window.decreaseQuantity = function() {
         const input = document.getElementById('quantityInput');
-        if (!input) {
-          console.error('Quantity input not found');
-          return;
-        }
+        if (!input) return;
+        
         const currentValue = parseInt(input.value) || 1;
-        console.log('Decrease clicked, current value:', currentValue);
         if (currentValue > 1) {
           input.value = currentValue - 1;
           updateQuantityButtons();
@@ -1171,6 +1170,7 @@
       function updateQuantityButtons() {
         const input = document.getElementById('quantityInput');
         if (!input) return;
+        
         const currentValue = parseInt(input.value) || 1;
         const decreaseBtn = document.getElementById('decreaseBtn');
         const increaseBtn = document.getElementById('increaseBtn');
@@ -1179,54 +1179,32 @@
           if (currentValue <= 1) {
             decreaseBtn.style.opacity = '0.5';
             decreaseBtn.style.cursor = 'not-allowed';
+            decreaseBtn.disabled = true;
           } else {
             decreaseBtn.style.opacity = '1';
             decreaseBtn.style.cursor = 'pointer';
+            decreaseBtn.disabled = false;
           }
         }
         
         if (increaseBtn) {
-          if (currentValue >= maxStock) {
+          if (currentValue >= effectiveMax) {
             increaseBtn.style.opacity = '0.5';
             increaseBtn.style.cursor = 'not-allowed';
+            increaseBtn.disabled = true;
           } else {
             increaseBtn.style.opacity = '1';
             increaseBtn.style.cursor = 'pointer';
+            increaseBtn.disabled = false;
           }
         }
       }
 
-      function initQuantityButtons() {
-        const decreaseBtn = document.getElementById('decreaseBtn');
-        const increaseBtn = document.getElementById('increaseBtn');
-        
-        console.log('Initializing quantity buttons');
-        console.log('Decrease button:', decreaseBtn);
-        console.log('Increase button:', increaseBtn);
-        
-        if (decreaseBtn) {
-          decreaseBtn.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            window.decreaseQuantity();
-          };
-        }
-        
-        if (increaseBtn) {
-          increaseBtn.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            window.increaseQuantity();
-          };
-        }
-        
-        updateQuantityButtons();
-      }
-
+      // Initialize button states on page load
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initQuantityButtons);
+        document.addEventListener('DOMContentLoaded', updateQuantityButtons);
       } else {
-        initQuantityButtons();
+        updateQuantityButtons();
       }
     })();
 
@@ -1408,11 +1386,14 @@
         return;
       }
       
-      if (quantity > maxStock) {
+      if (quantity > effectiveMax) {
+        const limitReason = maxQuantityPerOrder < maxStock 
+          ? `Maximum ${maxQuantityPerOrder} items allowed per order`
+          : `Only ${maxStock} items available`;
         Swal.fire({
           icon: 'warning',
           title: 'Insufficient Stock',
-          text: `Only ${maxStock} items available`,
+          text: limitReason,
           confirmButtonColor: '#7A5C3E'
         });
         return;

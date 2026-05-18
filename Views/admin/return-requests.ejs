@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Return Requests - Papyrus Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #d4c4b0;
+      color: #2d2d2d;
+      line-height: 1.5;
+    }
+
+    .admin-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .main-content {
+      margin-left: 240px;
+      flex: 1;
+      padding: 32px;
+      min-height: 100vh;
+    }
+
+    .admin-sidebar {
+      width: 240px;
+      background: #b8a082;
+      padding: 24px 0;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-logo {
+      padding: 0 24px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 24px;
+    }
+
+    .sidebar-logo h2 {
+      color: #2d2d2d;
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+
+    .sidebar-nav {
+      padding: 0 12px;
+      flex: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: #2d2d2d;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-bottom: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .nav-item:hover {
+      background: rgba(255,255,255,0.1);
+      color: #2d2d2d;
+      text-decoration: none;
+    }
+
+    .nav-item.active {
+      background: #8b6f47;
+      color: white;
+    }
+
+    .nav-icon {
+      width: 16px;
+      height: 16px;
+      opacity: 0.8;
+      font-size: 14px;
+    }
+
+    .sidebar-footer {
+      padding: 20px 12px 0;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      margin-top: auto;
+    }
+
+    .admin-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+    }
+
+    .admin-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #8b6f47;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .admin-details {
+      flex: 1;
+    }
+
+    .admin-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2d2d2d;
+      margin-bottom: 2px;
+    }
+
+    .admin-role {
+      font-size: 12px;
+      color: #6b5a48;
+    }
+
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: #2d2d2d;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      border: 1px solid rgba(45, 36, 24, 0.2);
+    }
+
+    .logout-btn:hover {
+      background: rgba(220, 38, 38, 0.1);
+      border-color: #dc2626;
+      color: #dc2626;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <%- include('../partials/admin-sidebar') %>
+    
+    <div class="main-content">
+      <div class="page-header" style="margin-bottom: 32px;">
+        <h1 style="font-size: 28px; font-weight: 600; color: #1f2937;">Return Requests</h1>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
+        <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #f59e0b;">
+          <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Pending Requests</div>
+          <div style="font-size: 24px; font-weight: 700; color: #1f2937;">
+            <%= orders.filter(o => o.returnRequestStatus === 'Requested' || o.items.some(i => i.returnRequestStatus === 'Requested')).length %>
+          </div>
+        </div>
+        <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #10b981;">
+          <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Approved</div>
+          <div style="font-size: 24px; font-weight: 700; color: #1f2937;">
+            <%= orders.filter(o => o.returnRequestStatus === 'Approved' || o.items.some(i => i.returnRequestStatus === 'Approved')).length %>
+          </div>
+        </div>
+        <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #ef4444;">
+          <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Rejected</div>
+          <div style="font-size: 24px; font-weight: 700; color: #1f2937;">
+            <%= orders.filter(o => o.returnRequestStatus === 'Rejected' || o.items.some(i => i.returnRequestStatus === 'Rejected')).length %>
+          </div>
+        </div>
+        <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #3b82f6;">
+          <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Total Requests</div>
+          <div style="font-size: 24px; font-weight: 700; color: #1f2937;"><%= total %></div>
+        </div>
+      </div>
+
+      <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <form action="/admin/return-requests" method="GET" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 16px; align-items: end;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 500; color: #6b7280; margin-bottom: 6px;">Search</label>
+            <input type="text" name="search" placeholder="Order ID, Customer, Product..." value="<%= search %>" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 500; color: #6b7280; margin-bottom: 6px;">Status</label>
+            <select name="status" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+              <option value="Requested" <%= status === 'Requested' ? 'selected' : '' %>>Pending</option>
+              <option value="Approved" <%= status === 'Approved' ? 'selected' : '' %>>Approved</option>
+              <option value="Rejected" <%= status === 'Rejected' ? 'selected' : '' %>>Rejected</option>
+              <option value="" <%= status === '' ? 'selected' : '' %>>All</option>
+            </select>
+          </div>
+          <div></div>
+          <button type="submit" style="padding: 10px 24px; background: #2d1f14; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500;">Apply Filters</button>
+        </form>
+      </div>
+
+      <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <% if (orders && orders.length > 0) { %>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #f9fafb;">
+              <tr>
+                <th style="padding: 16px; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase;">Order ID</th>
+                <th style="padding: 16px; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase;">Customer</th>
+                <th style="padding: 16px; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase;">Product</th>
+                <th style="padding: 16px; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase;">Return Reason</th>
+                <th style="padding: 16px; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase;">Requested Date</th>
+                <th style="padding: 16px; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase;">Status</th>
+                <th style="padding: 16px; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% orders.forEach(order => { %>
+                <% 
+                  const hasOrderReturn = order.returnRequestStatus && order.returnRequestStatus !== 'None';
+                  const itemsWithReturns = order.items.filter(item => item.returnRequestStatus && item.returnRequestStatus !== 'None');
+                %>
+                
+                <% if (hasOrderReturn) { %>
+                  <tr style="border-top: 1px solid #f3f4f6;">
+                    <td style="padding: 16px; font-size: 14px; font-weight: 600; color: #2d1f14;"><%= order.orderId %></td>
+                    <td style="padding: 16px; font-size: 14px;">
+                      <div><%= order.user.firstName %> <%= order.user.lastName %></div>
+                      <div style="font-size: 12px; color: #6b7280;"><%= order.user.email %></div>
+                    </td>
+                    <td style="padding: 16px; font-size: 14px;"><strong>Full Order</strong> (<%= order.items.length %> items)</td>
+                    <td style="padding: 16px; font-size: 14px;">
+                      <%= order.returnReason || 'N/A' %>
+                      <% if (order.returnComments) { %>
+                        <div style="font-size: 13px; color: #6b7280; margin-top: 4px; font-style: italic;"><%= order.returnComments %></div>
+                      <% } %>
+                    </td>
+                    <td style="padding: 16px; font-size: 14px;"><%= order.returnRequestedAt ? new Date(order.returnRequestedAt).toLocaleDateString() : 'N/A' %></td>
+                    <td style="padding: 16px;">
+                      <% 
+                        let orderBgColor = '#fef3c7';
+                        let orderTextColor = '#92400e';
+                        if (order.returnRequestStatus === 'Approved') {
+                          orderBgColor = '#d1fae5';
+                          orderTextColor = '#065f46';
+                        } else if (order.returnRequestStatus === 'Rejected') {
+                          orderBgColor = '#fee2e2';
+                          orderTextColor = '#991b1b';
+                        }
+                        const orderStatusStyle = `display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; text-transform: uppercase; background: ${orderBgColor}; color: ${orderTextColor};`;
+                      %>
+                      <span style="<%- orderStatusStyle %>">
+                        <%= order.returnRequestStatus %>
+                      </span>
+                    </td>
+                    <td style="padding: 16px;">
+                      <div style="display: flex; gap: 8px;">
+                        <% if (order.returnRequestStatus === 'Requested') { %>
+                          <button onclick="approveReturn('<%= order._id %>', null)" style="padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer;">Approve</button>
+                          <button onclick="rejectReturn('<%= order._id %>', null)" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer;">Reject</button>
+                        <% } %>
+                        <a href="/admin/orders/<%= order._id %>" style="padding: 6px 12px; background: #3b82f6; color: white; border-radius: 6px; font-size: 12px; font-weight: 500; text-decoration: none;">View</a>
+                      </div>
+                    </td>
+                  </tr>
+                <% } %>
+
+                <% itemsWithReturns.forEach(item => { %>
+                  <tr style="border-top: 1px solid #f3f4f6;">
+                    <td style="padding: 16px; font-size: 14px; font-weight: 600; color: #2d1f14;"><%= order.orderId %></td>
+                    <td style="padding: 16px; font-size: 14px;">
+                      <div><%= order.user.firstName %> <%= order.user.lastName %></div>
+                      <div style="font-size: 12px; color: #6b7280;"><%= order.user.email %></div>
+                    </td>
+                    <td style="padding: 16px;">
+                      <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 50px; height: 60px; border-radius: 6px; overflow: hidden; background: #f3f4f6; flex-shrink: 0;">
+                          <% if (item.product && item.product.images && item.product.images.length > 0) { %>
+                            <img src="<%= item.product.images[0].url %>" alt="<%= item.title %>" style="width: 100%; height: 100%; object-fit: cover;">
+                          <% } else { %>
+                            <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 20px;">📚</div>
+                          <% } %>
+                        </div>
+                        <div>
+                          <div style="font-weight: 500; margin-bottom: 4px;"><%= item.title %></div>
+                          <div style="font-size: 12px; color: #6b7280;">Qty: <%= item.quantity %> × ₹<%= item.price.toFixed(2) %></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style="padding: 16px; font-size: 14px;">
+                      <%= item.returnReason || 'N/A' %>
+                      <% if (item.returnComments) { %>
+                        <div style="font-size: 13px; color: #6b7280; margin-top: 4px; font-style: italic;"><%= item.returnComments %></div>
+                      <% } %>
+                    </td>
+                    <td style="padding: 16px; font-size: 14px;"><%= item.returnRequestedAt ? new Date(item.returnRequestedAt).toLocaleDateString() : 'N/A' %></td>
+                    <td style="padding: 16px;">
+                      <% 
+                        let itemBgColor = '#fef3c7';
+                        let itemTextColor = '#92400e';
+                        if (item.returnRequestStatus === 'Approved') {
+                          itemBgColor = '#d1fae5';
+                          itemTextColor = '#065f46';
+                        } else if (item.returnRequestStatus === 'Rejected') {
+                          itemBgColor = '#fee2e2';
+                          itemTextColor = '#991b1b';
+                        }
+                        const itemStatusStyle = `display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; text-transform: uppercase; background: ${itemBgColor}; color: ${itemTextColor};`;
+                      %>
+                      <span style="<%- itemStatusStyle %>">
+                        <%= item.returnRequestStatus %>
+                      </span>
+                    </td>
+                    <td style="padding: 16px;">
+                      <div style="display: flex; gap: 8px;">
+                        <% if (item.returnRequestStatus === 'Requested') { %>
+                          <button onclick="approveReturn('<%= order._id %>', '<%= item._id %>')" style="padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer;">Approve</button>
+                          <button onclick="rejectReturn('<%= order._id %>', '<%= item._id %>')" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer;">Reject</button>
+                        <% } %>
+                        <a href="/admin/orders/<%= order._id %>" style="padding: 6px 12px; background: #3b82f6; color: white; border-radius: 6px; font-size: 12px; font-weight: 500; text-decoration: none;">View</a>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% }) %>
+            </tbody>
+          </table>
+
+          <% if (totalPages > 1) { %>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 8px; padding: 20px;">
+              <% 
+                const isPrevDisabled = currentPage === 1;
+                const prevBtnStyle = `padding: 8px 12px; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: ${isPrevDisabled ? 'not-allowed' : 'pointer'}; font-size: 14px; opacity: ${isPrevDisabled ? '0.5' : '1'};`;
+              %>
+              <button onclick="goToPage(<%= currentPage - 1 %>)" <%= isPrevDisabled ? 'disabled' : '' %> style="<%- prevBtnStyle %>">Previous</button>
+              
+              <% for (let i = 1; i <= totalPages; i++) { %>
+                <% if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) { %>
+                  <% 
+                    const isCurrentPage = i === currentPage;
+                    const pageBtnStyle = `padding: 8px 12px; border: 1px solid #d1d5db; background: ${isCurrentPage ? '#2d1f14' : 'white'}; color: ${isCurrentPage ? 'white' : '#374151'}; border-radius: 6px; cursor: pointer; font-size: 14px;`;
+                  %>
+                  <button onclick="goToPage(<%= i %>)" style="<%- pageBtnStyle %>"><%= i %></button>
+                <% } else if (i === currentPage - 2 || i === currentPage + 2) { %>
+                  <span>...</span>
+                <% } %>
+              <% } %>
+              
+              <% 
+                const isNextDisabled = currentPage === totalPages;
+                const nextBtnStyle = `padding: 8px 12px; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: ${isNextDisabled ? 'not-allowed' : 'pointer'}; font-size: 14px; opacity: ${isNextDisabled ? '0.5' : '1'};`;
+              %>
+              <button onclick="goToPage(<%= currentPage + 1 %>)" <%= isNextDisabled ? 'disabled' : '' %> style="<%- nextBtnStyle %>">Next</button>
+            </div>
+          <% } %>
+        <% } else { %>
+          <div style="text-align: center; padding: 60px 20px; color: #9ca3af;">
+            <div style="font-size: 48px; margin-bottom: 16px;">📦</div>
+            <h3>No Return Requests Found</h3>
+            <p>There are no return requests matching your filters.</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function handleLogout(event) {
+      event.preventDefault();
+      
+      const result = await Swal.fire({
+        title: 'Logout?',
+        text: 'Are you sure you want to logout?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, logout',
+        cancelButtonText: 'Cancel'
+      });
+
+      if (result.isConfirmed) {
+        window.location.href = '/admin/logout';
+      }
+    }
+
+    function goToPage(page) {
+      const url = new URL(window.location);
+      url.searchParams.set('page', page);
+      window.location.href = url.toString();
+    }
+
+    async function approveReturn(orderId, itemId) {
+      const result = await Swal.fire({
+        title: 'Approve Return Request?',
+        text: itemId ? 'This will approve the return for this specific item.' : 'This will approve the return for the entire order.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, Approve',
+        cancelButtonText: 'Cancel'
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const url = itemId 
+            ? `/admin/orders/${orderId}/items/${itemId}/return/approve`
+            : `/admin/orders/${orderId}/return/approve`;
+            
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Approved!',
+              text: data.message,
+              confirmButtonColor: '#2d1f14'
+            }).then(() => location.reload());
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message,
+              confirmButtonColor: '#2d1f14'
+            });
+          }
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to approve return request',
+            confirmButtonColor: '#2d1f14'
+          });
+        }
+      }
+    }
+
+    async function rejectReturn(orderId, itemId) {
+      const result = await Swal.fire({
+        title: 'Reject Return Request?',
+        html: `
+          <p style="margin-bottom: 16px;">Please provide a reason for rejection:</p>
+          <textarea id="rejectionReason" class="swal2-textarea" placeholder="Enter rejection reason..." style="width: 100%; min-height: 100px;"></textarea>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Reject',
+        cancelButtonText: 'Cancel',
+        preConfirm: () => {
+          const reason = document.getElementById('rejectionReason').value;
+          if (!reason || !reason.trim()) {
+            Swal.showValidationMessage('Please provide a rejection reason');
+            return false;
+          }
+          return reason.trim();
+        }
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const url = itemId 
+            ? `/admin/orders/${orderId}/items/${itemId}/return/reject`
+            : `/admin/orders/${orderId}/return/reject`;
+            
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason: result.value })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Rejected',
+              text: data.message,
+              confirmButtonColor: '#2d1f14'
+            }).then(() => location.reload());
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message,
+              confirmButtonColor: '#2d1f14'
+            });
+          }
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to reject return request',
+            confirmButtonColor: '#2d1f14'
+          });
+        }
+      }
+    }
+  </script>
+</body>
+</html>

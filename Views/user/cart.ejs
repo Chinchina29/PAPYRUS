@@ -450,7 +450,7 @@
       <div class="cart-content">
         <div class="cart-items">
           <% cart.items.forEach(item => { %>
-            <div class="cart-item" data-product-id="<%= item.product._id %>" data-item-price="<%= item.price %>" data-max-stock="<%= item.product.stock %>">
+            <div class="cart-item" data-product-id="<%= item.product._id %>" data-item-price="<%= item.price %>" data-max-stock="<%= item.product.stock %>" data-max-quantity="<%= item.product.maxQuantityPerOrder || 10 %>">
               <div class="item-image">
                 <% if (item.product.images && item.product.images.length > 0) { %>
                   <img src="<%= item.product.images[0].url %>" alt="<%= item.product.title %>"/>
@@ -470,9 +470,9 @@
                   </div>
                 <% } %>
                 <div class="quantity-controls">
-                  <button type="button" class="qty-btn" onclick="updateQuantity('<%= item.product._id %>', <%= item.quantity - 1 %>)" <%= item.quantity <= 1 ? 'disabled' : '' %>>−</button>
+                  <button type="button" class="qty-btn qty-decrease" data-product-id="<%= item.product._id %>">−</button>
                   <span class="qty-display"><%= item.quantity %></span>
-                  <button type="button" class="qty-btn" onclick="updateQuantity('<%= item.product._id %>', <%= item.quantity + 1 %>)" <%= item.quantity >= item.product.stock ? 'disabled' : '' %>>+</button>
+                  <button type="button" class="qty-btn qty-increase" data-product-id="<%= item.product._id %>">+</button>
                 </div>
                 <button type="button" class="remove-link" onclick="removeFromCart('<%= item.product._id %>')">REMOVE</button>
               </div>
@@ -540,92 +540,182 @@
       };
     }
 
-    const debouncedUpdateQuantity = debounce(async function(productId, newQuantity) {
+    async function updateQuantity(productId, newQuantity) {
       if (newQuantity < 1) {
         return removeFromCart(productId);
       }
 
-      try {
-        const response = await fetch(`/cart/update/${productId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ quantity: parseInt(newQuantity) })
-        });
+      // Optimistic UI update - update immediately for instant feedback
+      const itemRow = document.querySelector(`[data-product-id="${productId}"]`);
+      if (itemRow) {
+        const qtyDisplay = itemRow.querySelector('.qty-display');
+        const priceAmount = itemRow.querySelector('.price-amount');
+        const itemPrice = parseFloat(itemRow.dataset.itemPrice);
+        const maxStock = parseInt(itemRow.dataset.maxStock);
+        const maxQuantity = parseInt(itemRow.dataset.maxQuantity || 10);
+        const effectiveMax = Math.min(maxStock, maxQuantity);
+        
+        // Store old values for rollback if needed
+        const oldQuantity = parseInt(qtyDisplay.textContent);
+        const oldPrice = priceAmount.textContent;
+        
+        // Update UI immediately
+        if (qtyDisplay) qtyDisplay.textContent = newQuantity;
+        if (priceAmount) priceAmount.textContent = `₹${(itemPrice * newQuantity).toFixed(2)}`;
+        
+        const decreaseBtn = itemRow.querySelector('.qty-decrease');
+        const increaseBtn = itemRow.querySelector('.qty-increase');
+        
+        if (decreaseBtn) decreaseBtn.disabled = newQuantity <= 1;
+        if (increaseBtn) increaseBtn.disabled = newQuantity >= effectiveMax;
 
-        const data = await response.json();
+        // Update summary optimistically
+        updateCartSummaryOptimistic();
 
-        if (data.success) {
-          const itemRow = document.querySelector(`[data-product-id="${productId}"]`);
-          if (itemRow) {
-            const qtyDisplay = itemRow.querySelector('.qty-display');
-            const priceAmount = itemRow.querySelector('.price-amount');
-            const itemPrice = parseFloat(itemRow.dataset.itemPrice);
-            
-            if (qtyDisplay) qtyDisplay.textContent = newQuantity;
-            if (priceAmount) priceAmount.textContent = `₹${(itemPrice * newQuantity).toFixed(2)}`;
-            
-            const decreaseBtn = itemRow.querySelector('.qty-btn:first-of-type');
-            const increaseBtn = itemRow.querySelector('.qty-btn:last-of-type');
-            const maxStock = parseInt(itemRow.dataset.maxStock);
-            
-            if (decreaseBtn) decreaseBtn.disabled = newQuantity <= 1;
-            if (increaseBtn) increaseBtn.disabled = newQuantity >= maxStock;
-          }
-          
-          updateCartSummary();
-        } else {
-          if (data.message && (data.message.toLowerCase().includes('out of stock') || data.message.toLowerCase().includes('stock') && data.message.includes('0'))) {
-            Swal.fire({
-              icon: 'error',
-              title: 'Out of Stock',
-              text: 'Sorry, this product is currently out of stock',
-              confirmButtonColor: '#2d1f14'
-            }).then(() => {
-              location.reload();
-            });
-          } else if (data.message && data.message.toLowerCase().includes('insufficient stock')) {
-            Swal.fire({
-              icon: 'warning',
-              title: 'Insufficient Stock',
-              text: data.message,
-              confirmButtonColor: '#2d1f14'
-            }).then(() => {
-              location.reload();
-            });
-          } else if (data.message && data.message.toLowerCase().includes('maximum')) {
-            Swal.fire({
-              icon: 'warning',
-              title: 'Quantity Limit',
-              text: data.message,
-              confirmButtonColor: '#2d1f14'
-            }).then(() => {
-              location.reload();
-            });
+        // Make API call in background
+        try {
+          const response = await fetch(`/cart/update/${productId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ quantity: parseInt(newQuantity) })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            // Refresh summary with actual values from server
+            updateCartSummary();
           } else {
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: data.message || 'Failed to update quantity',
-              confirmButtonColor: '#2d1f14'
-            });
+            // Rollback on error
+            if (qtyDisplay) qtyDisplay.textContent = oldQuantity;
+            if (priceAmount) priceAmount.textContent = oldPrice;
+            if (decreaseBtn) decreaseBtn.disabled = oldQuantity <= 1;
+            if (increaseBtn) increaseBtn.disabled = oldQuantity >= effectiveMax;
+            
+            if (data.message && (data.message.toLowerCase().includes('out of stock') || data.message.toLowerCase().includes('stock') && data.message.includes('0'))) {
+              Swal.fire({
+                icon: 'error',
+                title: 'Out of Stock',
+                text: 'Sorry, this product is currently out of stock',
+                confirmButtonColor: '#2d1f14'
+              }).then(() => {
+                location.reload();
+              });
+            } else if (data.message && data.message.toLowerCase().includes('insufficient stock')) {
+              Swal.fire({
+                icon: 'warning',
+                title: 'Insufficient Stock',
+                text: data.message,
+                confirmButtonColor: '#2d1f14'
+              }).then(() => {
+                location.reload();
+              });
+            } else if (data.message && data.message.toLowerCase().includes('maximum')) {
+              Swal.fire({
+                icon: 'warning',
+                title: 'Quantity Limit',
+                text: data.message,
+                confirmButtonColor: '#2d1f14'
+              }).then(() => {
+                location.reload();
+              });
+            } else {
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message || 'Failed to update quantity',
+                confirmButtonColor: '#2d1f14'
+              }).then(() => {
+                location.reload();
+              });
+            }
           }
+        } catch (error) {
+          // Rollback on error
+          if (qtyDisplay) qtyDisplay.textContent = oldQuantity;
+          if (priceAmount) priceAmount.textContent = oldPrice;
+          if (decreaseBtn) decreaseBtn.disabled = oldQuantity <= 1;
+          if (increaseBtn) increaseBtn.disabled = oldQuantity >= effectiveMax;
+          
+          console.error('Update quantity error:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong. Please try again.',
+            confirmButtonColor: '#2d1f14'
+          }).then(() => {
+            location.reload();
+          });
         }
-      } catch (error) {
-        console.error('Update quantity error:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Something went wrong. Please try again.',
-          confirmButtonColor: '#2d1f14'
-        });
       }
-    }, 500);
-
-    function updateQuantity(productId, newQuantity) {
-      debouncedUpdateQuantity(productId, newQuantity);
     }
+
+    function updateCartSummaryOptimistic() {
+      // Calculate totals from current DOM values
+      let subtotal = 0;
+      document.querySelectorAll('[data-product-id]').forEach(row => {
+        const qty = parseInt(row.querySelector('.qty-display').textContent);
+        const price = parseFloat(row.dataset.itemPrice);
+        subtotal += qty * price;
+      });
+      
+      const subtotalElement = document.querySelector('.summary-row:nth-child(1) .summary-value');
+      const totalElement = document.querySelector('.summary-total .summary-value');
+      
+      if (subtotalElement) subtotalElement.textContent = `₹${subtotal.toFixed(2)}`;
+      if (totalElement) totalElement.textContent = `₹${subtotal.toFixed(2)}`;
+    }
+
+    // Add event listeners for quantity buttons
+    document.addEventListener('DOMContentLoaded', function() {
+      // Quantity increase buttons
+      document.querySelectorAll('.qty-increase').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const productId = this.dataset.productId;
+          const itemRow = document.querySelector(`[data-product-id="${productId}"]`);
+          const currentQty = parseInt(itemRow.querySelector('.qty-display').textContent);
+          const maxStock = parseInt(itemRow.dataset.maxStock);
+          const maxQuantity = parseInt(itemRow.dataset.maxQuantity || 10);
+          const effectiveMax = Math.min(maxStock, maxQuantity);
+          
+          if (currentQty < effectiveMax) {
+            updateQuantity(productId, currentQty + 1);
+          }
+        });
+      });
+
+      // Quantity decrease buttons
+      document.querySelectorAll('.qty-decrease').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const productId = this.dataset.productId;
+          const itemRow = document.querySelector(`[data-product-id="${productId}"]`);
+          const currentQty = parseInt(itemRow.querySelector('.qty-display').textContent);
+          
+          if (currentQty > 1) {
+            updateQuantity(productId, currentQty - 1);
+          }
+        });
+      });
+
+      // Initialize button states
+      document.querySelectorAll('[data-product-id]').forEach(itemRow => {
+        const qtyDisplay = itemRow.querySelector('.qty-display');
+        const currentQty = parseInt(qtyDisplay.textContent);
+        const maxStock = parseInt(itemRow.dataset.maxStock);
+        const maxQuantity = parseInt(itemRow.dataset.maxQuantity || 10);
+        const effectiveMax = Math.min(maxStock, maxQuantity);
+        
+        const decreaseBtn = itemRow.querySelector('.qty-decrease');
+        const increaseBtn = itemRow.querySelector('.qty-increase');
+        
+        if (decreaseBtn) decreaseBtn.disabled = currentQty <= 1;
+        if (increaseBtn) increaseBtn.disabled = currentQty >= effectiveMax;
+      });
+    });
     
     async function updateCartSummary() {
       try {

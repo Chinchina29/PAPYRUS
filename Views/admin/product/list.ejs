@@ -278,6 +278,28 @@
     });
 
     async function toggleProduct(id, checkbox) {
+      const isCurrentlyListed = checkbox.checked;
+      const action = isCurrentlyListed ? 'list' : 'unlist';
+      const actionText = isCurrentlyListed ? 'List' : 'Unlist';
+      
+      const result = await Swal.fire({
+        title: `${actionText} this product?`,
+        text: isCurrentlyListed 
+          ? 'This product will be visible to customers in the store.' 
+          : 'This product will be hidden from customers.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#8b7355',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: `Yes, ${action} it`,
+        cancelButtonText: 'Cancel'
+      });
+
+      if (!result.isConfirmed) {
+        checkbox.checked = !checkbox.checked;
+        return;
+      }
+
       try {
         const res = await fetch(`/admin/products/toggle/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' } });
         const data = await res.json();

@@ -541,6 +541,26 @@
         }
 
         async function toggleUserStatus(userId, isActive) {
+            // Show confirmation dialog before proceeding
+            const action = isActive ? 'unblock' : 'block';
+            const result = await Swal.fire({
+                title: `${action.charAt(0).toUpperCase() + action.slice(1)} User?`,
+                text: `Are you sure you want to ${action} this user?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#8b6f47',
+                cancelButtonColor: '#999',
+                confirmButtonText: `Yes, ${action}`,
+                cancelButtonText: 'Cancel'
+            });
+
+            if (!result.isConfirmed) {
+                // Revert toggle if user cancels
+                const toggle = document.getElementById(`toggle-${userId}`);
+                toggle.checked = !isActive;
+                return;
+            }
+
             try {
                 const response = await fetch('/admin/users/block-unblock', {
                     method: 'POST',

@@ -8,6 +8,7 @@ import passport from "./src/shared/config/passport.config.js";
 import { setUserLocals } from "./src/user/middleware/auth.middleware.js";
 import { secureHeaders } from "./src/shared/middleware/cache.middleware.js";
 import { generalApiLimiter } from "./src/shared/middleware/rateLimiting.middleware.js";
+import { registerCurrencyHelpers } from "./src/shared/utils/currency.js";
 
 import {
   userSessionStore,
@@ -154,6 +155,8 @@ app.set("views", "./Views");
 app.use(express.static("public"));
 app.use(secureHeaders);
 
+registerCurrencyHelpers(app);
+
 app.use((req, res, next) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
   res.set("Pragma", "no-cache");
@@ -170,14 +173,16 @@ app.use("/", authRoutes);
 app.use("/", userRoutes);
 
 app.use((req, res) => {
-  const isAjax = req.xhr || req.headers.accept?.includes('application/json');
+  const isAjax = req.xhr || req.headers.accept?.includes("application/json");
   if (isAjax) {
     return res.status(404).json({
       success: false,
-      message: "The page you're looking for doesn't exist"
+      message: "The page you're looking for doesn't exist",
     });
   }
-  res.redirect('/?error=The page you\'re looking for doesn\'t exist. It might have been moved or deleted.');
+  res.redirect(
+    "/?error=The page you're looking for doesn't exist. It might have been moved or deleted.",
+  );
 });
 
 app.use((err, req, res, next) => {
@@ -204,16 +209,18 @@ app.use((err, req, res, next) => {
           .json({ error: "Upload error", message: err.message });
     }
   }
-  
-  console.error('Server Error:', err);
-  const isAjax = req.xhr || req.headers.accept?.includes('application/json');
+
+  console.error("Server Error:", err);
+  const isAjax = req.xhr || req.headers.accept?.includes("application/json");
   if (isAjax) {
     return res.status(500).json({
       success: false,
-      message: "Something went wrong on our end. Please try again later."
+      message: "Something went wrong on our end. Please try again later.",
     });
   }
-  res.redirect('/?error=Something went wrong on our end. Our team has been notified and we\'re working on it.');
+  res.redirect(
+    "/?error=Something went wrong on our end. Our team has been notified and we're working on it.",
+  );
 });
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

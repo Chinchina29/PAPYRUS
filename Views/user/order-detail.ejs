@@ -118,8 +118,8 @@
         <div class="card">
           <div class="card-title">Order Items (<%= order.items.length %>)</div>
           
-          <% order.items.forEach(item => { %>
-            <div class="order-item">
+          <% order.items.forEach((item, index) => { %>
+            <div class="order-item" style="<%= index === order.items.length - 1 ? 'border-bottom: none;' : '' %>">
               <div class="item-image">
                 <% if (item.product && item.product.images && item.product.images.length > 0) { %>
                   <img src="<%= item.product.images[0].url %>" alt="<%= item.title %>">
@@ -127,10 +127,96 @@
                   <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 24px;">📚</div>
                 <% } %>
               </div>
-              <div class="item-details">
+              <div class="item-details" style="flex: 1;">
                 <div class="item-title"><%= item.title %></div>
-                <div class="item-meta">Hardcover • New</div>
-                <div class="item-qty">Qty: <%= item.quantity %></div>
+                <div class="item-meta">
+                  <% if (item.product && item.product.condition) { %>
+                    <%= item.product.condition.replace('-', ' ') %> condition
+                  <% } %>
+                </div>
+                <div class="item-qty">Qty: <%= item.quantity %> × ₹<%= item.price.toFixed(2) %></div>
+                
+                <!-- Item Status Badge -->
+                <div style="margin-top: 8px;">
+                  <% 
+                    // Determine the correct display status
+                    let displayStatus;
+                    
+                    if (item.cancelledAt) {
+                      // Item is cancelled
+                      displayStatus = 'Cancelled';
+                    } else if (item.returnRequestStatus === 'Approved') {
+                      // Return was approved
+                      displayStatus = 'Returned';
+                    } else if (item.itemStatus) {
+                      // Use item-specific status if available
+                      displayStatus = item.itemStatus;
+                    } else {
+                      // Fall back to order status
+                      displayStatus = order.orderStatus;
+                    }
+                  %>
+                  <span class="status-badge status-<%= displayStatus.toLowerCase() %>">
+                    <%= displayStatus.toUpperCase() %>
+                  </span>
+                </div>
+
+                <!-- Item-level Action Buttons -->
+                <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                  <% if ((item.itemStatus === 'Pending' || item.itemStatus === 'Processing' || (!item.itemStatus && (order.orderStatus === 'Pending' || order.orderStatus === 'Processing'))) && !item.cancelledAt) { %>
+                    <button 
+                      class="btn" 
+                      onclick="cancelItem('<%= order._id %>', '<%= item._id %>', '<%= item.title %>')"
+                      style="padding: 6px 12px; font-size: 12px; background: white; color: #d32f2f; border: 1.5px solid #d32f2f; border-radius: 6px;">
+                      Cancel This Item
+                    </button>
+                  <% } %>
+                  
+                  <% if ((item.itemStatus === 'Delivered' || (!item.itemStatus && order.orderStatus === 'Delivered')) && (item.returnRequestStatus === 'None' || !item.returnRequestStatus) && !item.cancelledAt) { %>
+                    <button 
+                      class="btn" 
+                      onclick="returnItem('<%= order._id %>', '<%= item._id %>', '<%= item.title %>')"
+                      style="padding: 6px 12px; font-size: 12px; background: white; color: #f57c00; border: 1.5px solid #f57c00; border-radius: 6px;">
+                      Return This Item
+                    </button>
+                  <% } %>
+
+                  <% if (item.returnRequestStatus === 'Requested') { %>
+                    <span style="padding: 6px 12px; font-size: 12px; background: #fff3e0; color: #f57c00; border-radius: 6px; display: inline-block;">
+                      Return Pending
+                    </span>
+                  <% } %>
+
+                  <% if (item.returnRequestStatus === 'Approved') { %>
+                    <span style="padding: 6px 12px; font-size: 12px; background: #e8f5e9; color: #2e7d32; border-radius: 6px; display: inline-block;">
+                      Return Approved
+                    </span>
+                  <% } %>
+
+                  <% if (item.returnRequestStatus === 'Rejected') { %>
+                    <span style="padding: 6px 12px; font-size: 12px; background: #ffebee; color: #d32f2f; border-radius: 6px; display: inline-block;">
+                      Return Rejected
+                    </span>
+                  <% } %>
+
+                  <% if (item.cancelledAt) { %>
+                    <span style="padding: 6px 12px; font-size: 12px; background: #ffebee; color: #d32f2f; border-radius: 6px; display: inline-block;">
+                      Cancelled
+                    </span>
+                  <% } %>
+                </div>
+
+                <!-- Cancellation/Return Reason -->
+                <% if (item.cancellationReason) { %>
+                  <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                    <strong>Cancellation Reason:</strong> <%= item.cancellationReason %>
+                  </div>
+                <% } %>
+                <% if (item.returnReason) { %>
+                  <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                    <strong>Return Reason:</strong> <%= item.returnReason %>
+                  </div>
+                <% } %>
               </div>
               <div class="item-price">₹<%= item.subtotal.toFixed(2) %></div>
             </div>
@@ -301,6 +387,200 @@
   </div>
 
   <script>
+    async function cancelItem(orderId, itemId, itemTitle) {
+      const result = await Swal.fire({
+        title: 'Cancel This Item?',
+        html: `
+          <p style="color: #666; font-size: 14px; margin-bottom: 12px;">You are about to cancel:</p>
+          <p style="font-weight: 600; font-size: 15px; margin-bottom: 20px;">${itemTitle}</p>
+          <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Please let us know the reason for cancellation.</p>
+          <div style="text-align: left; margin-bottom: 20px;">
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="cancelReason" value="Found a better price elsewhere" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Found a better price elsewhere</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="cancelReason" value="Mistakenly ordered" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Mistakenly ordered</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="cancelReason" value="Long expected delivery time" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Long expected delivery time</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="cancelReason" value="Changed my mind" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Changed my mind</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="cancelReason" value="Other" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Other</span>
+            </label>
+          </div>
+          <div style="text-align: left;">
+            <label style="display: block; font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Additional Comments (Optional)</label>
+            <textarea id="cancelComments" class="swal2-textarea" placeholder="Please provide any additional details..." style="width: 100%; min-height: 80px; padding: 12px; border: 1px solid #e8dcc8; border-radius: 6px; font-size: 14px; resize: vertical;"></textarea>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonColor: '#d32f2f',
+        cancelButtonColor: '#999',
+        confirmButtonText: 'Confirm Cancellation',
+        cancelButtonText: 'Keep Item',
+        width: '500px',
+        preConfirm: () => {
+          const selectedReason = document.querySelector('input[name="cancelReason"]:checked');
+          if (!selectedReason) {
+            Swal.showValidationMessage('Please select a reason for cancellation');
+            return false;
+          }
+          return {
+            reason: selectedReason.value,
+            comments: document.getElementById('cancelComments').value
+          };
+        }
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(`/orders/${orderId}/cancel`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              productIds: [itemId],
+              reason: result.value.reason,
+              comments: result.value.comments
+            })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Item Cancelled',
+              text: data.message || 'Item has been cancelled successfully',
+              confirmButtonColor: '#2d1f14'
+            }).then(() => location.reload());
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message,
+              confirmButtonColor: '#2d1f14'
+            });
+          }
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to cancel item',
+            confirmButtonColor: '#2d1f14'
+          });
+        }
+      }
+    }
+
+    async function returnItem(orderId, itemId, itemTitle) {
+      const result = await Swal.fire({
+        title: 'Return This Item?',
+        html: `
+          <p style="color: #666; font-size: 14px; margin-bottom: 12px;">You are about to return:</p>
+          <p style="font-weight: 600; font-size: 15px; margin-bottom: 20px;">${itemTitle}</p>
+          <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Please let us know the reason for return.</p>
+          <div style="text-align: left; margin-bottom: 20px;">
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="returnReason" value="Item damaged upon arrival" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Item damaged upon arrival</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="returnReason" value="Incorrect book received" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Incorrect book received</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="returnReason" value="Quality not as described" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Quality not as described</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="returnReason" value="Changed my mind" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Changed my mind</span>
+            </label>
+            <label style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+              <input type="radio" name="returnReason" value="Other" style="margin-right: 10px;">
+              <span style="font-size: 14px;">Other</span>
+            </label>
+          </div>
+          <div style="text-align: left;">
+            <label style="display: block; font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Additional Comments (Optional)</label>
+            <textarea id="returnComments" class="swal2-textarea" placeholder="Please provide any additional details..." style="width: 100%; min-height: 80px; padding: 12px; border: 1px solid #e8dcc8; border-radius: 6px; font-size: 14px; resize: vertical;"></textarea>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonColor: '#f57c00',
+        cancelButtonColor: '#999',
+        confirmButtonText: 'Initiate Return',
+        cancelButtonText: 'Keep Item',
+        width: '500px',
+        preConfirm: () => {
+          const selectedReason = document.querySelector('input[name="returnReason"]:checked');
+          if (!selectedReason) {
+            Swal.showValidationMessage('Please select a reason for return');
+            return false;
+          }
+          return {
+            reason: selectedReason.value,
+            comments: document.getElementById('returnComments').value
+          };
+        }
+      });
+
+      if (result.isConfirmed) {
+        try {
+          console.log('Sending return request:', {
+            orderId,
+            itemId,
+            productIds: [itemId],
+            reason: result.value.reason,
+            comments: result.value.comments
+          });
+          
+          const response = await fetch(`/orders/${orderId}/return`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              productIds: [itemId],
+              reason: result.value.reason,
+              comments: result.value.comments
+            })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Return Initiated',
+              text: data.message || 'Return request has been submitted successfully',
+              confirmButtonColor: '#2d1f14'
+            }).then(() => location.reload());
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message,
+              confirmButtonColor: '#2d1f14'
+            });
+          }
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to process return request',
+            confirmButtonColor: '#2d1f14'
+          });
+        }
+      }
+    }
+
     async function cancelOrder(orderId) {
       const result = await Swal.fire({
         title: 'Cancel Your Order',

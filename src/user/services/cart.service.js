@@ -12,7 +12,7 @@ export const getOrCreateCart = async (userId, session = null) => {
     let cart = await Cart.findOne({ user: userId, isActive: true }).populate({
       path: "items.product",
       select:
-        "title author price images stock condition isListed isDeleted seller hideFromSeller",
+        "title author price images stock condition isListed isDeleted seller hideFromSeller maxQuantityPerOrder",
       populate: {
         path: "category",
         select: "name isListed",
@@ -71,7 +71,7 @@ export const getOrCreateCart = async (userId, session = null) => {
         cart = await Cart.findById(cart._id).populate({
           path: "items.product",
           select:
-            "title author price images stock condition isListed isDeleted seller hideFromSeller",
+            "title author price images stock condition isListed isDeleted seller hideFromSeller maxQuantityPerOrder",
           populate: {
             path: "category",
             select: "name isListed",
@@ -272,7 +272,7 @@ export const removeFromCart = async (userId, productId) => {
   return await Cart.findById(cart._id).populate({
     path: "items.product",
     select:
-      "title author price images stock condition isListed isDeleted seller hideFromSeller",
+      "title author price images stock condition isListed isDeleted seller hideFromSeller maxQuantityPerOrder",
     populate: {
       path: "category",
       select: "name isListed",

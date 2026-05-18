@@ -5,7 +5,60 @@ export const createOrder = async (data) => {
   return await order.save();
 };
 
-export const getAllOrders = async ({ search = "", page = 1, limit = 10, status = "", sort = "" }) => {
+export const getReturnRequests = async ({
+  search = "",
+  page = 1,
+  limit = 10,
+  status = "Requested",
+}) => {
+  const query = {
+    $or: [
+      { returnRequestStatus: status },
+      { "items.returnRequestStatus": status },
+    ],
+  };
+
+  if (search) {
+    query.$and = [
+      query.$or ? { $or: query.$or } : {},
+      {
+        $or: [
+          { orderId: { $regex: search, $options: "i" } },
+          { "shippingAddress.fullName": { $regex: search, $options: "i" } },
+          { "items.title": { $regex: search, $options: "i" } },
+        ],
+      },
+    ];
+    delete query.$or;
+  }
+
+  const skip = (page - 1) * limit;
+
+  const [orders, total] = await Promise.all([
+    Order.find(query)
+      .populate("user", "firstName lastName email")
+      .populate("items.product", "title images")
+      .sort({ returnRequestedAt: -1, "items.returnRequestedAt": -1 })
+      .skip(skip)
+      .limit(limit),
+    Order.countDocuments(query),
+  ]);
+
+  return {
+    orders,
+    total,
+    totalPages: Math.ceil(total / limit),
+    currentPage: page,
+  };
+};
+
+export const getAllOrders = async ({
+  search = "",
+  page = 1,
+  limit = 10,
+  status = "",
+  sort = "",
+}) => {
   const query = {
     ...(search && {
       $or: [
@@ -54,26 +107,29 @@ export const getOrderByOrderId = async (orderId) => {
     .populate("items.product", "title images");
 };
 
-export const getUserOrders = async (userId, { page = 1, limit = 10, sort = 'newest', search = '', status = '' }) => {
+export const getUserOrders = async (
+  userId,
+  { page = 1, limit = 10, sort = "newest", search = "", status = "" },
+) => {
   const skip = (page - 1) * limit;
 
   const query = { user: userId };
-  
+
   if (status) {
     query.orderStatus = status;
   }
-  
+
   if (search) {
     query.$or = [
-      { orderId: { $regex: search, $options: 'i' } },
-      { 'items.title': { $regex: search, $options: 'i' } }
+      { orderId: { $regex: search, $options: "i" } },
+      { "items.title": { $regex: search, $options: "i" } },
     ];
   }
 
   let sortOption = { createdAt: -1 };
-  if (sort === 'oldest') sortOption = { createdAt: 1 };
-  else if (sort === 'amount-high') sortOption = { totalAmount: -1 };
-  else if (sort === 'amount-low') sortOption = { totalAmount: 1 };
+  if (sort === "oldest") sortOption = { createdAt: 1 };
+  else if (sort === "amount-high") sortOption = { totalAmount: -1 };
+  else if (sort === "amount-low") sortOption = { totalAmount: 1 };
 
   const [orders, total] = await Promise.all([
     Order.find(query)
@@ -101,6 +157,16 @@ export const updateOrderStatus = async (id, status) => {
 
   order.orderStatus = status;
 
+  order.items.forEach((item) => {
+    if (
+      !item.cancelledAt &&
+      item.itemStatus !== "Cancelled" &&
+      item.itemStatus !== "Returned"
+    ) {
+      item.itemStatus = status;
+    }
+  });
+
   if (status === "Shipped" && !order.shippedAt) {
     order.shippedAt = new Date();
   }
@@ -121,7 +187,7 @@ export const updatePaymentStatus = async (id, status) => {
   return await Order.findByIdAndUpdate(
     id,
     { paymentStatus: status },
-    { returnDocument: "after" }
+    { returnDocument: "after" },
   );
 };
 

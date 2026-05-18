@@ -25,6 +25,54 @@ const orderItemSchema = new mongoose.Schema({
     required: true,
     min: 0,
   },
+  itemStatus: {
+    type: String,
+    enum: [
+      "Pending",
+      "Processing",
+      "Shipped",
+      "Delivered",
+      "Cancelled",
+      "Returned",
+    ],
+    default: "Pending",
+  },
+  cancelledAt: {
+    type: Date,
+  },
+  cancellationReason: {
+    type: String,
+    maxlength: 500,
+  },
+  returnRequestStatus: {
+    type: String,
+    enum: ["None", "Requested", "Approved", "Rejected"],
+    default: "None",
+  },
+  returnRequestedAt: {
+    type: Date,
+  },
+  returnReason: {
+    type: String,
+    maxlength: 500,
+  },
+  returnComments: {
+    type: String,
+    maxlength: 500,
+  },
+  returnApprovedAt: {
+    type: Date,
+  },
+  returnRejectedAt: {
+    type: Date,
+  },
+  returnRejectionReason: {
+    type: String,
+    maxlength: 500,
+  },
+  returnedAt: {
+    type: Date,
+  },
 });
 
 const orderSchema = new mongoose.Schema(
@@ -63,7 +111,14 @@ const orderSchema = new mongoose.Schema(
     orderStatus: {
       type: String,
       required: true,
-      enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Returned"],
+      enum: [
+        "Pending",
+        "Processing",
+        "Shipped",
+        "Delivered",
+        "Cancelled",
+        "Returned",
+      ],
       default: "Pending",
     },
     subtotal: {
@@ -141,7 +196,7 @@ const orderSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 orderSchema.index({ orderId: 1 });
@@ -150,7 +205,7 @@ orderSchema.index({ orderStatus: 1 });
 orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ createdAt: -1 });
 
-orderSchema.pre('validate', function() {
+orderSchema.pre("validate", function () {
   if (!this.orderId) {
     this.orderId = `PY-${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 1000)}`;
   }

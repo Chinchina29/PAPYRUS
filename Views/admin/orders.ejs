@@ -338,7 +338,7 @@
                     <td><span class="order-id"><%= order.orderId %></span></td>
                     <td><%= order.shippingAddress && order.shippingAddress.fullName ? order.shippingAddress.fullName : (order.user ? order.user.firstName + ' ' + order.user.lastName : 'N/A') %></td>
                     <td><%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></td>
-                    <td><strong>$<%= order.totalAmount.toFixed(2) %></strong></td>
+                    <td><strong>₹<%= order.totalAmount.toFixed(2) %></strong></td>
                     <td><%= order.paymentMethod %></td>
                     <td>
                       <span class="status-badge status-<%= order.orderStatus.toLowerCase() %>">
