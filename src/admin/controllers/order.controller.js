@@ -292,7 +292,6 @@ export const approveItemReturn = async (req, res) => {
 
     await order.save();
 
-    // Send notification to user
     await notificationService.notifyReturnApproved({
       userId: order.user._id || order.user,
       orderId: order._id,

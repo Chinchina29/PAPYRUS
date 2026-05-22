@@ -16,9 +16,24 @@ export const getProducts = async (req, res) => {
     const limit = 10;
 
     const { products, total, totalPages, currentPage } =
-      await productService.getAllProducts({ search, page, limit, showDeleted, sort, category, minPrice, maxPrice, condition, status, stock });
+      await productService.getAllProducts({
+        search,
+        page,
+        limit,
+        showDeleted,
+        sort,
+        category,
+        minPrice,
+        maxPrice,
+        condition,
+        status,
+        stock,
+      });
 
-    const { categories } = await categoryService.getAllCategories({ page: 1, limit: 100 });
+    const { categories } = await categoryService.getAllCategories({
+      page: 1,
+      limit: 100,
+    });
 
     res.render("admin/product/list", {
       products,
@@ -346,8 +361,10 @@ export const deleteProduct = async (req, res) => {
     const SellerSubmission = (
       await import("../../shared/models/SellerSubmission.js")
     ).default;
-    
-    const submission = await SellerSubmission.findOne({ approvedProductId: id });
+
+    const submission = await SellerSubmission.findOne({
+      approvedProductId: id,
+    });
     if (submission) {
       submission.status = "rejected";
       submission.adminNote = "Product was deleted by admin";
