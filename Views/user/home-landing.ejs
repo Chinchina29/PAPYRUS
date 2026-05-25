@@ -1015,7 +1015,6 @@
       }
     });
 
-    // Autumn leaves animation functions
     function createAutumnLeaf() {
       const leaf = document.createElement('div');
       leaf.className = 'autumn-leaf-falling';
@@ -1119,27 +1118,22 @@
       }, duration * 1000);
     }
 
-    // Initialize falling leaves from top
     for (let i = 0; i < 20; i++) {
       setTimeout(() => createAutumnLeaf(), i * 500);
     }
 
-    // Initialize leaves floating from right
     for (let i = 0; i < 12; i++) {
       setTimeout(() => createReverseLeafFromRight(), i * 800);
     }
 
-    // Initialize leaves rising from bottom
     for (let i = 0; i < 10; i++) {
       setTimeout(() => createReverseLeafFromBottom(), i * 1000);
     }
 
-    // Initialize leaves from left
     for (let i = 0; i < 12; i++) {
       setTimeout(() => createLeafFromLeft(), i * 900);
     }
 
-    // Continuous leaf generation
     setInterval(() => createAutumnLeaf(), 2000);
     setInterval(() => createReverseLeafFromRight(), 3000);
     setInterval(() => createReverseLeafFromBottom(), 3500);

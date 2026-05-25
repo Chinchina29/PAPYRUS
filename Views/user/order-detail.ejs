@@ -142,20 +142,20 @@
                 <!-- Item Status Badge -->
                 <div style="margin-top: 8px;">
                   <% 
-                    // Determine the correct display status
+                    
                     let displayStatus;
                     
                     if (item.cancelledAt) {
-                      // Item is cancelled
+                      
                       displayStatus = 'Cancelled';
                     } else if (item.returnRequestStatus === 'Approved') {
-                      // Return was approved
+                      
                       displayStatus = 'Returned';
                     } else if (item.itemStatus) {
-                      // Use item-specific status if available
+                      
                       displayStatus = item.itemStatus;
                     } else {
-                      // Fall back to order status
+                      
                       displayStatus = order.orderStatus;
                     }
                   %>

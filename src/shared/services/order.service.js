@@ -13,14 +13,14 @@ export const getReturnRequests = async ({
 }) => {
   let query = {};
   
-  // If status is provided and not empty, filter by status
+  
   if (status && status !== "") {
     query.$or = [
       { returnRequestStatus: status },
       { "items.returnRequestStatus": status },
     ];
   } else {
-    // For "All" status, show orders with any return request
+    
     query.$or = [
       { returnRequestStatus: { $in: ["Requested", "Approved", "Rejected"] } },
       { "items.returnRequestStatus": { $in: ["Requested", "Approved", "Rejected"] } },

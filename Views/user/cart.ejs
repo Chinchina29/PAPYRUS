@@ -545,7 +545,6 @@
         return removeFromCart(productId);
       }
 
-      // Optimistic UI update - update immediately for instant feedback
       const itemRow = document.querySelector(`[data-product-id="${productId}"]`);
       if (itemRow) {
         const qtyDisplay = itemRow.querySelector('.qty-display');
@@ -555,11 +554,9 @@
         const maxQuantity = parseInt(itemRow.dataset.maxQuantity || 10);
         const effectiveMax = Math.min(maxStock, maxQuantity);
         
-        // Store old values for rollback if needed
         const oldQuantity = parseInt(qtyDisplay.textContent);
         const oldPrice = priceAmount.textContent;
         
-        // Update UI immediately
         if (qtyDisplay) qtyDisplay.textContent = newQuantity;
         if (priceAmount) priceAmount.textContent = `₹${(itemPrice * newQuantity).toFixed(2)}`;
         
@@ -569,10 +566,8 @@
         if (decreaseBtn) decreaseBtn.disabled = newQuantity <= 1;
         if (increaseBtn) increaseBtn.disabled = newQuantity >= effectiveMax;
 
-        // Update summary optimistically
         updateCartSummaryOptimistic();
 
-        // Make API call in background
         try {
           const response = await fetch(`/cart/update/${productId}`, {
             method: 'PUT',
@@ -585,10 +580,8 @@
           const data = await response.json();
 
           if (data.success) {
-            // Refresh summary with actual values from server
             updateCartSummary();
           } else {
-            // Rollback on error
             if (qtyDisplay) qtyDisplay.textContent = oldQuantity;
             if (priceAmount) priceAmount.textContent = oldPrice;
             if (decreaseBtn) decreaseBtn.disabled = oldQuantity <= 1;
@@ -633,7 +626,6 @@
             }
           }
         } catch (error) {
-          // Rollback on error
           if (qtyDisplay) qtyDisplay.textContent = oldQuantity;
           if (priceAmount) priceAmount.textContent = oldPrice;
           if (decreaseBtn) decreaseBtn.disabled = oldQuantity <= 1;
@@ -653,7 +645,6 @@
     }
 
     function updateCartSummaryOptimistic() {
-      // Calculate totals from current DOM values
       let subtotal = 0;
       document.querySelectorAll('[data-product-id]').forEach(row => {
         const qty = parseInt(row.querySelector('.qty-display').textContent);
@@ -668,9 +659,7 @@
       if (totalElement) totalElement.textContent = `₹${subtotal.toFixed(2)}`;
     }
 
-    // Add event listeners for quantity buttons
     document.addEventListener('DOMContentLoaded', function() {
-      // Quantity increase buttons
       document.querySelectorAll('.qty-increase').forEach(btn => {
         btn.addEventListener('click', function(e) {
           e.preventDefault();
@@ -687,7 +676,6 @@
         });
       });
 
-      // Quantity decrease buttons
       document.querySelectorAll('.qty-decrease').forEach(btn => {
         btn.addEventListener('click', function(e) {
           e.preventDefault();
@@ -701,7 +689,6 @@
         });
       });
 
-      // Initialize button states
       document.querySelectorAll('[data-product-id]').forEach(itemRow => {
         const qtyDisplay = itemRow.querySelector('.qty-display');
         const currentQty = parseInt(qtyDisplay.textContent);
@@ -796,7 +783,6 @@
         });
       }
 
-      // Check for stock updates every 30 seconds
       setInterval(checkStockUpdates, 30000);
     });
 
@@ -817,7 +803,6 @@
           const data = await response.json();
           
           if (data.hasChanges) {
-            // Build a detailed message listing removed items
             let itemsList = '';
             if (data.outOfStockItems && data.outOfStockItems.length > 0) {
               itemsList = '<ul style="text-align:left; margin: 12px 0 0 0; padding-left: 20px;">';

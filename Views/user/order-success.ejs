@@ -697,7 +697,7 @@
         });
       }
 
-      // Create sparkles around the book
+      
       function createSparkle() {
         const container = document.getElementById('bookContainer');
         if (!container) return;
@@ -723,20 +723,20 @@
         }, 2500);
       }
 
-      // Create multiple sparkles with better timing
+      
       setTimeout(() => {
         for (let i = 0; i < 20; i++) {
           setTimeout(() => createSparkle(), i * 80);
         }
       }, 1200);
 
-      // Add continuous sparkles during opening
+      
       const sparkleInterval = setInterval(() => {
         createSparkle();
         createSparkle();
       }, 200);
 
-      // Stop sparkles after animation completes
+      
       setTimeout(() => {
         clearInterval(sparkleInterval);
       }, 3000);

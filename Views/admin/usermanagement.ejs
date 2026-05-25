@@ -258,7 +258,7 @@
             border-color: #8b6f47;
         }
 
-        /* Toggle Switch Styles */
+        
         .toggle-slider.active {
             background-color: #059669;
         }
@@ -541,7 +541,7 @@
         }
 
         async function toggleUserStatus(userId, isActive) {
-            // Show confirmation dialog before proceeding
+            
             const action = isActive ? 'unblock' : 'block';
             const result = await Swal.fire({
                 title: `${action.charAt(0).toUpperCase() + action.slice(1)} User?`,
@@ -555,7 +555,7 @@
             });
 
             if (!result.isConfirmed) {
-                // Revert toggle if user cancels
+                
                 const toggle = document.getElementById(`toggle-${userId}`);
                 toggle.checked = !isActive;
                 return;
@@ -589,7 +589,7 @@
                         confirmButtonColor: '#8b6f47'
                     });
                     
-                    // Update the toggle UI
+                    
                     const toggle = document.getElementById(`toggle-${userId}`);
                     const slider = toggle.nextElementSibling;
                     const statusText = toggle.parentElement.querySelector('span');

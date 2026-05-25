@@ -20,7 +20,7 @@ export const getWishlist = async (req, res) => {
 
 export const addToWishlist = async (req, res) => {
   try {
-    // Check if user is logged in
+    
     if (!req.session?.userId) {
       return res.status(401).json({
         success: false,

@@ -103,7 +103,7 @@ export const getWishlistItemCount = async (userId) => {
     return 0;
   }
 
-  // Filter out items where product is null (deleted/unlisted)
+  
   const validItems = wishlist.items.filter(item => item.product !== null);
   
   return validItems.length;

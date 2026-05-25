@@ -279,6 +279,34 @@
       <a href="/sell/create">Create Your First Listing</a>
     </div>
     <% } %>
+
+    <% if (submissions.length > 0 && totalPages > 1) { %>
+    <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 40px; padding: 20px 0;">
+      <% 
+        const isPrevDisabled = currentPage === 1;
+        const prevBtnStyle = `padding: 10px 18px; border: 2px solid ${isPrevDisabled ? '#e5e7eb' : '#8b6f47'}; background: ${isPrevDisabled ? '#f9fafb' : 'white'}; color: ${isPrevDisabled ? '#9ca3af' : '#8b6f47'}; border-radius: 8px; cursor: ${isPrevDisabled ? 'not-allowed' : 'pointer'}; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; transition: all 0.3s ease;`;
+      %>
+      <button onclick="window.location.href='?page=<%= currentPage - 1 %>'" <%= isPrevDisabled ? 'disabled' : '' %> style="<%- prevBtnStyle %>" onmouseover="if(!this.disabled) { this.style.background='#8b6f47'; this.style.color='white'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(139, 111, 71, 0.3)'; }" onmouseout="if(!this.disabled) { this.style.background='white'; this.style.color='#8b6f47'; this.style.transform='translateY(0)'; this.style.boxShadow='none'; }">← Previous</button>
+      
+      <% for (let i = 1; i <= totalPages; i++) { %>
+        <% if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) { %>
+          <% 
+            const isCurrentPage = i === currentPage;
+            const pageBtnStyle = `padding: 10px 16px; border: 2px solid ${isCurrentPage ? '#8b6f47' : '#e5e7eb'}; background: ${isCurrentPage ? 'linear-gradient(135deg, #8b6f47 0%, #6b5a48 100%)' : 'white'}; color: ${isCurrentPage ? 'white' : '#374151'}; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: ${isCurrentPage ? '700' : '600'}; font-family: 'DM Sans', sans-serif; transition: all 0.3s ease; box-shadow: ${isCurrentPage ? '0 2px 8px rgba(139, 111, 71, 0.3)' : 'none'};`;
+          %>
+          <button onclick="window.location.href='?page=<%= i %>'" style="<%- pageBtnStyle %>" onmouseover="if(<%= !isCurrentPage %>) { this.style.background='#f3f4f6'; this.style.borderColor='#8b6f47'; this.style.transform='translateY(-2px)'; }" onmouseout="if(<%= !isCurrentPage %>) { this.style.background='white'; this.style.borderColor='#e5e7eb'; this.style.transform='translateY(0)'; }"><%= i %></button>
+        <% } else if (i === currentPage - 2 || i === currentPage + 2) { %>
+          <span style="color: #9ca3af; padding: 0 8px;">...</span>
+        <% } %>
+      <% } %>
+      
+      <% 
+        const isNextDisabled = currentPage === totalPages;
+        const nextBtnStyle = `padding: 10px 18px; border: 2px solid ${isNextDisabled ? '#e5e7eb' : '#8b6f47'}; background: ${isNextDisabled ? '#f9fafb' : 'white'}; color: ${isNextDisabled ? '#9ca3af' : '#8b6f47'}; border-radius: 8px; cursor: ${isNextDisabled ? 'not-allowed' : 'pointer'}; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; transition: all 0.3s ease;`;
+      %>
+      <button onclick="window.location.href='?page=<%= currentPage + 1 %>'" <%= isNextDisabled ? 'disabled' : '' %> style="<%- nextBtnStyle %>" onmouseover="if(!this.disabled) { this.style.background='#8b6f47'; this.style.color='white'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(139, 111, 71, 0.3)'; }" onmouseout="if(!this.disabled) { this.style.background='white'; this.style.color='#8b6f47'; this.style.transform='translateY(0)'; this.style.boxShadow='none'; }">Next →</button>
+    </div>
+    <% } %>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

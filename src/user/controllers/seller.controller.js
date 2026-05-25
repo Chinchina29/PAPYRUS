@@ -257,9 +257,17 @@ export const uploadVideo = async (req, res) => {
 
 export const getMyListings = async (req, res) => {
   try {
-    const submissions = await sellerService.getSubmissionsByUser(
+    const page = parseInt(req.query.page) || 1;
+    const limit = 12;
+    const skip = (page - 1) * limit;
+
+    const allSubmissions = await sellerService.getSubmissionsByUser(
       req.session.userId,
     );
+
+    const total = allSubmissions.length;
+    const totalPages = Math.ceil(total / limit);
+    const submissions = allSubmissions.slice(skip, skip + limit);
 
     const populatedSubmissions = await Promise.all(
       submissions.map(async (sub) => {
@@ -287,7 +295,12 @@ export const getMyListings = async (req, res) => {
       }),
     );
 
-    res.render("user/my-listings", { submissions: populatedSubmissions });
+    res.render("user/my-listings", { 
+      submissions: populatedSubmissions,
+      currentPage: page,
+      totalPages,
+      total
+    });
   } catch (error) {
     return res.redirect(`/sell?error=${encodeURIComponent('Failed to load your listings. Please try again.')}`);
   }

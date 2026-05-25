@@ -615,7 +615,7 @@
                 btn.disabled = false;
                 btn.textContent = 'Send Verification Code';
             }
-        }, 3000); // 3 second throttle
+        }, 3000); 
 
         document.getElementById('sendEmailOTP').addEventListener('click', sendEmailOTPThrottled);
 
@@ -659,7 +659,7 @@
                 btn.disabled = false;
                 btn.textContent = 'Verify & Change Email';
             }
-        }, 2000); // 2 second throttle
+        }, 2000); 
 
         document.getElementById('verifyEmailOTP').addEventListener('click', verifyEmailOTPThrottled);
 
@@ -694,7 +694,7 @@
                 btn.disabled = false;
                 btn.textContent = 'Resend OTP';
             }
-        }, 3000); // 3 second throttle
+        }, 3000); 
 
         document.getElementById('resendOTPBtn').addEventListener('click', resendOTPThrottled);
 

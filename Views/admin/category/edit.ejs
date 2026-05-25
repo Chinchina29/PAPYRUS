@@ -80,7 +80,7 @@
     .toggle-switch input:checked + .toggle-slider { background: #8b7355; }
     .toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); }
 
-    /* Subcategory tags */
+    
     .subcategory-wrap {
       border: 1.5px solid #e8dcc8;
       border-radius: 8px;
@@ -365,7 +365,7 @@
         successMsg.style.display = "none";
         nameError.style.display  = "none";
 
-        // Add any pending subcategory
+        
         const pending = subInput ? subInput.value.trim() : "";
         if (pending && categoryType === "main") addSub(pending);
 
@@ -392,7 +392,7 @@
             isListed 
           };
           
-          // Add subcategories if this is a main category and subcategories are provided
+          
           if (categoryType === "main" && subcategories.length > 0) {
             requestData.subcategories = subcategories;
           }
