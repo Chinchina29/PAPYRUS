@@ -215,12 +215,10 @@ app.use((err, req, res, next) => {
   if (isAjax) {
     return res.status(500).json({
       success: false,
-      message: "Something went wrong on our end. Please try again later.",
+      message: "Server error occurred. Our team has been notified and is working on it.",
     });
   }
-  res.redirect(
-    "/?error=Something went wrong on our end. Our team has been notified and we're working on it.",
-  );
+  res.redirect("/?error=A server error occurred. Our team has been notified and we're working on it.");
 });
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

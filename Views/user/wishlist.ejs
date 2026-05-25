@@ -386,7 +386,7 @@
           showNotification(data.message || 'Failed to remove item', 'error');
         }
       } catch (error) {
-        showNotification('Something went wrong. Please try again.', 'error');
+        showNotification('Failed to remove item from wishlist. Please check your connection and try again.', 'error');
       }
     }
 
@@ -420,7 +420,7 @@
           }
         }
       } catch (error) {
-        showNotification('Something went wrong. Please try again.', 'error');
+        showNotification('Failed to add item to cart. Please check your connection and try again.', 'error');
       }
     }
 

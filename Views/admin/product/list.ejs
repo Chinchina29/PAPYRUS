@@ -313,7 +313,7 @@
           checkbox.checked = !checkbox.checked;
           Swal.fire('Error', data.message, 'error');
         }
-      } catch(err) { checkbox.checked = !checkbox.checked; Swal.fire('Error', 'Something went wrong', 'error'); }
+      } catch(err) { checkbox.checked = !checkbox.checked; Swal.fire('Error', 'Failed to toggle product listing. Please check your connection and try again.', 'error'); }
     }
 
     async function deleteProduct(id, title) {
@@ -326,7 +326,7 @@
           document.querySelector(`tr[data-id="${id}"]`).remove();
           Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Product deleted', showConfirmButton: false, timer: 2000 });
         } else { Swal.fire('Error', data.message, 'error'); }
-      } catch(err) { Swal.fire('Error', 'Something went wrong', 'error'); }
+      } catch(err) { Swal.fire('Error', 'Failed to delete product. Please check your connection and try again.', 'error'); }
     }
   </script>
 </body>

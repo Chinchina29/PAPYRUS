@@ -460,9 +460,10 @@
         title: 'Reject Return Request?',
         html: `
           <p style="margin-bottom: 16px;">Please provide a reason for rejection:</p>
-          <textarea id="rejectionReason" class="swal2-textarea" placeholder="Enter rejection reason..." style="width: 100%; min-height: 100px;"></textarea>
+          <textarea id="rejectionReason" class="swal2-textarea" placeholder="Enter rejection reason..." style="width: 100%; min-height: 100px; max-width: 100%; resize: vertical; box-sizing: border-box;"></textarea>
         `,
         icon: 'warning',
+        width: '500px',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
         cancelButtonColor: '#6b7280',

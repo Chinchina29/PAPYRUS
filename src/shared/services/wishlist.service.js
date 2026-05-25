@@ -92,13 +92,21 @@ export const isInWishlist = async (userId, productId) => {
 };
 
 export const getWishlistItemCount = async (userId) => {
-  const wishlist = await Wishlist.findOne({ user: userId });
+  const wishlist = await Wishlist.findOne({ user: userId })
+    .populate({
+      path: "items.product",
+      match: { isDeleted: false, isListed: true },
+      select: "_id"
+    });
 
   if (!wishlist) {
     return 0;
   }
 
-  return wishlist.items.length;
+  // Filter out items where product is null (deleted/unlisted)
+  const validItems = wishlist.items.filter(item => item.product !== null);
+  
+  return validItems.length;
 };
 
 export const moveToCart = async (userId, productId) => {

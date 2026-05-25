@@ -250,7 +250,7 @@ export const setGooglePassword = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Something went wrong. Please try again.",
+      message: "Failed to set password. Please try again or contact support if the issue persists.",
     });
   }
 };

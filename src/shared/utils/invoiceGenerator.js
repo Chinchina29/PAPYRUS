@@ -1,10 +1,5 @@
 import PDFDocument from 'pdfkit';
 
-/**
- * Generates a PDF invoice for an order and pipes it to the provided response stream.
- * @param {object} order - Populated order document
- * @param {import('express').Response} res - Express response object
- */
 export const generateInvoicePDF = (order, res) => {
   const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
@@ -21,9 +16,8 @@ export const generateInvoicePDF = (order, res) => {
     accent: '#8b7355',
   };
 
-  const pageWidth = doc.page.width - 100; // account for margins
+  const pageWidth = doc.page.width - 100;
 
-  // ── Header ──────────────────────────────────────────────────────────────────
   doc
     .fontSize(28)
     .font('Helvetica-Bold')
@@ -37,7 +31,6 @@ export const generateInvoicePDF = (order, res) => {
     .text('Online Bookstore', 50, 85)
     .text('support@papyrus.com', 50, 100);
 
-  // Invoice title (right-aligned)
   doc
     .fontSize(22)
     .font('Helvetica-Bold')
@@ -58,7 +51,6 @@ export const generateInvoicePDF = (order, res) => {
     .text(invoiceDate, 0, 95, { align: 'right' })
     .text(`Payment: ${order.paymentStatus}`, 0, 110, { align: 'right' });
 
-  // Divider
   doc
     .moveTo(50, 130)
     .lineTo(545, 130)
@@ -66,7 +58,6 @@ export const generateInvoicePDF = (order, res) => {
     .lineWidth(1.5)
     .stroke();
 
-  // ── Addresses ───────────────────────────────────────────────────────────────
   const addrY = 150;
 
   doc
@@ -93,7 +84,6 @@ export const generateInvoicePDF = (order, res) => {
     doc.text(line, 50, addrY + 32 + i * 15);
   });
 
-  // Payment details (right side)
   doc
     .fontSize(9)
     .font('Helvetica-Bold')
@@ -119,11 +109,9 @@ export const generateInvoicePDF = (order, res) => {
       .text(value, 430, addrY + 16 + i * 18);
   });
 
-  // ── Items Table ──────────────────────────────────────────────────────────────
   const tableTop = addrY + 100;
   const colX = { item: 50, qty: 340, price: 400, total: 470 };
 
-  // Table header background
   doc
     .rect(50, tableTop, pageWidth, 28)
     .fill(colors.light);
@@ -137,7 +125,6 @@ export const generateInvoicePDF = (order, res) => {
     .text('UNIT PRICE', colX.price, tableTop + 9, { width: 60, align: 'right' })
     .text('TOTAL', colX.total, tableTop + 9, { width: 60, align: 'right' });
 
-  // Header bottom border
   doc
     .moveTo(50, tableTop + 28)
     .lineTo(545, tableTop + 28)
@@ -147,10 +134,14 @@ export const generateInvoicePDF = (order, res) => {
 
   let rowY = tableTop + 36;
 
-  order.items.forEach((item) => {
-    // Wrap long titles
+  order.items.forEach((item, index) => {
     const titleHeight = doc.heightOfString(item.title, { width: 270, fontSize: 11 });
     const rowHeight = Math.max(titleHeight + 16, 30);
+
+    if (rowY + rowHeight > doc.page.height - 200) {
+      doc.addPage();
+      rowY = 50;
+    }
 
     doc
       .fontSize(11)
@@ -167,24 +158,18 @@ export const generateInvoicePDF = (order, res) => {
 
     rowY += rowHeight;
 
-    // Row divider
-    doc
-      .moveTo(50, rowY)
-      .lineTo(545, rowY)
-      .strokeColor(colors.border)
-      .lineWidth(0.5)
-      .stroke();
+    if (index < order.items.length - 1) {
+      doc
+        .moveTo(50, rowY)
+        .lineTo(545, rowY)
+        .strokeColor(colors.border)
+        .lineWidth(0.5)
+        .stroke();
 
-    rowY += 8;
-
-    // Page break if needed
-    if (rowY > doc.page.height - 200) {
-      doc.addPage();
-      rowY = 50;
+      rowY += 8;
     }
   });
 
-  // ── Totals ───────────────────────────────────────────────────────────────────
   rowY += 10;
   const totalsX = 350;
   const totalsValueX = 470;
@@ -222,33 +207,56 @@ export const generateInvoicePDF = (order, res) => {
 
   addTotalsRow('Total Amount:', `Rs.${order.totalAmount.toFixed(2)}`, true, true);
 
-  // ── Footer ───────────────────────────────────────────────────────────────────
-  const footerY = doc.page.height - 80;
+  const footerY = Math.max(rowY + 40, doc.page.height - 120);
+  
+  if (footerY > doc.page.height - 100) {
+    doc.addPage();
+    const newFooterY = 50;
+    
+    doc
+      .moveTo(50, newFooterY)
+      .lineTo(545, newFooterY)
+      .strokeColor(colors.border)
+      .lineWidth(0.5)
+      .stroke();
 
-  doc
-    .moveTo(50, footerY)
-    .lineTo(545, footerY)
-    .strokeColor(colors.border)
-    .lineWidth(0.5)
-    .stroke();
+    doc
+      .fontSize(10)
+      .font('Helvetica-Bold')
+      .fillColor(colors.dark)
+      .text('Thank you for shopping with Papyrus!', 50, newFooterY + 12, { align: 'center' });
 
-  doc
-    .fontSize(10)
-    .font('Helvetica-Bold')
-    .fillColor(colors.dark)
-    .text('Thank you for shopping with Papyrus!', 50, footerY + 12, { align: 'center' });
+    doc
+      .fontSize(9)
+      .font('Helvetica')
+      .fillColor(colors.muted)
+      .text('For any queries, contact us at support@papyrus.com', 50, newFooterY + 28, { align: 'center' })
+      .text('This is a computer-generated invoice and does not require a signature.', 50, newFooterY + 43, { align: 'center' });
+  } else {
+    doc
+      .moveTo(50, footerY)
+      .lineTo(545, footerY)
+      .strokeColor(colors.border)
+      .lineWidth(0.5)
+      .stroke();
 
-  doc
-    .fontSize(9)
-    .font('Helvetica')
-    .fillColor(colors.muted)
-    .text('For any queries, contact us at support@papyrus.com', 50, footerY + 28, { align: 'center' })
-    .text('This is a computer-generated invoice and does not require a signature.', 50, footerY + 43, { align: 'center' });
+    doc
+      .fontSize(10)
+      .font('Helvetica-Bold')
+      .fillColor(colors.dark)
+      .text('Thank you for shopping with Papyrus!', 50, footerY + 12, { align: 'center' });
+
+    doc
+      .fontSize(9)
+      .font('Helvetica')
+      .fillColor(colors.muted)
+      .text('For any queries, contact us at support@papyrus.com', 50, footerY + 28, { align: 'center' })
+      .text('This is a computer-generated invoice and does not require a signature.', 50, footerY + 43, { align: 'center' });
+  }
 
   doc.end();
 };
 
-// Keep the HTML generator for any other use
 export const generateInvoiceHTML = (order) => {
   const invoiceDate = new Date(order.createdAt).toLocaleDateString('en-IN', {
     day: 'numeric',

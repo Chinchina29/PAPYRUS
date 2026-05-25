@@ -46,7 +46,7 @@ const CartWishlist = {
       }
     } catch (error) {
       console.error('Add to cart error:', error);
-      this.showError('Something went wrong. Please try again.');
+      this.showError('Unable to connect to server. Please check your internet connection and try again.');
       return false;
     }
   },
@@ -86,7 +86,7 @@ const CartWishlist = {
       }
     } catch (error) {
       console.error('Add to wishlist error:', error);
-      this.showError('Something went wrong. Please try again.');
+      this.showError('Unable to connect to server. Please check your internet connection and try again.');
       return false;
     }
   },
@@ -129,7 +129,7 @@ const CartWishlist = {
       }
     } catch (error) {
       console.error('Remove from cart error:', error);
-      this.showError('Something went wrong. Please try again.');
+      this.showError('Failed to remove item from cart. Please check your connection and try again.');
       return false;
     }
   },
@@ -168,7 +168,7 @@ const CartWishlist = {
       }
     } catch (error) {
       console.error('Remove from wishlist error:', error);
-      this.showError('Something went wrong. Please try again.');
+      this.showError('Failed to remove item from wishlist. Please check your connection and try again.');
       return false;
     }
   },
@@ -196,7 +196,7 @@ const CartWishlist = {
       }
     } catch (error) {
       console.error('Update quantity error:', error);
-      this.showError('Something went wrong. Please try again.');
+      this.showError('Failed to update quantity. Please check your connection and try again.');
       return false;
     }
   },

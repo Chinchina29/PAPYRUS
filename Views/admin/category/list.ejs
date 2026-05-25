@@ -303,7 +303,7 @@
                 }
             } catch (err) {
                 checkbox.checked = !checkbox.checked;
-                Swal.fire('Error', 'Something went wrong', 'error');
+                Swal.fire('Error', 'Failed to toggle category listing. Please check your connection and try again.', 'error');
             }
         }
 
@@ -331,7 +331,7 @@
                     Swal.fire('Error', data.message, 'error');
                 }
             } catch (err) {
-                Swal.fire('Error', 'Something went wrong', 'error');
+                Swal.fire('Error', 'Failed to delete category. Please check your connection and try again.', 'error');
             }
         }
     </script>
