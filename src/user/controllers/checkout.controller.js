@@ -16,6 +16,32 @@ export const getCheckout = async (req, res) => {
     }
 
     const stockIssues = [];
+    let hasStockChanges = false;
+    
+    const originalCart = await cartService.getOrCreateCart(userId, req.session);
+    
+    if (originalCart.outOfStockItems && originalCart.outOfStockItems.length > 0) {
+      originalCart.outOfStockItems.forEach(item => {
+        stockIssues.push(`"${item.title}" was removed from your cart (out of stock)`);
+        hasStockChanges = true;
+      });
+    }
+    
+    if (originalCart.stockAdjustedItems && originalCart.stockAdjustedItems.length > 0) {
+      originalCart.stockAdjustedItems.forEach(item => {
+        stockIssues.push(`"${item.title}" quantity reduced from ${item.originalQuantity} to ${item.newQuantity} (limited stock)`);
+        hasStockChanges = true;
+      });
+    }
+    
+    if (req.session.stockAdjustedItems && req.session.stockAdjustedItems.length > 0) {
+      req.session.stockAdjustedItems.forEach(item => {
+        stockIssues.push(`"${item.title}" quantity was reduced from ${item.originalQuantity} to ${item.newQuantity} (limited stock)`);
+        hasStockChanges = true;
+      });
+      delete req.session.stockAdjustedItems;
+    }
+    
     for (const item of cart.items) {
       const product = await Product.findById(item.product._id)
         .select("stock isListed isDeleted title category")
@@ -32,13 +58,24 @@ export const getCheckout = async (req, res) => {
         !product.category
       ) {
         stockIssues.push(`"${item.product.title}" is no longer available`);
+        hasStockChanges = true;
       } else if (product.stock === 0) {
         stockIssues.push(`"${item.product.title}" is out of stock`);
+        hasStockChanges = true;
       } else if (product.stock < item.quantity) {
         stockIssues.push(
           `"${item.product.title}" — only ${product.stock} left (you have ${item.quantity} in cart)`,
         );
+        hasStockChanges = true;
+      } else if (product.stock < 5) {
+        stockIssues.push(`"${item.product.title}" — only ${product.stock} left in stock`);
       }
+    }
+    
+    if (hasStockChanges) {
+      req.session.stockIssues = stockIssues;
+    } else if (req.session.stockIssues) {
+      delete req.session.stockIssues;
     }
 
     const addresses = await addressService.getUserAddresses(userId);
@@ -117,7 +154,7 @@ export const placeOrder = async (req, res) => {
 
     for (const item of cart.items) {
       const product = await Product.findById(item.product._id)
-        .select("stock isListed isDeleted category")
+        .select("stock isListed isDeleted category title")
         .populate({
           path: "category",
           select: "isListed",
@@ -132,14 +169,21 @@ export const placeOrder = async (req, res) => {
       ) {
         return res.status(400).json({
           success: false,
-          message: `Product "${item.product.title}" is no longer available.`,
+          message: `Sorry, "${item.product.title}" is no longer available for purchase. Please remove it from your cart and try again.`,
+        });
+      }
+
+      if (product.stock === 0) {
+        return res.status(400).json({
+          success: false,
+          message: `"${item.product.title}" is currently out of stock. Please remove it from your cart or check back later.`,
         });
       }
 
       if (product.stock < item.quantity) {
         return res.status(400).json({
           success: false,
-          message: `Insufficient stock for "${item.product.title}". Only ${product.stock} available.`,
+          message: `Insufficient stock for "${item.product.title}". Only ${product.stock} ${product.stock === 1 ? 'copy' : 'copies'} available, but you have ${item.quantity} in your cart. Please update the quantity.`,
         });
       }
     }
@@ -193,9 +237,34 @@ export const placeOrder = async (req, res) => {
     const order = await orderService.createOrder(orderData);
 
     for (const item of cart.items) {
-      await Product.findByIdAndUpdate(item.product._id, {
-        $inc: { stock: -item.quantity },
-      });
+      const updateResult = await Product.findOneAndUpdate(
+        { 
+          _id: item.product._id,
+          stock: { $gte: item.quantity }
+        },
+        {
+          $inc: { stock: -item.quantity }
+        },
+        { new: true }
+      );
+
+      if (!updateResult) {
+        await orderService.cancelOrder(order._id, "Stock unavailable during order processing");
+        
+        const currentProduct = await Product.findById(item.product._id).select('stock title');
+        
+        if (!currentProduct || currentProduct.stock === 0) {
+          return res.status(400).json({
+            success: false,
+            message: `Sorry, "${item.product.title}" just went out of stock. Your order has been cancelled. Please refresh your cart and try again.`,
+          });
+        } else {
+          return res.status(400).json({
+            success: false,
+            message: `Sorry, only ${currentProduct.stock} ${currentProduct.stock === 1 ? 'copy' : 'copies'} of "${item.product.title}" ${currentProduct.stock === 1 ? 'is' : 'are'} now available. Your order has been cancelled. Please update your cart and try again.`,
+          });
+        }
+      }
     }
 
     await cartService.clearCart(userId);

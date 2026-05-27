@@ -243,15 +243,24 @@ export const logout = (req, res) => {
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
+    const trimmedEmail = email?.trim();
 
-    if (!email) {
+    if (!trimmedEmail) {
       return res.status(400).json({
         success: false,
         message: "Email is required",
       });
     }
 
-    const user = await userService.findUserByEmail(email);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid email address",
+      });
+    }
+
+    const user = await userService.findUserByEmail(trimmedEmail);
 
     if (!user || user.role !== "admin") {
       return res.json({
@@ -288,7 +297,7 @@ export const forgotPassword = async (req, res) => {
       });
     }
 
-    req.session.adminResetEmail = email;
+    req.session.adminResetEmail = trimmedEmail;
 
     return res.json({
       success: true,

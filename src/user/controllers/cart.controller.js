@@ -14,7 +14,11 @@ export const getCart = async (req, res) => {
 
     const outOfStockItems =
       req.session.outOfStockItems || cart.outOfStockItems || [];
+    const stockAdjustedItems = 
+      req.session.stockAdjustedItems || cart.stockAdjustedItems || [];
+    
     req.session.outOfStockItems = null;
+    req.session.stockAdjustedItems = null;
 
     res.render("user/cart", {
       cart,
@@ -22,6 +26,7 @@ export const getCart = async (req, res) => {
       user: req.session.user || null,
       error: req.query.error || null,
       outOfStockItems,
+      stockAdjustedItems,
     });
   } catch (error) {
     return res.redirect(

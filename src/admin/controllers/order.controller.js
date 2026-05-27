@@ -5,9 +5,9 @@ import * as notificationService from "../../shared/services/notification.service
 export const getReturnRequests = async (req, res) => {
   try {
     const search = req.query.search?.trim() || "";
-    const status = req.query.status || "Requested";
+    const status = req.query.status !== undefined ? req.query.status : "Requested";
     const page = parseInt(req.query.page) || 1;
-    const limit = 10;
+    const limit = 5;
 
     const { orders, total, totalPages, currentPage } =
       await orderService.getReturnRequests({ search, page, limit, status });
@@ -18,7 +18,7 @@ export const getReturnRequests = async (req, res) => {
       totalPages: totalPages || 1,
       currentPage: currentPage || 1,
       search: search || "",
-      status: status || "Requested",
+      status: status !== undefined ? status : "Requested",
       currentPage_name: "return-requests",
       user: req.session.adminUser,
     });

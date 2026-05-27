@@ -13,7 +13,7 @@ export const getProducts = async (req, res) => {
     const condition = req.query.condition || "";
     const status = req.query.status || "";
     const stock = req.query.stock || "";
-    const limit = 10;
+    const limit = 5;
 
     const { products, total, totalPages, currentPage } =
       await productService.getAllProducts({

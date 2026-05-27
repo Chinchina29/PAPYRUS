@@ -439,6 +439,26 @@
       </div>
     <% } %>
 
+    <% if (stockAdjustedItems && stockAdjustedItems.length > 0) { %>
+      <div class="stock-adjusted-alert" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3; border-radius: 12px; padding: 24px; margin-bottom: 32px; display: flex; gap: 20px; align-items: flex-start; box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2); animation: slideDown 0.4s ease-out;">
+        <div class="alert-icon" style="font-size: 32px; flex-shrink: 0;">📦</div>
+        <div class="alert-content" style="flex: 1;">
+          <h3 class="alert-title" style="font-size: 18px; font-weight: 600; color: #1565c0; margin: 0 0 8px 0;">Quantities Adjusted Due to Limited Stock</h3>
+          <p class="alert-message" style="font-size: 14px; color: #1976d2; margin: 0 0 12px 0; line-height: 1.5;">Some item quantities were automatically reduced because there wasn't enough stock available:</p>
+          <ul class="stock-adjusted-list" style="margin: 0; padding-left: 20px; color: #1976d2;">
+            <% stockAdjustedItems.forEach(item => { %>
+              <li style="margin-bottom: 8px; font-size: 14px;">
+                <strong><%= item.title %></strong>
+                <span style="color: #666; font-size: 13px;">
+                  - Quantity changed from <span style="text-decoration: line-through; color: #d32f2f; font-weight: 600;"><%= item.originalQuantity %></span> to <span style="color: #2e7d32; font-weight: 600;"><%= item.newQuantity %></span>
+                </span>
+              </li>
+            <% }) %>
+          </ul>
+        </div>
+      </div>
+    <% } %>
+
     <% if (!cart || !cart.items || cart.items.length === 0) { %>
       <div class="empty-cart">
         <div class="empty-cart-icon">🛒</div>
@@ -652,11 +672,20 @@
         subtotal += qty * price;
       });
       
-      const subtotalElement = document.querySelector('.summary-row:nth-child(1) .summary-value');
-      const totalElement = document.querySelector('.summary-total .summary-value');
+      const shippingCharge = 95;
+      const total = subtotal + shippingCharge;
       
-      if (subtotalElement) subtotalElement.textContent = `₹${subtotal.toFixed(2)}`;
-      if (totalElement) totalElement.textContent = `₹${subtotal.toFixed(2)}`;
+      const summaryRows = document.querySelectorAll('.summary-row');
+      if (summaryRows.length > 0) {
+        const subtotalSpan = summaryRows[0].querySelector('span:last-child');
+        if (subtotalSpan) subtotalSpan.textContent = `₹${subtotal.toFixed(2)}`;
+      }
+      
+      const totalRow = document.querySelector('.summary-row.total');
+      if (totalRow) {
+        const totalSpan = totalRow.querySelector('span:last-child');
+        if (totalSpan) totalSpan.textContent = `₹${total.toFixed(2)}`;
+      }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -672,6 +701,16 @@
           
           if (currentQty < effectiveMax) {
             updateQuantity(productId, currentQty + 1);
+          } else {
+            const limitReason = maxQuantity < maxStock 
+              ? `Maximum ${maxQuantity} items allowed per order for this product`
+              : `Only ${maxStock} items available in stock`;
+            Swal.fire({
+              icon: 'warning',
+              title: 'Maximum Quantity',
+              text: limitReason,
+              confirmButtonColor: '#2d1f14'
+            });
           }
         });
       });
@@ -702,6 +741,24 @@
         if (decreaseBtn) decreaseBtn.disabled = currentQty <= 1;
         if (increaseBtn) increaseBtn.disabled = currentQty >= effectiveMax;
       });
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      
+      if (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: decodeURIComponent(error),
+          confirmButtonColor: '#2d1f14'
+        }).then(() => {
+          const url = new URL(window.location);
+          url.searchParams.delete('error');
+          window.history.replaceState({}, '', url);
+        });
+      }
+
+      setInterval(checkStockUpdates, 30000);
     });
     
     async function updateCartSummary() {
@@ -711,20 +768,32 @@
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
         
-        const newSubtotal = doc.querySelector('.summary-row:nth-child(1) .summary-value');
-        const newTotal = doc.querySelector('.summary-total .summary-value');
+        const summaryRows = doc.querySelectorAll('.summary-row');
+        const currentSummaryRows = document.querySelectorAll('.summary-row');
         
-        const currentSubtotal = document.querySelector('.summary-row:nth-child(1) .summary-value');
-        const currentTotal = document.querySelector('.summary-total .summary-value');
+        if (summaryRows.length > 0 && currentSummaryRows.length > 0) {
+          const newSubtotalSpan = summaryRows[0].querySelector('span:last-child');
+          const currentSubtotalSpan = currentSummaryRows[0].querySelector('span:last-child');
+          if (newSubtotalSpan && currentSubtotalSpan) {
+            currentSubtotalSpan.textContent = newSubtotalSpan.textContent;
+          }
+        }
         
-        if (newSubtotal && currentSubtotal) currentSubtotal.textContent = newSubtotal.textContent;
-        if (newTotal && currentTotal) currentTotal.textContent = newTotal.textContent;
+        const newTotalRow = doc.querySelector('.summary-row.total');
+        const currentTotalRow = document.querySelector('.summary-row.total');
+        if (newTotalRow && currentTotalRow) {
+          const newTotalSpan = newTotalRow.querySelector('span:last-child');
+          const currentTotalSpan = currentTotalRow.querySelector('span:last-child');
+          if (newTotalSpan && currentTotalSpan) {
+            currentTotalSpan.textContent = newTotalSpan.textContent;
+          }
+        }
       } catch (error) {
         console.error('Failed to update cart summary:', error);
       }
     }
 
-    const throttledRemoveFromCart = throttle(async function(productId) {
+    window.removeFromCart = throttle(async function(productId) {
       const result = await Swal.fire({
         title: 'Remove Item?',
         text: 'Are you sure you want to remove this item from your cart?',
@@ -762,29 +831,9 @@
       throttledRemoveFromCart(productId);
     }
 
-    function proceedToCheckout() {
+    window.proceedToCheckout = function() {
       window.location.href = '/checkout';
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const error = urlParams.get('error');
-      
-      if (error) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: decodeURIComponent(error),
-          confirmButtonColor: '#2d1f14'
-        }).then(() => {
-          const url = new URL(window.location);
-          url.searchParams.delete('error');
-          window.history.replaceState({}, '', url);
-        });
-      }
-
-      setInterval(checkStockUpdates, 30000);
-    });
+    };
 
     async function checkStockUpdates() {
       try {

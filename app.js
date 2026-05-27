@@ -152,6 +152,7 @@ app.use(passport.session());
 
 app.set("view engine", "ejs");
 app.set("views", "./Views");
+app.set("view cache", false);
 app.use(express.static("public"));
 app.use(secureHeaders);
 

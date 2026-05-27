@@ -11,8 +11,18 @@ import {
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
+    const trimmedEmail = email?.trim();
 
-    const user = await userService.findUserByEmail(email);
+    if (!trimmedEmail) {
+      return errorResponse(res, "Email address is required");
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      return errorResponse(res, "Please enter a valid email address");
+    }
+
+    const user = await userService.findUserByEmail(trimmedEmail);
     if (!user) {
       return successResponse(res, "If email exists, reset code has been sent");
     }
@@ -34,7 +44,7 @@ export const forgotPassword = async (req, res) => {
       return errorResponse(res, "Failed to send reset code", 500);
     }
 
-    req.session.resetEmail = email;
+    req.session.resetEmail = trimmedEmail;
     return redirectResponse(
       res,
       "Reset code sent to your email",

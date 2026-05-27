@@ -8,11 +8,24 @@ import {
 export const signup = async (req, res) => {
   try {
     const { firstName, lastName, email, password, confirmPassword } = req.body;
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+    
+    const trimmedFirstName = firstName?.trim();
+    const trimmedLastName = lastName?.trim();
+    const trimmedEmail = email?.trim();
+    
+    if (!trimmedFirstName || !trimmedLastName || !trimmedEmail || !password || !confirmPassword) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
     }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please enter a valid email address" });
+    }
+    
     if (password !== confirmPassword) {
       return res
         .status(400)
@@ -24,7 +37,16 @@ export const signup = async (req, res) => {
         message: "Password must be at least 6 characters",
       });
     }
-    const result = await authService.signupUser(req.body);
+    
+    const signupData = {
+      firstName: trimmedFirstName,
+      lastName: trimmedLastName,
+      email: trimmedEmail,
+      password,
+      confirmPassword
+    };
+    
+    const result = await authService.signupUser(signupData);
     if (!result.success) {
       return res.status(400).json({ success: false, message: result.message });
     }
@@ -81,16 +103,26 @@ export const resendOTP = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
+    const trimmedEmail = email?.trim();
+    
+    if (!trimmedEmail || !password) {
       return res
         .status(400)
         .json({ success: false, message: "Email and password are required" });
     }
-    const result = await authService.loginUser(email, password);
-    if (!result.success) {
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please enter a valid email address" });
+    }
+    
+    const result = await authService.loginUser(trimmedEmail, password);
+    if (result.success) {
       if (result.needsVerification) {
         req.session.tempUserId = result.userId.toString();
-        req.session.tempUserEmail = email;
+        req.session.tempUserEmail = trimmedEmail;
         return res.json({
           success: true,
           message: result.message,

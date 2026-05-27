@@ -26,6 +26,7 @@ export const getOrCreateCart = async (userId, session = null) => {
     } else {
       let needsUpdate = false;
       const outOfStockItems = [];
+      const stockAdjustedItems = [];
       const validItems = cart.items.filter((item) => {
         if (
           !item.product ||
@@ -57,6 +58,11 @@ export const getOrCreateCart = async (userId, session = null) => {
         }
 
         if (item.quantity > item.product.stock) {
+          stockAdjustedItems.push({
+            title: item.product.title,
+            originalQuantity: item.quantity,
+            newQuantity: item.product.stock,
+          });
           item.quantity = item.product.stock;
           needsUpdate = true;
         }
@@ -85,6 +91,14 @@ export const getOrCreateCart = async (userId, session = null) => {
             session.outOfStockItems = [...existing, ...outOfStockItems];
           }
           cart.outOfStockItems = outOfStockItems;
+        }
+        
+        if (stockAdjustedItems.length > 0) {
+          if (session) {
+            const existing = session.stockAdjustedItems || [];
+            session.stockAdjustedItems = [...existing, ...stockAdjustedItems];
+          }
+          cart.stockAdjustedItems = stockAdjustedItems;
         }
       }
     }
