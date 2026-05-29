@@ -6,7 +6,6 @@
   <meta name="product-id" content="<%= product._id %>"/>
   <title><%= product.title %> - Papyrus</title>
   <link rel="stylesheet" href="/css/home.css">
-  <!-- Viewer.js for professional image zoom -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.6/viewer.min.css"/>
   <style>
     :root {
@@ -27,7 +26,6 @@
       padding: 32px 24px;
     }
 
-    /* ─── Breadcrumb ─── */
     .breadcrumb {
       display: flex;
       align-items: center;
@@ -40,7 +38,6 @@
     .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb-sep { color: #bbb; }
 
-    /* ─── Product Main Grid ─── */
     .product-main {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -422,7 +419,6 @@
     .bar-fill { height: 100%; background: #ffa500; border-radius: 4px; transition: width 0.4s; }
     .bar-cnt { font-size: 13px; color: #666; width: 28px; text-align: right; }
 
-    /* Review Form */
     .review-form-card {
       background: var(--white);
       border: 1px solid var(--border);
@@ -562,7 +558,6 @@
     .pager-btn.active { background: var(--brown); color: #fff; }
     .pager-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* Loading / empty states */
     .state-msg {
       text-align: center;
       padding: 32px;
@@ -570,7 +565,6 @@
       font-size: 14px;
     }
 
-    /* ─── Related ─── */
     .related-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
@@ -617,7 +611,6 @@
     }
     .rel-price { font-size: 15px; font-weight: 800; color: var(--text-dark); }
 
-    /* ─── Responsive ─── */
     @media (max-width: 768px) {
       .product-main { grid-template-columns: 1fr; gap: 24px; }
       .product-images { position: static; }
@@ -636,7 +629,6 @@
 
   <div class="product-wrapper">
 
-    <!-- Breadcrumb -->
     <nav class="breadcrumb">
       <% if (from === 'my-listings') { %>
         <a href="/home">HOME</a>
@@ -652,11 +644,8 @@
         <span><%= product.title %></span>
       <% } %>
     </nav>
-
-    <!-- Product Main -->
     <div class="product-main">
 
-      <!-- Images column -->
       <div class="product-images">
         <div class="main-image-wrap" id="mainImageWrap">
           <% if (product.images && product.images.length > 0) { %>
@@ -671,7 +660,6 @@
           <% } %>
         </div>
 
-        <!-- Thumbnails -->
         <% if (product.images && product.images.length > 0) { %>
         <div class="thumbnail-strip" id="thumbStrip">
           <% product.images.forEach((img, idx) => { %>
@@ -685,7 +673,6 @@
         </div>
         <% } %>
 
-        <!-- Hidden image list consumed by Viewer.js -->
         <div id="galleryImages">
           <% if (product.images && product.images.length > 0) { %>
             <% product.images.forEach((img, idx) => { %>
@@ -695,7 +682,6 @@
         </div>
       </div>
 
-      <!-- Info column -->
       <div class="product-info">
         <h1><%= product.title %></h1>
         <% if (product.author) { %>
@@ -729,7 +715,6 @@
           <% } %>
         </div>
 
-        <!-- Quantity (hide for own listing or out of stock) -->
         <% if (product.stock > 0 && !(locals.userId && product.seller._id.toString() === userId.toString())) { %>
         <div class="qty-section">
           <label class="qty-label">Quantity</label>
@@ -745,7 +730,6 @@
         </div>
         <% } %>
 
-        <!-- Action buttons -->
         <div class="action-buttons">
           <% if (locals.userId && product.seller._id.toString() === userId.toString()) { %>
             <div class="own-listing-note">
@@ -778,7 +762,6 @@
           <% } %>
         </div>
 
-        <!-- Seller -->
         <div class="seller-box">
           <h3>Sold by</h3>
           <div class="seller-name"><%= product.seller.name %></div>
@@ -786,7 +769,6 @@
       </div>
     </div>
 
-    <!-- Product Details Card -->
     <div class="product-details-card">
       <div class="details-grid">
         <% if (product.isbn) { %>
@@ -845,7 +827,6 @@
       <% } %>
     </div>
 
-    <!-- Reviews Section -->
     <div class="reviews-section">
       <h2>Customer Reviews</h2>
 
@@ -888,7 +869,6 @@
       <div id="reviewsPager" class="pager"></div>
     </div>
 
-    <!-- Related Products -->
     <% if (related && related.length > 0) { %>
     <div class="related-section">
       <h2>More from this Category</h2>
@@ -915,15 +895,11 @@
 
   </div>
 
-  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="/js/cart-wishlist.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.6/viewer.min.js"></script>
 
   <script>
-    /* ══════════════════════════════════════════
-       CONFIG
-    ══════════════════════════════════════════ */
     const PRODUCT_ID   = '<%= product._id %>';
     const MAX_STOCK    = <%= product.stock %>;
     const MAX_PER_ORDER = <%= product.maxQuantityPerOrder || 10 %>;
@@ -931,13 +907,9 @@
     let currentReviewPage = 1;
     let chosenRating = 0;
 
-    /* ══════════════════════════════════════════
-       IMAGE GALLERY
-    ══════════════════════════════════════════ */
     let viewerInstance = null;
     let activeThumbIdx = 0;
 
-    // Build Viewer.js on the hidden gallery div
     (function initViewer() {
       const gallery = document.getElementById('galleryImages');
       if (!gallery || gallery.children.length === 0) return;
@@ -965,21 +937,16 @@
     }
 
     function selectThumb(el, url, idx) {
-      // Update main image
       const mainImg = document.getElementById('mainProductImage');
       if (mainImg) {
         mainImg.src = url;
         mainImg.onclick = function() { openViewer(idx); };
       }
-      // Update active thumb highlight
       document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
       el.classList.add('active');
       activeThumbIdx = idx;
     }
 
-    /* ══════════════════════════════════════════
-       QUANTITY
-    ══════════════════════════════════════════ */
     function changeQty(delta) {
       const input = document.getElementById('qtyInput');
       if (!input) return;
@@ -1008,9 +975,6 @@
       syncQtyButtons(1);
     });
 
-    /* ══════════════════════════════════════════
-       CART
-    ══════════════════════════════════════════ */
     let cartBusy = false;
 
     async function handleAddToCart(productId) {
@@ -1073,9 +1037,6 @@
       }
     }
 
-    /* ══════════════════════════════════════════
-       WISHLIST
-    ══════════════════════════════════════════ */
     window.toggleWishlist = async function(event, productId) {
       event.preventDefault();
       event.stopPropagation();
@@ -1089,7 +1050,6 @@
           await CartWishlist.addToWishlist(productId, btn);
         }
       } else {
-        // Fallback direct call
         const endpoint = inWishlist ? '/wishlist/remove' : '/wishlist/add';
         try {
           const res = await fetch(endpoint, {
@@ -1123,9 +1083,6 @@
       }
     };
 
-    /* ══════════════════════════════════════════
-       HEADER BADGE UPDATES
-    ══════════════════════════════════════════ */
     async function updateHeaderCartCount() {
       try {
         const res = await fetch('/cart/count');
@@ -1147,10 +1104,6 @@
         }
       } catch(e) {}
     }
-
-    /* ══════════════════════════════════════════
-       STAR PICKER
-    ══════════════════════════════════════════ */
     document.addEventListener('DOMContentLoaded', function() {
       const picker = document.getElementById('starPicker');
       if (!picker) return;
@@ -1173,9 +1126,6 @@
       });
     }
 
-    /* ══════════════════════════════════════════
-       SUBMIT REVIEW
-    ══════════════════════════════════════════ */
     async function submitReview(e) {
       e.preventDefault();
       if (!chosenRating) {
@@ -1213,9 +1163,6 @@
       }
     }
 
-    /* ══════════════════════════════════════════
-       LOAD REVIEWS
-    ══════════════════════════════════════════ */
     async function loadReviews(page = 1) {
       currentReviewPage = page;
       try {
@@ -1327,15 +1274,10 @@
       } catch(e) {}
     }
 
-    /* ══════════════════════════════════════════
-       INIT
-    ══════════════════════════════════════════ */
     document.addEventListener('DOMContentLoaded', function() {
       updateHeaderCartCount();
       updateHeaderWishlistCount();
       loadReviews(1);
-
-      // Surface any server-side error in URL
       const urlError = new URLSearchParams(window.location.search).get('error');
       if (urlError) {
         Swal.fire({ icon: 'error', title: 'Error', text: decodeURIComponent(urlError), confirmButtonColor: '#7A5C3E' })

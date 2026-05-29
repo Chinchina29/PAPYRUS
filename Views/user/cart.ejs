@@ -469,6 +469,7 @@
     <% } else { %>
       <div class="cart-content">
         <div class="cart-items">
+          
           <% cart.items.forEach(item => { %>
             <div class="cart-item" data-product-id="<%= item.product._id %>" data-item-price="<%= item.price %>" data-max-stock="<%= item.product.stock %>" data-max-quantity="<%= item.product.maxQuantityPerOrder || 10 %>">
               <div class="item-image">
