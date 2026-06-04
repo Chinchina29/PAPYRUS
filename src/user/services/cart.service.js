@@ -1,6 +1,5 @@
 import Cart from "../../shared/models/Cart.js";
 import Product from "../../shared/models/Product.js";
-import { debounceAsync } from "../../shared/utils/asyncThrottle.js";
 import * as wishlistService from "../../shared/services/wishlist.service.js";
 
 export const getOrCreateCart = async (userId, session = null) => {
@@ -53,8 +52,7 @@ export const getOrCreateCart = async (userId, session = null) => {
             author: item.product.author,
             quantity: item.quantity,
           });
-          needsUpdate = true;
-          return false;
+          return true;
         }
 
         if (item.quantity > item.product.stock) {
@@ -199,76 +197,64 @@ export const addToCart = async (userId, productId, quantity = 1) => {
 };
 
 export const updateCartItem = async (userId, productId, quantity) => {
-  const operationKey = `cart-update-${userId}-${productId}`;
+  if (quantity < 1) {
+    return await removeFromCart(userId, productId);
+  }
 
-  return debounceAsync(
-    operationKey,
-    async () => {
-      if (quantity < 1) {
-        return await removeFromCart(userId, productId);
-      }
+  const product = await Product.findById(productId)
+    .select("stock maxQuantityPerOrder isListed isDeleted category")
+    .populate({
+      path: "category",
+      select: "isListed",
+      match: { isListed: true, isDeleted: false },
+    });
 
-      const product = await Product.findById(productId)
-        .select("stock maxQuantityPerOrder isListed isDeleted category")
-        .populate({
-          path: "category",
-          select: "isListed",
-          match: { isListed: true, isDeleted: false },
-        });
+  if (!product || product.isDeleted || !product.isListed) {
+    throw new Error("Product not found or no longer available");
+  }
 
-      if (!product || product.isDeleted || !product.isListed) {
-        throw new Error("Product not found or no longer available");
-      }
+  if (!product.category) {
+    throw new Error(
+      "This product is unavailable because its category has been disabled",
+    );
+  }
 
-      if (!product.category) {
-        throw new Error(
-          "This product is unavailable because its category has been disabled",
-        );
-      }
+  if (product.stock > 0 && product.stock < quantity) {
+    throw new Error(`Only ${product.stock} item(s) available in stock`);
+  }
 
-      if (product.stock === 0) {
-        throw new Error("Product is out of stock");
-      }
+  if (quantity > product.maxQuantityPerOrder) {
+    throw new Error(
+      `Maximum ${product.maxQuantityPerOrder} items allowed per order for this product`,
+    );
+  }
 
-      if (product.stock < quantity) {
-        throw new Error(`Only ${product.stock} item(s) available in stock`);
-      }
+  const cart = await Cart.findOne({ user: userId, isActive: true });
+  if (!cart) {
+    throw new Error("Cart not found");
+  }
 
-      if (quantity > product.maxQuantityPerOrder) {
-        throw new Error(
-          `Maximum ${product.maxQuantityPerOrder} items allowed per order for this product`,
-        );
-      }
-
-      const cart = await Cart.findOne({ user: userId, isActive: true });
-      if (!cart) {
-        throw new Error("Cart not found");
-      }
-
-      const itemIndex = cart.items.findIndex(
-        (item) => item.product.toString() === productId,
-      );
-
-      if (itemIndex === -1) {
-        throw new Error("Item not found in cart");
-      }
-
-      cart.items[itemIndex].quantity = quantity;
-      await cart.save();
-
-      return await Cart.findById(cart._id).populate({
-        path: "items.product",
-        select:
-          "title author price images stock condition isListed isDeleted maxQuantityPerOrder seller hideFromSeller",
-        populate: {
-          path: "category",
-          select: "name isListed",
-          match: { isListed: true, isDeleted: false },
-        },
-      });
-    },
-    300,
+  const itemIndex = cart.items.findIndex(
+    (item) => item.product.toString() === productId,
   );
+
+  if (itemIndex === -1) {
+    throw new Error("Item not found in cart");
+  }
+
+  cart.items[itemIndex].quantity = quantity;
+  await cart.save();
+
+  return await Cart.findById(cart._id).populate({
+    path: "items.product",
+    select:
+      "title author price images stock condition isListed isDeleted maxQuantityPerOrder seller hideFromSeller",
+    populate: {
+      path: "category",
+      select: "name isListed",
+      match: { isListed: true, isDeleted: false },
+    },
+  });
 };
 
 export const removeFromCart = async (userId, productId) => {

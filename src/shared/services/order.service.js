@@ -1,4 +1,5 @@
 import Order from "../models/Order.js";
+import Product from "../models/Product.js";
 
 export const createOrder = async (data) => {
   const order = new Order(data);
@@ -162,6 +163,28 @@ export const updateOrderStatus = async (id, status) => {
 
   if (!order) {
     throw new Error("Order not found");
+  }
+
+  const statusProgression = {
+    "Pending": 1,
+    "Processing": 2,
+    "Shipped": 3,
+    "Delivered": 4,
+    "Cancelled": 5,
+    "Returned": 6
+  };
+
+  const currentStatusLevel = statusProgression[order.orderStatus];
+  const newStatusLevel = statusProgression[status];
+
+  if (currentStatusLevel && newStatusLevel && newStatusLevel < currentStatusLevel) {
+    if (order.orderStatus === "Delivered" && status !== "Returned") {
+      throw new Error("Cannot rollback order status from Delivered. Only returns are allowed.");
+    } else if (order.orderStatus === "Shipped" && status === "Pending") {
+      throw new Error("Cannot rollback shipped order to pending status.");
+    } else if (order.orderStatus === "Processing" && status === "Pending") {
+      throw new Error("Cannot rollback processing order to pending status.");
+    }
   }
 
   order.orderStatus = status;

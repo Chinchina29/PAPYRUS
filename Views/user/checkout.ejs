@@ -550,7 +550,7 @@
 
         <div class="order-items">
           <% cart.items.forEach(item => { %>
-            <div class="order-item">
+            <div class="order-item" data-product-id="<%= item.product._id %>">
               <div class="order-item-image">
                 <% if (item.product.images && item.product.images.length > 0) { %>
                   <img src="<%= item.product.images[0].url %>" alt="<%= item.product.title %>"/>
@@ -678,6 +678,53 @@
       });
       radio.closest('.payment-option').classList.add('selected');
     }
+
+    async function updateCheckoutSummary() {
+      try {
+        const response = await fetch('/cart/summary');
+        const data = await response.json();
+
+        if (data.success && data.cart) {
+          const cart = data.cart;
+          
+          const summaryRows = document.querySelectorAll('.summary-row');
+          summaryRows.forEach(row => {
+            const firstSpan = row.querySelector('span:first-child');
+            const lastSpan = row.querySelector('span:last-child');
+            
+            if (firstSpan && lastSpan) {
+              if (firstSpan.textContent.includes('Subtotal')) {
+                lastSpan.textContent = `₹${cart.subtotal.toFixed(2)}`;
+              } else if (firstSpan.textContent.includes('Shipping')) {
+                lastSpan.textContent = cart.shippingCharge === 0 ? 'FREE' : `₹${cart.shippingCharge.toFixed(2)}`;
+              }
+            }
+          });
+          
+          const totalElement = document.querySelector('.summary-row.total span:last-child');
+          if (totalElement) {
+            totalElement.textContent = `₹${cart.total.toFixed(2)}`;
+          }
+
+          cart.items.forEach(item => {
+            const itemElement = document.querySelector(`[data-product-id="${item.productId}"] .order-item-price`);
+            if (itemElement) {
+              itemElement.textContent = `₹${item.subtotal.toFixed(2)}`;
+            }
+            
+            const qtyElement = document.querySelector(`[data-product-id="${item.productId}"] .order-item-qty`);
+            if (qtyElement) {
+              qtyElement.textContent = `Qty: ${item.quantity}`;
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Failed to update checkout summary:', error);
+      }
+    }
+
+    // Reduced frequency for better performance
+    setInterval(updateCheckoutSummary, 10000);
 
     async function placeOrder() {
       const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');

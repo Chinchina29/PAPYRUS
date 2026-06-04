@@ -40,7 +40,7 @@ const CartWishlist = {
         if (response.status === 401) {
           this.showLoginRequired();
         } else {
-          this.showError(data.message || 'Failed to add item to cart');
+          this.showError(data.message || 'Failed to add item to cart', data.field, data.errorType);
         }
         return false;
       }
@@ -191,7 +191,7 @@ const CartWishlist = {
         this.updateCartCount();
         return true;
       } else {
-        this.showError(data.message || 'Failed to update quantity');
+        this.showError(data.message || 'Failed to update quantity', data.field, data.errorType);
         return false;
       }
     } catch (error) {
@@ -285,16 +285,67 @@ const CartWishlist = {
     }
   },
 
-  showError: function(message) {
-    if (typeof Swal !== 'undefined') {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: message,
-        confirmButtonColor: '#7A5C3E'
-      });
+  showError: function(message, field = null, errorType = null) {
+    if (typeof FormValidator !== 'undefined') {
+      FormValidator.showFieldError(message, field, errorType);
     } else {
-      alert(message);
+      // Fallback to original implementation
+      let title = 'Error';
+      let icon = 'error';
+      
+      if (errorType) {
+        switch (errorType) {
+          case 'MISSING_QUANTITY':
+          case 'INVALID_QUANTITY_FORMAT':
+          case 'INVALID_QUANTITY_MINIMUM':
+          case 'INVALID_QUANTITY_DECIMAL':
+            title = 'Quantity Error';
+            icon = 'warning';
+            break;
+          case 'OUT_OF_STOCK':
+          case 'INSUFFICIENT_STOCK':
+            title = 'Stock Issue';
+            icon = 'info';
+            break;
+          case 'PRODUCT_NOT_AVAILABLE':
+          case 'PRODUCT_NOT_FOUND':
+            title = 'Product Unavailable';
+            icon = 'warning';
+            break;
+          case 'INVALID_COUPON':
+          case 'EXPIRED_COUPON':
+            title = 'Coupon Invalid';
+            icon = 'warning';
+            break;
+          case 'EMPTY_CART':
+            title = 'Cart Empty';
+            icon = 'info';
+            break;
+        }
+      }
+
+      if (field && typeof Swal !== 'undefined') {
+        const fieldElement = document.querySelector(`[name="${field}"], #${field}, .${field}-input`);
+        if (fieldElement) {
+          fieldElement.focus();
+          fieldElement.style.border = '2px solid #ff6b6b';
+          setTimeout(() => {
+            fieldElement.style.border = '';
+          }, 3000);
+        }
+      }
+
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          icon: icon,
+          title: title,
+          text: message,
+          confirmButtonColor: '#7A5C3E',
+          footer: field ? `Please check the ${field} field` : null
+        });
+      } else {
+        alert(message);
+      }
     }
   },
 

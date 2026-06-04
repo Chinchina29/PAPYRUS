@@ -515,12 +515,12 @@
           
           <div class="summary-row">
             <span>Estimated Shipping</span>
-            <span>₹95.00</span>
+            <span><%= cart.totalAmount >= 500 ? 'FREE' : '₹50.00' %></span>
           </div>
           
           <div class="summary-row total">
             <span>Total</span>
-            <span>₹<%= (cart.totalAmount + 95).toFixed(2) %></span>
+            <span>₹<%= (cart.totalAmount + (cart.totalAmount >= 500 ? 0 : 50)).toFixed(2) %></span>
           </div>
 
           <button class="checkout-btn" onclick="proceedToCheckout()">
@@ -561,107 +561,148 @@
       };
     }
 
+    let updateInProgress = new Set(); // Track updates in progress per product
+
     async function updateQuantity(productId, newQuantity) {
       if (newQuantity < 1) {
         return removeFromCart(productId);
       }
 
+      // Prevent concurrent updates for the same product
+      if (updateInProgress.has(productId)) {
+        console.log('Update already in progress for product:', productId);
+        return;
+      }
+
       const itemRow = document.querySelector(`[data-product-id="${productId}"]`);
-      if (itemRow) {
-        const qtyDisplay = itemRow.querySelector('.qty-display');
-        const priceAmount = itemRow.querySelector('.price-amount');
-        const itemPrice = parseFloat(itemRow.dataset.itemPrice);
-        const maxStock = parseInt(itemRow.dataset.maxStock);
-        const maxQuantity = parseInt(itemRow.dataset.maxQuantity || 10);
-        const effectiveMax = Math.min(maxStock, maxQuantity);
-        
-        const oldQuantity = parseInt(qtyDisplay.textContent);
-        const oldPrice = priceAmount.textContent;
-        
-        if (qtyDisplay) qtyDisplay.textContent = newQuantity;
-        if (priceAmount) priceAmount.textContent = `₹${(itemPrice * newQuantity).toFixed(2)}`;
-        
-        const decreaseBtn = itemRow.querySelector('.qty-decrease');
-        const increaseBtn = itemRow.querySelector('.qty-increase');
-        
-        if (decreaseBtn) decreaseBtn.disabled = newQuantity <= 1;
-        if (increaseBtn) increaseBtn.disabled = newQuantity >= effectiveMax;
+      if (!itemRow) return;
 
-        updateCartSummaryOptimistic();
+      const qtyDisplay = itemRow.querySelector('.qty-display');
+      const priceAmount = itemRow.querySelector('.price-amount');
+      const itemPrice = parseFloat(itemRow.dataset.itemPrice);
+      const maxStock = parseInt(itemRow.dataset.maxStock);
+      const maxQuantity = parseInt(itemRow.dataset.maxQuantity || 10);
+      const effectiveMax = Math.min(maxStock, maxQuantity);
+      
+      const oldQuantity = parseInt(qtyDisplay.textContent);
+      
+      // Don't update if quantity hasn't changed
+      if (oldQuantity === newQuantity) return;
+      
+      // Validate quantity limits
+      if (newQuantity > effectiveMax) {
+        const limitReason = maxQuantity < maxStock 
+          ? `Maximum ${maxQuantity} items allowed per order for this product`
+          : `Only ${maxStock} items available in stock`;
+        Swal.fire({
+          icon: 'warning',
+          title: 'Maximum Quantity',
+          text: limitReason,
+          confirmButtonColor: '#2d1f14'
+        });
+        return;
+      }
+      
+      // Mark as updating
+      updateInProgress.add(productId);
+      
+      // Add loading state
+      const increaseBtn = itemRow.querySelector('.qty-increase');
+      const decreaseBtn = itemRow.querySelector('.qty-decrease');
+      const originalIncreaseText = increaseBtn.textContent;
+      const originalDecreaseText = decreaseBtn.textContent;
+      
+      increaseBtn.disabled = true;
+      decreaseBtn.disabled = true;
+      increaseBtn.textContent = '⋯';
+      decreaseBtn.textContent = '⋯';
+      
+      try {
+        const response = await fetch(`/cart/update/${productId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ quantity: parseInt(newQuantity) })
+        });
 
-        try {
-          const response = await fetch(`/cart/update/${productId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ quantity: parseInt(newQuantity) })
-          });
+        const data = await response.json();
 
-          const data = await response.json();
-
-          if (data.success) {
-            updateCartSummary();
-          } else {
-            if (qtyDisplay) qtyDisplay.textContent = oldQuantity;
-            if (priceAmount) priceAmount.textContent = oldPrice;
-            if (decreaseBtn) decreaseBtn.disabled = oldQuantity <= 1;
-            if (increaseBtn) increaseBtn.disabled = oldQuantity >= effectiveMax;
-            
-            if (data.message && (data.message.toLowerCase().includes('out of stock') || data.message.toLowerCase().includes('stock') && data.message.includes('0'))) {
-              Swal.fire({
-                icon: 'error',
-                title: 'Out of Stock',
-                text: 'Sorry, this product is currently out of stock',
-                confirmButtonColor: '#2d1f14'
-              }).then(() => {
-                location.reload();
-              });
-            } else if (data.message && data.message.toLowerCase().includes('insufficient stock')) {
-              Swal.fire({
-                icon: 'warning',
-                title: 'Insufficient Stock',
-                text: data.message,
-                confirmButtonColor: '#2d1f14'
-              }).then(() => {
-                location.reload();
-              });
-            } else if (data.message && data.message.toLowerCase().includes('maximum')) {
-              Swal.fire({
-                icon: 'warning',
-                title: 'Quantity Limit',
-                text: data.message,
-                confirmButtonColor: '#2d1f14'
-              }).then(() => {
-                location.reload();
-              });
-            } else {
-              Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: data.message || 'Failed to update quantity',
-                confirmButtonColor: '#2d1f14'
-              }).then(() => {
-                location.reload();
-              });
-            }
-          }
-        } catch (error) {
-          if (qtyDisplay) qtyDisplay.textContent = oldQuantity;
-          if (priceAmount) priceAmount.textContent = oldPrice;
-          if (decreaseBtn) decreaseBtn.disabled = oldQuantity <= 1;
-          if (increaseBtn) increaseBtn.disabled = oldQuantity >= effectiveMax;
+        if (data.success) {
+          // Update UI with server response
+          if (qtyDisplay) qtyDisplay.textContent = newQuantity;
+          if (priceAmount) priceAmount.textContent = `₹${(itemPrice * newQuantity).toFixed(2)}`;
           
-          console.error('Update quantity error:', error);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Something went wrong. Please try again.',
-            confirmButtonColor: '#2d1f14'
-          }).then(() => {
-            location.reload();
-          });
+          // Update cart summary with real data from server
+          updateCartSummaryFromResponse(data.cart);
+          
+          // Show success feedback briefly
+          qtyDisplay.style.color = '#2e7d32';
+          setTimeout(() => {
+            qtyDisplay.style.color = '';
+          }, 500);
+          
+          console.log('Quantity updated successfully:', { productId, newQuantity, serverData: data.cart });
+        } else {
+          // Revert UI on error
+          if (qtyDisplay) qtyDisplay.textContent = oldQuantity;
+          
+          // Show error message
+          if (data.message && (data.message.toLowerCase().includes('out of stock') || data.message.toLowerCase().includes('stock') && data.message.includes('0'))) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Out of Stock',
+              text: 'Sorry, this product is currently out of stock',
+              confirmButtonColor: '#2d1f14'
+            }).then(() => {
+              location.reload();
+            });
+          } else if (data.message && data.message.toLowerCase().includes('insufficient stock')) {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Insufficient Stock',
+              text: data.message,
+              confirmButtonColor: '#2d1f14'
+            });
+          } else if (data.message && data.message.toLowerCase().includes('maximum')) {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Quantity Limit',
+              text: data.message,
+              confirmButtonColor: '#2d1f14'
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message || 'Failed to update quantity',
+              confirmButtonColor: '#2d1f14'
+            });
+          }
         }
+      } catch (error) {
+        console.error('Update quantity error:', error);
+        // Revert UI on error
+        if (qtyDisplay) qtyDisplay.textContent = oldQuantity;
+        
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Something went wrong. Please try again.',
+          confirmButtonColor: '#2d1f14'
+        });
+      } finally {
+        // Restore button states
+        increaseBtn.textContent = originalIncreaseText;
+        decreaseBtn.textContent = originalDecreaseText;
+        
+        // Set button states based on current quantity
+        const currentQty = parseInt(qtyDisplay.textContent);
+        decreaseBtn.disabled = currentQty <= 1;
+        increaseBtn.disabled = currentQty >= effectiveMax;
+        
+        // Remove from updating set
+        updateInProgress.delete(productId);
       }
     }
 
@@ -673,13 +714,19 @@
         subtotal += qty * price;
       });
       
-      const shippingCharge = 95;
-      const total = subtotal + shippingCharge;
+      const shippingCharge = subtotal >= 500 ? 0 : 50;
+      const discount = 0; // We'll get this from session in real update
+      const total = subtotal + shippingCharge - discount;
       
       const summaryRows = document.querySelectorAll('.summary-row');
       if (summaryRows.length > 0) {
         const subtotalSpan = summaryRows[0].querySelector('span:last-child');
         if (subtotalSpan) subtotalSpan.textContent = `₹${subtotal.toFixed(2)}`;
+        
+        if (summaryRows.length > 1) {
+          const shippingSpan = summaryRows[1].querySelector('span:last-child');
+          if (shippingSpan) shippingSpan.textContent = shippingCharge === 0 ? 'FREE' : `₹${shippingCharge.toFixed(2)}`;
+        }
       }
       
       const totalRow = document.querySelector('.summary-row.total');
@@ -691,8 +738,9 @@
 
     document.addEventListener('DOMContentLoaded', function() {
       document.querySelectorAll('.qty-increase').forEach(btn => {
-        btn.addEventListener('click', function(e) {
+        btn.addEventListener('click', async function(e) {
           e.preventDefault();
+          
           const productId = this.dataset.productId;
           const itemRow = document.querySelector(`[data-product-id="${productId}"]`);
           const currentQty = parseInt(itemRow.querySelector('.qty-display').textContent);
@@ -701,7 +749,7 @@
           const effectiveMax = Math.min(maxStock, maxQuantity);
           
           if (currentQty < effectiveMax) {
-            updateQuantity(productId, currentQty + 1);
+            await updateQuantity(productId, currentQty + 1);
           } else {
             const limitReason = maxQuantity < maxStock 
               ? `Maximum ${maxQuantity} items allowed per order for this product`
@@ -717,14 +765,15 @@
       });
 
       document.querySelectorAll('.qty-decrease').forEach(btn => {
-        btn.addEventListener('click', function(e) {
+        btn.addEventListener('click', async function(e) {
           e.preventDefault();
+          
           const productId = this.dataset.productId;
           const itemRow = document.querySelector(`[data-product-id="${productId}"]`);
           const currentQty = parseInt(itemRow.querySelector('.qty-display').textContent);
           
           if (currentQty > 1) {
-            updateQuantity(productId, currentQty - 1);
+            await updateQuantity(productId, currentQty - 1);
           }
         });
       });
@@ -759,35 +808,90 @@
         });
       }
 
-      setInterval(checkStockUpdates, 30000);
+      // Check for stock changes periodically (reduced frequency)
+      setInterval(checkStockUpdates, 60000);
     });
     
-    async function updateCartSummary() {
-      try {
-        const response = await fetch('/cart');
-        const html = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        
-        const summaryRows = doc.querySelectorAll('.summary-row');
-        const currentSummaryRows = document.querySelectorAll('.summary-row');
-        
-        if (summaryRows.length > 0 && currentSummaryRows.length > 0) {
-          const newSubtotalSpan = summaryRows[0].querySelector('span:last-child');
-          const currentSubtotalSpan = currentSummaryRows[0].querySelector('span:last-child');
-          if (newSubtotalSpan && currentSubtotalSpan) {
-            currentSubtotalSpan.textContent = newSubtotalSpan.textContent;
-          }
+    function updateCartSummaryFromResponse(cartData) {
+      if (!cartData) {
+        console.log('No cart data received');
+        return;
+      }
+      
+      console.log('Updating cart summary with:', cartData);
+      
+      const summaryRows = document.querySelectorAll('.summary-row:not(.total)');
+      if (summaryRows.length >= 2) {
+        // Update subtotal
+        const subtotalSpan = summaryRows[0].querySelector('span:last-child');
+        if (subtotalSpan && cartData.subtotal !== undefined) {
+          subtotalSpan.textContent = `₹${cartData.subtotal.toFixed(2)}`;
         }
         
-        const newTotalRow = doc.querySelector('.summary-row.total');
-        const currentTotalRow = document.querySelector('.summary-row.total');
-        if (newTotalRow && currentTotalRow) {
-          const newTotalSpan = newTotalRow.querySelector('span:last-child');
-          const currentTotalSpan = currentTotalRow.querySelector('span:last-child');
-          if (newTotalSpan && currentTotalSpan) {
-            currentTotalSpan.textContent = newTotalSpan.textContent;
+        // Update shipping
+        const shippingSpan = summaryRows[1].querySelector('span:last-child');
+        if (shippingSpan && cartData.shippingCharge !== undefined) {
+          shippingSpan.textContent = cartData.shippingCharge === 0 ? 'FREE' : `₹${cartData.shippingCharge.toFixed(2)}`;
+        }
+      }
+      
+      // Update total
+      const totalRow = document.querySelector('.summary-row.total');
+      if (totalRow && cartData.total !== undefined) {
+        const totalSpan = totalRow.querySelector('span:last-child');
+        if (totalSpan) {
+          totalSpan.textContent = `₹${cartData.total.toFixed(2)}`;
+        }
+      }
+      
+      // Update discount if present
+      if (cartData.discount > 0) {
+        let discountRow = document.querySelector('.summary-row.discount');
+        if (!discountRow) {
+          // Create discount row if it doesn't exist
+          const totalRow = document.querySelector('.summary-row.total');
+          discountRow = document.createElement('div');
+          discountRow.className = 'summary-row discount';
+          discountRow.innerHTML = `
+            <span>Discount</span>
+            <span style="color: #2e7d32;">-₹${cartData.discount.toFixed(2)}</span>
+          `;
+          totalRow.parentNode.insertBefore(discountRow, totalRow);
+        } else {
+          const discountSpan = discountRow.querySelector('span:last-child');
+          if (discountSpan) {
+            discountSpan.textContent = `-₹${cartData.discount.toFixed(2)}`;
           }
+        }
+      } else {
+        // Remove discount row if no discount
+        const discountRow = document.querySelector('.summary-row.discount');
+        if (discountRow) {
+          discountRow.remove();
+        }
+      }
+    }
+
+    async function updateCartSummary() {
+      try {
+        const response = await fetch('/cart/summary');
+        const data = await response.json();
+
+        if (data.success && data.cart) {
+          updateCartSummaryFromResponse(data.cart);
+          
+          // Update individual item prices
+          data.cart.items.forEach(item => {
+            const itemElement = document.querySelector(`[data-product-id="${item.productId}"] .price-amount`);
+            if (itemElement) {
+              itemElement.textContent = `₹${item.subtotal.toFixed(2)}`;
+            }
+            
+            const qtyElement = document.querySelector(`[data-product-id="${item.productId}"] .qty-display`);
+            if (qtyElement) {
+              qtyElement.textContent = item.quantity;
+            }
+          });
         }
       } catch (error) {
         console.error('Failed to update cart summary:', error);

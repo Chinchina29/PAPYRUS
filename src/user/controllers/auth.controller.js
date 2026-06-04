@@ -9,46 +9,21 @@ export const signup = async (req, res) => {
   try {
     const { firstName, lastName, email, password, confirmPassword } = req.body;
     
-    const trimmedFirstName = firstName?.trim();
-    const trimmedLastName = lastName?.trim();
-    const trimmedEmail = email?.trim();
-    
-    if (!trimmedFirstName || !trimmedLastName || !trimmedEmail || !password || !confirmPassword) {
-      return res
-        .status(400)
-        .json({ success: false, message: "All fields are required" });
-    }
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Please enter a valid email address" });
-    }
-    
-    if (password !== confirmPassword) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Passwords do not match" });
-    }
-    if (password.length < 6) {
-      return res.status(400).json({
-        success: false,
-        message: "Password must be at least 6 characters",
-      });
-    }
-    
     const signupData = {
-      firstName: trimmedFirstName,
-      lastName: trimmedLastName,
-      email: trimmedEmail,
+      firstName: firstName?.trim(),
+      lastName: lastName?.trim(),
+      email: email?.trim(),
       password,
       confirmPassword
     };
     
     const result = await authService.signupUser(signupData);
     if (!result.success) {
-      return res.status(400).json({ success: false, message: result.message });
+      return res.status(400).json({ 
+        success: false, 
+        message: result.message,
+        errorType: result.errorType || 'SIGNUP_FAILED'
+      });
     }
     req.session.tempUserId = result.user._id.toString();
     req.session.tempUserEmail = result.user.email;
@@ -58,9 +33,11 @@ export const signup = async (req, res) => {
       redirectUrl: "/signup/verify-otp",
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, message: "Server error: " + error.message });
+    return res.status(500).json({ 
+      success: false, 
+      message: "Server error occurred. Please try again later.",
+      errorType: 'SERVER_ERROR'
+    });
   }
 };
 
@@ -103,43 +80,36 @@ export const resendOTP = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const trimmedEmail = email?.trim();
     
-    if (!trimmedEmail || !password) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Email and password are required" });
-    }
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Please enter a valid email address" });
-    }
-    
-    const result = await authService.loginUser(trimmedEmail, password);
+    const result = await authService.loginUser(email?.trim(), password);
     if (result.success) {
       if (result.needsVerification) {
         req.session.tempUserId = result.userId.toString();
-        req.session.tempUserEmail = trimmedEmail;
+        req.session.tempUserEmail = email?.trim();
         return res.json({
           success: true,
           message: result.message,
           redirectUrl: "/signup/verify-otp",
         });
       }
-      return res.status(400).json({ success: false, message: result.message });
+      return res.status(400).json({ 
+        success: false, 
+        message: result.message,
+        errorType: result.errorType || 'LOGIN_FAILED'
+      });
     }
     if (result.user.role === "admin") {
-      return res
-        .status(403)
-        .json({ success: false, message: "Please use the admin login page." });
+      return res.status(403).json({ 
+        success: false, 
+        message: "Please use the admin login page.",
+        errorType: 'ADMIN_LOGIN_REQUIRED'
+      });
     }
     if (result.user.isBlocked) {
       return res.status(403).json({
         success: false,
         message: "Your account has been blocked. Please contact support.",
+        errorType: 'ACCOUNT_BLOCKED'
       });
     }
     req.session.userId = result.user._id.toString();
@@ -157,9 +127,11 @@ export const login = async (req, res) => {
       redirectUrl: "/home",
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, message: "Server error: " + error.message });
+    return res.status(500).json({ 
+      success: false, 
+      message: "Server error occurred. Please try again later.",
+      errorType: 'SERVER_ERROR'
+    });
   }
 };
 

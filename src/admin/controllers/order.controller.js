@@ -1,6 +1,7 @@
 import * as orderService from "../../shared/services/order.service.js";
 import { generateInvoicePDF } from "../../shared/utils/invoiceGenerator.js";
 import * as notificationService from "../../shared/services/notification.service.js";
+import Product from "../../shared/models/Product.js";
 
 export const getReturnRequests = async (req, res) => {
   try {
@@ -197,11 +198,20 @@ export const approveReturnRequest = async (req, res) => {
     order.returnApprovedAt = new Date();
     order.orderStatus = "Returned";
     order.returnedAt = new Date();
+
+    for (const item of order.items) {
+      await Product.findByIdAndUpdate(
+        item.product,
+        { $inc: { stock: item.quantity } },
+        { new: true }
+      );
+    }
+
     await order.save();
 
     return res.json({
       success: true,
-      message: "Return request approved successfully",
+      message: "Return request approved successfully and inventory restored",
     });
   } catch (error) {
     return res.status(500).json({
@@ -290,6 +300,12 @@ export const approveItemReturn = async (req, res) => {
     item.itemStatus = "Returned";
     item.returnedAt = new Date();
 
+    await Product.findByIdAndUpdate(
+      item.product,
+      { $inc: { stock: item.quantity } },
+      { new: true }
+    );
+
     await order.save();
 
     await notificationService.notifyReturnApproved({
@@ -300,7 +316,7 @@ export const approveItemReturn = async (req, res) => {
 
     return res.json({
       success: true,
-      message: "Item return request approved successfully",
+      message: "Item return request approved successfully and inventory restored",
     });
   } catch (error) {
     console.error("Approve item return error:", error);

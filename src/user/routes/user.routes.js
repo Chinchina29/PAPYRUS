@@ -174,6 +174,7 @@ router.delete(
   cartController.clearCart,
 );
 router.get("/cart/count", cartController.getCartCount);
+router.get("/cart/summary", cartController.getCartSummary);
 router.post(
   "/cart/validate-coupon",
   requireAuth,

@@ -237,10 +237,20 @@ export const emailChangeValidation = [
 export const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    const formattedErrors = {};
+    const errorMessages = [];
+    
+    errors.array().forEach((error) => {
+      formattedErrors[error.path] = error.msg;
+      errorMessages.push(`${error.path}: ${error.msg}`);
+    });
+    
     return res.status(400).json({
       success: false,
-      message: errors.array()[0].msg,
+      message: `Validation failed: ${errorMessages.join(', ')}`,
       errors: errors.array(),
+      fieldErrors: formattedErrors,
+      failedField: errors.array()[0].path
     });
   }
   next();

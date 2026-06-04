@@ -10,6 +10,8 @@ import {
 import {
   passwordResetValidation,
   validate,
+  signupValidation,
+  loginValidation,
 } from "../../shared/middleware/validation.middleware.js";
 import passport from "../../shared/config/passport.config.js";
 import {
@@ -61,7 +63,7 @@ router.get("/home", async (req, res) => {
 router.get("/signup", isNotAuthenticated, (req, res) =>
   res.render("user/signup"),
 );
-router.post("/signup", authLimiter, authController.signup);
+router.post("/signup", signupValidation, validate, authLimiter, authController.signup);
 
 router.get("/signup/verify-otp", (req, res) => {
   if (!req.session.tempUserId) {
@@ -91,6 +93,8 @@ router.get(
 
 router.post(
   "/login",
+  loginValidation,
+  validate,
   authLimiter,
   preventLoginIfAdminActive,
   authController.login,

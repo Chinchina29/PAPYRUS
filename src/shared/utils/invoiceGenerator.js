@@ -143,18 +143,54 @@ export const generateInvoicePDF = (order, res) => {
       rowY = 50;
     }
 
+    const isCancelled = item.itemStatus === 'Cancelled';
+    const isReturned = item.itemStatus === 'Returned';
+    
     doc
       .fontSize(11)
       .font('Helvetica')
-      .fillColor(colors.dark)
+      .fillColor(isCancelled || isReturned ? colors.muted : colors.dark)
       .text(item.title, colX.item + 4, rowY, { width: 270 });
+
+    if (isCancelled) {
+      doc
+        .fontSize(8)
+        .font('Helvetica-Bold')
+        .fillColor('#dc2626')
+        .text('CANCELLED', colX.item + 4, rowY + 12);
+    } else if (isReturned) {
+      doc
+        .fontSize(8)
+        .font('Helvetica-Bold')
+        .fillColor('#ea580c')
+        .text('RETURNED', colX.item + 4, rowY + 12);
+    }
 
     doc
       .fontSize(11)
+      .font('Helvetica')
+      .fillColor(isCancelled || isReturned ? colors.muted : colors.dark)
       .text(String(item.quantity), colX.qty, rowY, { width: 50, align: 'center' })
-      .text(`Rs.${item.price.toFixed(2)}`, colX.price, rowY, { width: 60, align: 'right' })
-      .font('Helvetica-Bold')
-      .text(`Rs.${item.subtotal.toFixed(2)}`, colX.total, rowY, { width: 60, align: 'right' });
+      .text(`Rs.${item.price.toFixed(2)}`, colX.price, rowY, { width: 60, align: 'right' });
+
+    if (isCancelled || isReturned) {
+      doc
+        .font('Helvetica')
+        .fillColor(colors.muted)
+        .text(`Rs.${item.subtotal.toFixed(2)}`, colX.total, rowY, { width: 60, align: 'right' });
+      
+      doc
+        .moveTo(colX.total, rowY + 7)
+        .lineTo(colX.total + 60, rowY + 7)
+        .strokeColor(colors.muted)
+        .lineWidth(1)
+        .stroke();
+    } else {
+      doc
+        .font('Helvetica-Bold')
+        .fillColor(colors.dark)
+        .text(`Rs.${item.subtotal.toFixed(2)}`, colX.total, rowY, { width: 60, align: 'right' });
+    }
 
     rowY += rowHeight;
 

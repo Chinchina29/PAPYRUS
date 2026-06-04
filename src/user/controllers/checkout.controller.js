@@ -173,14 +173,7 @@ export const placeOrder = async (req, res) => {
         });
       }
 
-      if (product.stock === 0) {
-        return res.status(400).json({
-          success: false,
-          message: `"${item.product.title}" is currently out of stock. Please remove it from your cart or check back later.`,
-        });
-      }
-
-      if (product.stock < item.quantity) {
+      if (product.stock > 0 && product.stock < item.quantity) {
         return res.status(400).json({
           success: false,
           message: `Insufficient stock for "${item.product.title}". Only ${product.stock} ${product.stock === 1 ? 'copy' : 'copies'} available, but you have ${item.quantity} in your cart. Please update the quantity.`,
@@ -253,15 +246,20 @@ export const placeOrder = async (req, res) => {
         
         const currentProduct = await Product.findById(item.product._id).select('stock title');
         
-        if (!currentProduct || currentProduct.stock === 0) {
+        if (!currentProduct) {
           return res.status(400).json({
             success: false,
-            message: `Sorry, "${item.product.title}" just went out of stock. Your order has been cancelled. Please refresh your cart and try again.`,
+            message: `Sorry, "${item.product.title}" is no longer available. Your order has been cancelled. Please refresh your cart and try again.`,
+          });
+        } else if (currentProduct.stock === 0) {
+          return res.status(400).json({
+            success: false,
+            message: `Sorry, "${item.product.title}" just went out of stock. Your order has been cancelled. You can keep the item in your cart for future availability or remove it.`,
           });
         } else {
           return res.status(400).json({
             success: false,
-            message: `Sorry, only ${currentProduct.stock} ${currentProduct.stock === 1 ? 'copy' : 'copies'} of "${item.product.title}" ${currentProduct.stock === 1 ? 'is' : 'are'} now available. Your order has been cancelled. Please update your cart and try again.`,
+            message: `Sorry, only ${currentProduct.stock} ${currentProduct.stock === 1 ? 'copy' : 'copies'} of "${item.product.title}" ${currentProduct.stock === 1 ? 'is' : 'are'} now available. Your order has been cancelled. Please update your cart quantity to ${currentProduct.stock} or less and try again.`,
           });
         }
       }
