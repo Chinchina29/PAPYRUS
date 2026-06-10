@@ -85,7 +85,7 @@ export const getCheckout = async (req, res) => {
     const subtotal = cart.totalAmount;
     const shippingCharge = subtotal >= 500 ? 0 : 50;
     const discount = req.session.appliedCoupon?.discount || 0;
-    const totalAmount = subtotal + shippingCharge - discount;
+    const totalAmount = parseFloat((subtotal + shippingCharge - discount).toFixed(2));
 
     const now = new Date();
     const availableCoupons = await Coupon.find({
@@ -193,14 +193,14 @@ export const placeOrder = async (req, res) => {
     const subtotal = cart.totalAmount;
     const shippingCharge = subtotal >= 500 ? 0 : 50;
     const discount = req.session.appliedCoupon?.discount || 0;
-    const totalAmount = subtotal + shippingCharge - discount;
+    const totalAmount = parseFloat((subtotal + shippingCharge - discount).toFixed(2));
 
     const orderItems = cart.items.map((item) => ({
       product: item.product._id,
       title: item.product.title,
-      price: item.price,
+      price: parseFloat(item.price.toFixed(2)),
       quantity: item.quantity,
-      subtotal: item.price * item.quantity,
+      subtotal: parseFloat((item.price * item.quantity).toFixed(2)),
     }));
 
     const orderData = {
@@ -219,9 +219,9 @@ export const placeOrder = async (req, res) => {
       paymentMethod,
       paymentStatus: paymentMethod === "COD" ? "Pending" : "Paid",
       orderStatus: "Pending",
-      subtotal,
-      shippingCharge,
-      discount,
+      subtotal: parseFloat(subtotal.toFixed(2)),
+      shippingCharge: parseFloat(shippingCharge.toFixed(2)),
+      discount: parseFloat(discount.toFixed(2)),
       couponCode: req.session.appliedCoupon?.code || null,
       totalAmount,
       orderNotes: orderNotes || "",

@@ -1,55 +1,55 @@
-import PDFDocument from 'pdfkit';
+import PDFDocument from "pdfkit";
 
 export const generateInvoicePDF = (order, res) => {
-  const doc = new PDFDocument({ margin: 50, size: 'A4' });
+  const doc = new PDFDocument({ margin: 50, size: "A4" });
 
   const filename = `invoice-${order.orderId}.pdf`;
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
   doc.pipe(res);
 
   const colors = {
-    dark: '#2d1f14',
-    muted: '#6b7280',
-    light: '#f9fafb',
-    border: '#e5e7eb',
-    accent: '#8b7355',
+    dark: "#2d1f14",
+    muted: "#6b7280",
+    light: "#f9fafb",
+    border: "#e5e7eb",
+    accent: "#8b7355",
   };
 
   const pageWidth = doc.page.width - 100;
 
   doc
     .fontSize(28)
-    .font('Helvetica-Bold')
+    .font("Helvetica-Bold")
     .fillColor(colors.dark)
-    .text('PAPYRUS', 50, 50);
+    .text("PAPYRUS", 50, 50);
 
   doc
     .fontSize(10)
-    .font('Helvetica')
+    .font("Helvetica")
     .fillColor(colors.muted)
-    .text('Online Bookstore', 50, 85)
-    .text('support@papyrus.com', 50, 100);
+    .text("Online Bookstore", 50, 85)
+    .text("support@papyrus.com", 50, 100);
 
   doc
     .fontSize(22)
-    .font('Helvetica-Bold')
+    .font("Helvetica-Bold")
     .fillColor(colors.dark)
-    .text('INVOICE', 0, 50, { align: 'right' });
+    .text("INVOICE", 0, 50, { align: "right" });
 
-  const invoiceDate = new Date(order.createdAt).toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
+  const invoiceDate = new Date(order.createdAt).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   });
 
   doc
     .fontSize(10)
-    .font('Helvetica')
+    .font("Helvetica")
     .fillColor(colors.muted)
-    .text(order.orderId, 0, 80, { align: 'right' })
-    .text(invoiceDate, 0, 95, { align: 'right' })
-    .text(`Payment: ${order.paymentStatus}`, 0, 110, { align: 'right' });
+    .text(order.orderId, 0, 80, { align: "right" })
+    .text(invoiceDate, 0, 95, { align: "right" })
+    .text(`Payment: ${order.paymentStatus}`, 0, 110, { align: "right" });
 
   doc
     .moveTo(50, 130)
@@ -62,13 +62,13 @@ export const generateInvoicePDF = (order, res) => {
 
   doc
     .fontSize(9)
-    .font('Helvetica-Bold')
+    .font("Helvetica-Bold")
     .fillColor(colors.muted)
-    .text('BILL TO', 50, addrY);
+    .text("BILL TO", 50, addrY);
 
   doc
     .fontSize(11)
-    .font('Helvetica-Bold')
+    .font("Helvetica-Bold")
     .fillColor(colors.dark)
     .text(order.shippingAddress.fullName, 50, addrY + 16);
 
@@ -79,32 +79,32 @@ export const generateInvoicePDF = (order, res) => {
     order.shippingAddress.phone,
   ].filter(Boolean);
 
-  doc.fontSize(10).font('Helvetica').fillColor(colors.muted);
+  doc.fontSize(10).font("Helvetica").fillColor(colors.muted);
   addrLines.forEach((line, i) => {
     doc.text(line, 50, addrY + 32 + i * 15);
   });
 
   doc
     .fontSize(9)
-    .font('Helvetica-Bold')
+    .font("Helvetica-Bold")
     .fillColor(colors.muted)
-    .text('PAYMENT DETAILS', 350, addrY);
+    .text("PAYMENT DETAILS", 350, addrY);
 
   const paymentDetails = [
-    ['Method', order.paymentMethod],
-    ['Status', order.paymentStatus],
-    ['Order Status', order.orderStatus],
+    ["Method", order.paymentMethod],
+    ["Status", order.paymentStatus],
+    ["Order Status", order.orderStatus],
   ];
 
   paymentDetails.forEach(([label, value], i) => {
     doc
       .fontSize(10)
-      .font('Helvetica-Bold')
+      .font("Helvetica-Bold")
       .fillColor(colors.muted)
       .text(`${label}:`, 350, addrY + 16 + i * 18);
     doc
       .fontSize(10)
-      .font('Helvetica')
+      .font("Helvetica")
       .fillColor(colors.dark)
       .text(value, 430, addrY + 16 + i * 18);
   });
@@ -112,18 +112,16 @@ export const generateInvoicePDF = (order, res) => {
   const tableTop = addrY + 100;
   const colX = { item: 50, qty: 340, price: 400, total: 470 };
 
-  doc
-    .rect(50, tableTop, pageWidth, 28)
-    .fill(colors.light);
+  doc.rect(50, tableTop, pageWidth, 28).fill(colors.light);
 
   doc
     .fontSize(9)
-    .font('Helvetica-Bold')
+    .font("Helvetica-Bold")
     .fillColor(colors.muted)
-    .text('ITEM DESCRIPTION', colX.item + 4, tableTop + 9)
-    .text('QTY', colX.qty, tableTop + 9, { width: 50, align: 'center' })
-    .text('UNIT PRICE', colX.price, tableTop + 9, { width: 60, align: 'right' })
-    .text('TOTAL', colX.total, tableTop + 9, { width: 60, align: 'right' });
+    .text("ITEM DESCRIPTION", colX.item + 4, tableTop + 9)
+    .text("QTY", colX.qty, tableTop + 9, { width: 50, align: "center" })
+    .text("UNIT PRICE", colX.price, tableTop + 9, { width: 60, align: "right" })
+    .text("TOTAL", colX.total, tableTop + 9, { width: 60, align: "right" });
 
   doc
     .moveTo(50, tableTop + 28)
@@ -135,7 +133,10 @@ export const generateInvoicePDF = (order, res) => {
   let rowY = tableTop + 36;
 
   order.items.forEach((item, index) => {
-    const titleHeight = doc.heightOfString(item.title, { width: 270, fontSize: 11 });
+    const titleHeight = doc.heightOfString(item.title, {
+      width: 270,
+      fontSize: 11,
+    });
     const rowHeight = Math.max(titleHeight + 16, 30);
 
     if (rowY + rowHeight > doc.page.height - 200) {
@@ -143,53 +144,62 @@ export const generateInvoicePDF = (order, res) => {
       rowY = 50;
     }
 
-    const isCancelled = item.itemStatus === 'Cancelled';
-    const isReturned = item.itemStatus === 'Returned';
-    
+    const isCancelled = item.itemStatus === "Cancelled";
+    const isReturned = item.itemStatus === "Returned";
+
     doc
       .fontSize(11)
-      .font('Helvetica')
+      .font("Helvetica")
       .fillColor(isCancelled || isReturned ? colors.muted : colors.dark)
       .text(item.title, colX.item + 4, rowY, { width: 270 });
 
     if (isCancelled) {
       doc
         .fontSize(8)
-        .font('Helvetica-Bold')
-        .fillColor('#dc2626')
-        .text('CANCELLED', colX.item + 4, rowY + 12);
+        .font("Helvetica-Bold")
+        .fillColor("#dc2626")
+        .text("CANCELLED", colX.item + 4, rowY + 12);
     } else if (isReturned) {
       doc
         .fontSize(8)
-        .font('Helvetica-Bold')
-        .fillColor('#ea580c')
-        .text('RETURNED', colX.item + 4, rowY + 12);
+        .font("Helvetica-Bold")
+        .fillColor("#ea580c")
+        .text("RETURNED", colX.item + 4, rowY + 12);
     }
 
     doc
       .fontSize(11)
-      .font('Helvetica')
+      .font("Helvetica")
       .fillColor(isCancelled || isReturned ? colors.muted : colors.dark)
-      .text(String(item.quantity), colX.qty, rowY, { width: 50, align: 'center' })
-      .text(`Rs.${item.price.toFixed(2)}`, colX.price, rowY, { width: 60, align: 'right' });
+      .text(String(item.quantity), colX.qty, rowY, {
+        width: 50,
+        align: "center",
+      });
+
+    const unitPriceText = `Rs.${parseFloat(item.price).toFixed(2)}`;
+    doc.text(unitPriceText, colX.price, rowY, { width: 60, align: "right" });
+
+    const totalPriceText = `Rs.${parseFloat(item.subtotal).toFixed(2)}`;
 
     if (isCancelled || isReturned) {
       doc
-        .font('Helvetica')
+        .font("Helvetica")
         .fillColor(colors.muted)
-        .text(`Rs.${item.subtotal.toFixed(2)}`, colX.total, rowY, { width: 60, align: 'right' });
-      
+        .text(totalPriceText, colX.total, rowY, { width: 75, align: "right" });
+
+      const textWidth = doc.widthOfString(totalPriceText);
+      const startX = colX.total + 75 - textWidth;
       doc
-        .moveTo(colX.total, rowY + 7)
-        .lineTo(colX.total + 60, rowY + 7)
+        .moveTo(startX, rowY + 7)
+        .lineTo(startX + textWidth, rowY + 7)
         .strokeColor(colors.muted)
         .lineWidth(1)
         .stroke();
     } else {
       doc
-        .font('Helvetica-Bold')
+        .font("Helvetica-Bold")
         .fillColor(colors.dark)
-        .text(`Rs.${item.subtotal.toFixed(2)}`, colX.total, rowY, { width: 60, align: 'right' });
+        .text(totalPriceText, colX.total, rowY, { width: 75, align: "right" });
     }
 
     rowY += rowHeight;
@@ -210,6 +220,28 @@ export const generateInvoicePDF = (order, res) => {
   const totalsX = 350;
   const totalsValueX = 470;
 
+  let activeSubtotal = 0;
+  let cancelledAmount = 0;
+  let returnedAmount = 0;
+
+  order.items.forEach((item) => {
+    const isCancelled = item.itemStatus === "Cancelled";
+    const isReturned = item.itemStatus === "Returned";
+
+    if (isCancelled) {
+      cancelledAmount += item.subtotal;
+    } else if (isReturned) {
+      returnedAmount += item.subtotal;
+    } else {
+      activeSubtotal += item.subtotal;
+    }
+  });
+
+  const adjustedShipping =
+    activeSubtotal >= 500 ? 0 : activeSubtotal > 0 ? order.shippingCharge : 0;
+  const adjustedDiscount = activeSubtotal > 0 ? order.discount : 0;
+  const adjustedTotal = activeSubtotal + adjustedShipping - adjustedDiscount;
+
   const addTotalsRow = (label, value, bold = false, isTotal = false) => {
     if (isTotal) {
       doc
@@ -221,34 +253,72 @@ export const generateInvoicePDF = (order, res) => {
       rowY += 8;
     }
 
-    doc
-      .fontSize(isTotal ? 13 : 11)
-      .font(bold ? 'Helvetica-Bold' : 'Helvetica')
-      .fillColor(colors.dark)
-      .text(label, totalsX, rowY)
-      .text(value, totalsValueX, rowY, { width: 60, align: 'right' });
+    const fontSize = isTotal ? 13 : 11;
+    const font = bold ? "Helvetica-Bold" : "Helvetica";
+
+    doc.fontSize(fontSize).font(font).fillColor(colors.dark);
+
+    doc.text(label, totalsX, rowY);
+
+    doc.text(value, totalsX + 120, rowY, { width: 75, align: "right" });
 
     rowY += isTotal ? 20 : 18;
   };
+  if (order.subtotal !== activeSubtotal) {
+    addTotalsRow(
+      "Original Subtotal:",
+      `Rs.${parseFloat(order.subtotal).toFixed(2)}`,
+    );
 
-  addTotalsRow('Subtotal:', `Rs.${order.subtotal.toFixed(2)}`);
+    if (cancelledAmount > 0) {
+      addTotalsRow(
+        "Less: Cancelled Items:",
+        `-Rs.${parseFloat(cancelledAmount).toFixed(2)}`,
+        false,
+        false,
+      );
+    }
 
-  if (order.shippingCharge > 0) {
-    addTotalsRow('Shipping:', `Rs.${order.shippingCharge.toFixed(2)}`);
+    if (returnedAmount > 0) {
+      addTotalsRow(
+        "Less: Returned Items:",
+        `-Rs.${parseFloat(returnedAmount).toFixed(2)}`,
+        false,
+        false,
+      );
+    }
+
+    addTotalsRow(
+      "Active Subtotal:",
+      `Rs.${parseFloat(activeSubtotal).toFixed(2)}`,
+      true,
+      false,
+    );
+  } else {
+    addTotalsRow("Subtotal:", `Rs.${parseFloat(activeSubtotal).toFixed(2)}`);
   }
 
-  if (order.discount > 0) {
-    addTotalsRow('Discount:', `-Rs.${order.discount.toFixed(2)}`);
+  if (adjustedShipping > 0) {
+    addTotalsRow("Shipping:", `Rs.${parseFloat(adjustedShipping).toFixed(2)}`);
   }
 
-  addTotalsRow('Total Amount:', `Rs.${order.totalAmount.toFixed(2)}`, true, true);
+  if (adjustedDiscount > 0) {
+    addTotalsRow("Discount:", `-Rs.${parseFloat(adjustedDiscount).toFixed(2)}`);
+  }
+
+  addTotalsRow(
+    "Total Amount:",
+    `Rs.${parseFloat(adjustedTotal).toFixed(2)}`,
+    true,
+    true,
+  );
 
   const footerY = Math.max(rowY + 40, doc.page.height - 120);
-  
+
   if (footerY > doc.page.height - 100) {
     doc.addPage();
     const newFooterY = 50;
-    
+
     doc
       .moveTo(50, newFooterY)
       .lineTo(545, newFooterY)
@@ -258,16 +328,28 @@ export const generateInvoicePDF = (order, res) => {
 
     doc
       .fontSize(10)
-      .font('Helvetica-Bold')
+      .font("Helvetica-Bold")
       .fillColor(colors.dark)
-      .text('Thank you for shopping with Papyrus!', 50, newFooterY + 12, { align: 'center' });
+      .text("Thank you for shopping with Papyrus!", 50, newFooterY + 12, {
+        align: "center",
+      });
 
     doc
       .fontSize(9)
-      .font('Helvetica')
+      .font("Helvetica")
       .fillColor(colors.muted)
-      .text('For any queries, contact us at support@papyrus.com', 50, newFooterY + 28, { align: 'center' })
-      .text('This is a computer-generated invoice and does not require a signature.', 50, newFooterY + 43, { align: 'center' });
+      .text(
+        "For any queries, contact us at support@papyrus.com",
+        50,
+        newFooterY + 28,
+        { align: "center" },
+      )
+      .text(
+        "This is a computer-generated invoice and does not require a signature.",
+        50,
+        newFooterY + 43,
+        { align: "center" },
+      );
   } else {
     doc
       .moveTo(50, footerY)
@@ -278,29 +360,41 @@ export const generateInvoicePDF = (order, res) => {
 
     doc
       .fontSize(10)
-      .font('Helvetica-Bold')
+      .font("Helvetica-Bold")
       .fillColor(colors.dark)
-      .text('Thank you for shopping with Papyrus!', 50, footerY + 12, { align: 'center' });
+      .text("Thank you for shopping with Papyrus!", 50, footerY + 12, {
+        align: "center",
+      });
 
     doc
       .fontSize(9)
-      .font('Helvetica')
+      .font("Helvetica")
       .fillColor(colors.muted)
-      .text('For any queries, contact us at support@papyrus.com', 50, footerY + 28, { align: 'center' })
-      .text('This is a computer-generated invoice and does not require a signature.', 50, footerY + 43, { align: 'center' });
+      .text(
+        "For any queries, contact us at support@papyrus.com",
+        50,
+        footerY + 28,
+        { align: "center" },
+      )
+      .text(
+        "This is a computer-generated invoice and does not require a signature.",
+        50,
+        footerY + 43,
+        { align: "center" },
+      );
   }
 
   doc.end();
 };
 
 export const generateInvoiceHTML = (order) => {
-  const invoiceDate = new Date(order.createdAt).toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
+  const invoiceDate = new Date(order.createdAt).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   });
 
-  let itemsHTML = '';
+  let itemsHTML = "";
   order.items.forEach((item) => {
     itemsHTML += `
       <tr>
