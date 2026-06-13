@@ -17,31 +17,46 @@ export const getCheckout = async (req, res) => {
 
     const stockIssues = [];
     let hasStockChanges = false;
-    
+
     const originalCart = await cartService.getOrCreateCart(userId, req.session);
-    
-    if (originalCart.outOfStockItems && originalCart.outOfStockItems.length > 0) {
-      originalCart.outOfStockItems.forEach(item => {
-        stockIssues.push(`"${item.title}" was removed from your cart (out of stock)`);
+
+    if (
+      originalCart.outOfStockItems &&
+      originalCart.outOfStockItems.length > 0
+    ) {
+      originalCart.outOfStockItems.forEach((item) => {
+        stockIssues.push(
+          `"${item.title}" was removed from your cart (out of stock)`,
+        );
         hasStockChanges = true;
       });
     }
-    
-    if (originalCart.stockAdjustedItems && originalCart.stockAdjustedItems.length > 0) {
-      originalCart.stockAdjustedItems.forEach(item => {
-        stockIssues.push(`"${item.title}" quantity reduced from ${item.originalQuantity} to ${item.newQuantity} (limited stock)`);
+
+    if (
+      originalCart.stockAdjustedItems &&
+      originalCart.stockAdjustedItems.length > 0
+    ) {
+      originalCart.stockAdjustedItems.forEach((item) => {
+        stockIssues.push(
+          `"${item.title}" quantity reduced from ${item.originalQuantity} to ${item.newQuantity} (limited stock)`,
+        );
         hasStockChanges = true;
       });
     }
-    
-    if (req.session.stockAdjustedItems && req.session.stockAdjustedItems.length > 0) {
-      req.session.stockAdjustedItems.forEach(item => {
-        stockIssues.push(`"${item.title}" quantity was reduced from ${item.originalQuantity} to ${item.newQuantity} (limited stock)`);
+
+    if (
+      req.session.stockAdjustedItems &&
+      req.session.stockAdjustedItems.length > 0
+    ) {
+      req.session.stockAdjustedItems.forEach((item) => {
+        stockIssues.push(
+          `"${item.title}" quantity was reduced from ${item.originalQuantity} to ${item.newQuantity} (limited stock)`,
+        );
         hasStockChanges = true;
       });
       delete req.session.stockAdjustedItems;
     }
-    
+
     for (const item of cart.items) {
       const product = await Product.findById(item.product._id)
         .select("stock isListed isDeleted title category")
@@ -59,19 +74,18 @@ export const getCheckout = async (req, res) => {
       ) {
         stockIssues.push(`"${item.product.title}" is no longer available`);
         hasStockChanges = true;
-      } else if (product.stock === 0) {
-        stockIssues.push(`"${item.product.title}" is out of stock`);
-        hasStockChanges = true;
-      } else if (product.stock < item.quantity) {
+      } else if (product.stock > 0 && product.stock < item.quantity) {
         stockIssues.push(
           `"${item.product.title}" — only ${product.stock} left (you have ${item.quantity} in cart)`,
         );
         hasStockChanges = true;
-      } else if (product.stock < 5) {
-        stockIssues.push(`"${item.product.title}" — only ${product.stock} left in stock`);
+      } else if (product.stock > 0 && product.stock < 5) {
+        stockIssues.push(
+          `"${item.product.title}" — only ${product.stock} left in stock`,
+        );
       }
     }
-    
+
     if (hasStockChanges) {
       req.session.stockIssues = stockIssues;
     } else if (req.session.stockIssues) {
@@ -85,7 +99,9 @@ export const getCheckout = async (req, res) => {
     const subtotal = cart.totalAmount;
     const shippingCharge = subtotal >= 500 ? 0 : 50;
     const discount = req.session.appliedCoupon?.discount || 0;
-    const totalAmount = parseFloat((subtotal + shippingCharge - discount).toFixed(2));
+    const totalAmount = parseFloat(
+      (subtotal + shippingCharge - discount).toFixed(2),
+    );
 
     const now = new Date();
     const availableCoupons = await Coupon.find({
@@ -151,6 +167,8 @@ export const placeOrder = async (req, res) => {
           "Your cart is empty. Please add items before placing an order.",
       });
     }
+    const availableItems = [];
+    const outOfStockItems = [];
 
     for (const item of cart.items) {
       const product = await Product.findById(item.product._id)
@@ -173,10 +191,22 @@ export const placeOrder = async (req, res) => {
         });
       }
 
-      if (product.stock > 0 && product.stock < item.quantity) {
+      if (product.stock === 0) {
+        outOfStockItems.push({
+          ...item.toObject(),
+          status: "Out of Stock",
+          actualQuantity: 0,
+        });
+      } else if (product.stock < item.quantity) {
         return res.status(400).json({
           success: false,
-          message: `Insufficient stock for "${item.product.title}". Only ${product.stock} ${product.stock === 1 ? 'copy' : 'copies'} available, but you have ${item.quantity} in your cart. Please update the quantity.`,
+          message: `Insufficient stock for "${item.product.title}". Only ${product.stock} ${product.stock === 1 ? "copy" : "copies"} available, but you have ${item.quantity} in your cart. Please update the quantity.`,
+        });
+      } else {
+        availableItems.push({
+          ...item.toObject(),
+          status: "Available",
+          actualQuantity: item.quantity,
         });
       }
     }
@@ -190,17 +220,24 @@ export const placeOrder = async (req, res) => {
       });
     }
 
-    const subtotal = cart.totalAmount;
-    const shippingCharge = subtotal >= 500 ? 0 : 50;
+    const availableSubtotal = availableItems.reduce(
+      (total, item) => total + item.price * item.actualQuantity,
+      0,
+    );
+    const shippingCharge = availableSubtotal >= 500 ? 0 : 50;
     const discount = req.session.appliedCoupon?.discount || 0;
-    const totalAmount = parseFloat((subtotal + shippingCharge - discount).toFixed(2));
+    const totalAmount = parseFloat(
+      (availableSubtotal + shippingCharge - discount).toFixed(2),
+    );
 
-    const orderItems = cart.items.map((item) => ({
+    const orderItems = [...availableItems, ...outOfStockItems].map((item) => ({
       product: item.product._id,
       title: item.product.title,
       price: parseFloat(item.price.toFixed(2)),
       quantity: item.quantity,
-      subtotal: parseFloat((item.price * item.quantity).toFixed(2)),
+      actualQuantity: item.actualQuantity,
+      subtotal: parseFloat((item.price * item.actualQuantity).toFixed(2)),
+      status: item.status,
     }));
 
     const orderData = {
@@ -219,7 +256,7 @@ export const placeOrder = async (req, res) => {
       paymentMethod,
       paymentStatus: paymentMethod === "COD" ? "Pending" : "Paid",
       orderStatus: "Pending",
-      subtotal: parseFloat(subtotal.toFixed(2)),
+      subtotal: parseFloat(availableSubtotal.toFixed(2)),
       shippingCharge: parseFloat(shippingCharge.toFixed(2)),
       discount: parseFloat(discount.toFixed(2)),
       couponCode: req.session.appliedCoupon?.code || null,
@@ -229,37 +266,37 @@ export const placeOrder = async (req, res) => {
 
     const order = await orderService.createOrder(orderData);
 
-    for (const item of cart.items) {
+    for (const item of availableItems) {
       const updateResult = await Product.findOneAndUpdate(
-        { 
+        {
           _id: item.product._id,
-          stock: { $gte: item.quantity }
+          stock: { $gte: item.actualQuantity },
         },
         {
-          $inc: { stock: -item.quantity }
+          $inc: { stock: -item.actualQuantity },
         },
-        { new: true }
+        { new: true },
       );
 
       if (!updateResult) {
-        await orderService.cancelOrder(order._id, "Stock unavailable during order processing");
-        
-        const currentProduct = await Product.findById(item.product._id).select('stock title');
-        
-        if (!currentProduct) {
+        await orderService.cancelOrder(
+          order._id,
+          "Stock unavailable during order processing",
+        );
+
+        const currentProduct = await Product.findById(item.product._id).select(
+          "stock title",
+        );
+
+        if (!currentProduct || currentProduct.stock === 0) {
           return res.status(400).json({
             success: false,
-            message: `Sorry, "${item.product.title}" is no longer available. Your order has been cancelled. Please refresh your cart and try again.`,
-          });
-        } else if (currentProduct.stock === 0) {
-          return res.status(400).json({
-            success: false,
-            message: `Sorry, "${item.product.title}" just went out of stock. Your order has been cancelled. You can keep the item in your cart for future availability or remove it.`,
+            message: `Sorry, "${item.product.title}" just went out of stock. Your order has been cancelled. Please refresh your cart and try again.`,
           });
         } else {
           return res.status(400).json({
             success: false,
-            message: `Sorry, only ${currentProduct.stock} ${currentProduct.stock === 1 ? 'copy' : 'copies'} of "${item.product.title}" ${currentProduct.stock === 1 ? 'is' : 'are'} now available. Your order has been cancelled. Please update your cart quantity to ${currentProduct.stock} or less and try again.`,
+            message: `Sorry, only ${currentProduct.stock} ${currentProduct.stock === 1 ? "copy" : "copies"} of "${item.product.title}" ${currentProduct.stock === 1 ? "is" : "are"} now available. Your order has been cancelled. Please update your cart quantity and try again.`,
           });
         }
       }

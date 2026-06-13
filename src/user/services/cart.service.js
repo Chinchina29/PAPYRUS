@@ -26,7 +26,10 @@ export const getOrCreateCart = async (userId, session = null) => {
       let needsUpdate = false;
       const outOfStockItems = [];
       const stockAdjustedItems = [];
-      const validItems = cart.items.filter((item) => {
+
+      const validItems = [];
+
+      cart.items.forEach((item) => {
         if (
           !item.product ||
           !item.product.category ||
@@ -34,7 +37,7 @@ export const getOrCreateCart = async (userId, session = null) => {
           !item.product.isListed
         ) {
           needsUpdate = true;
-          return false;
+          return;
         }
 
         if (
@@ -43,7 +46,7 @@ export const getOrCreateCart = async (userId, session = null) => {
           item.product.seller.toString() === userId.toString()
         ) {
           needsUpdate = true;
-          return false;
+          return;
         }
 
         if (item.product.stock === 0) {
@@ -52,7 +55,8 @@ export const getOrCreateCart = async (userId, session = null) => {
             author: item.product.author,
             quantity: item.quantity,
           });
-          return true;
+          validItems.push(item);
+          return;
         }
 
         if (item.quantity > item.product.stock) {
@@ -65,7 +69,7 @@ export const getOrCreateCart = async (userId, session = null) => {
           needsUpdate = true;
         }
 
-        return true;
+        validItems.push(item);
       });
 
       if (needsUpdate) {
@@ -90,7 +94,7 @@ export const getOrCreateCart = async (userId, session = null) => {
           }
           cart.outOfStockItems = outOfStockItems;
         }
-        
+
         if (stockAdjustedItems.length > 0) {
           if (session) {
             const existing = session.stockAdjustedItems || [];

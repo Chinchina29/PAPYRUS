@@ -265,6 +265,35 @@
       color: #333;
     }
 
+    .cart-item.out-of-stock {
+      opacity: 0.7;
+      background-color: #f9f9f9;
+    }
+
+    .out-of-stock-title {
+      color: #999 !important;
+      text-decoration: line-through;
+    }
+
+    .out-of-stock-price {
+      color: #999 !important;
+      text-decoration: line-through;
+    }
+
+    .out-of-stock-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #ffebee;
+      color: #d32f2f;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+      border: 1px solid #ffcdd2;
+    }
+
     .item-price {
       text-align: right;
       flex-shrink: 0;
@@ -471,17 +500,29 @@
         <div class="cart-items">
           
           <% cart.items.forEach(item => { %>
-            <div class="cart-item" data-product-id="<%= item.product._id %>" data-item-price="<%= item.price %>" data-max-stock="<%= item.product.stock %>" data-max-quantity="<%= item.product.maxQuantityPerOrder || 10 %>">
+            <div class="cart-item <% if (item.product.stock === 0) { %>out-of-stock<% } %>" data-product-id="<%= item.product._id %>" data-item-price="<%= item.price %>" data-max-stock="<%= item.product.stock %>" data-max-quantity="<%= item.product.maxQuantityPerOrder || 10 %>">
               <div class="item-image">
                 <% if (item.product.images && item.product.images.length > 0) { %>
-                  <img src="<%= item.product.images[0].url %>" alt="<%= item.product.title %>"/>
+                  <% if (item.product.stock === 0) { %>
+                    <img src="<%= item.product.images[0].url %>" alt="<%= item.product.title %>" style="opacity: 0.5;"/>
+                  <% } else { %>
+                    <img src="<%= item.product.images[0].url %>" alt="<%= item.product.title %>"/>
+                  <% } %>
                 <% } else { %>
-                  <div style="font-size: 40px; color: #bbb;">📚</div>
+                  <% if (item.product.stock === 0) { %>
+                    <div style="font-size: 40px; color: #bbb; opacity: 0.5;">📚</div>
+                  <% } else { %>
+                    <div style="font-size: 40px; color: #bbb;">📚</div>
+                  <% } %>
                 <% } %>
               </div>
 
               <div class="item-details">
-                <div class="item-title"><%= item.product.title %></div>
+                <% if (item.product.stock === 0) { %>
+                  <div class="item-title out-of-stock-title"><%= item.product.title %></div>
+                <% } else { %>
+                  <div class="item-title"><%= item.product.title %></div>
+                <% } %>
                 <% if (item.product.author) { %>
                   <div class="item-author"><%= item.product.author %></div>
                 <% } %>
@@ -490,16 +531,23 @@
                     <%= item.product.condition.replace('-', ' ') %> condition
                   </div>
                 <% } %>
+                <% if (item.product.stock === 0) { %>
+                  <div class="out-of-stock-badge">OUT OF STOCK</div>
+                <% } %>
                 <div class="quantity-controls">
-                  <button type="button" class="qty-btn qty-decrease" data-product-id="<%= item.product._id %>">−</button>
+                  <button type="button" class="qty-btn qty-decrease" data-product-id="<%= item.product._id %>" <% if (item.product.stock === 0) { %>disabled<% } %>>−</button>
                   <span class="qty-display"><%= item.quantity %></span>
-                  <button type="button" class="qty-btn qty-increase" data-product-id="<%= item.product._id %>">+</button>
+                  <button type="button" class="qty-btn qty-increase" data-product-id="<%= item.product._id %>" <% if (item.product.stock === 0) { %>disabled<% } %>>+</button>
                 </div>
                 <button type="button" class="remove-link" onclick="removeFromCart('<%= item.product._id %>')">REMOVE</button>
               </div>
 
               <div class="item-price">
-                <div class="price-amount">₹<%= (item.price * item.quantity).toFixed(2) %></div>
+                <% if (item.product.stock === 0) { %>
+                  <div class="price-amount out-of-stock-price">₹<%= (item.price * item.quantity).toFixed(2) %></div>
+                <% } else { %>
+                  <div class="price-amount">₹<%= (item.price * item.quantity).toFixed(2) %></div>
+                <% } %>
               </div>
             </div>
           <% }) %>
@@ -561,14 +609,12 @@
       };
     }
 
-    let updateInProgress = new Set(); // Track updates in progress per product
+    let updateInProgress = new Set(); 
 
     async function updateQuantity(productId, newQuantity) {
       if (newQuantity < 1) {
         return removeFromCart(productId);
       }
-
-      // Prevent concurrent updates for the same product
       if (updateInProgress.has(productId)) {
         console.log('Update already in progress for product:', productId);
         return;
@@ -577,19 +623,27 @@
       const itemRow = document.querySelector(`[data-product-id="${productId}"]`);
       if (!itemRow) return;
 
+      const maxStock = parseInt(itemRow.dataset.maxStock);
+      if (maxStock === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Out of Stock',
+          text: 'This item is currently out of stock and cannot be updated. You can remove it from your cart.',
+          confirmButtonColor: '#2d1f14'
+        });
+        return;
+      }
+
       const qtyDisplay = itemRow.querySelector('.qty-display');
       const priceAmount = itemRow.querySelector('.price-amount');
       const itemPrice = parseFloat(itemRow.dataset.itemPrice);
-      const maxStock = parseInt(itemRow.dataset.maxStock);
       const maxQuantity = parseInt(itemRow.dataset.maxQuantity || 10);
       const effectiveMax = Math.min(maxStock, maxQuantity);
       
       const oldQuantity = parseInt(qtyDisplay.textContent);
       
-      // Don't update if quantity hasn't changed
       if (oldQuantity === newQuantity) return;
       
-      // Validate quantity limits
       if (newQuantity > effectiveMax) {
         const limitReason = maxQuantity < maxStock 
           ? `Maximum ${maxQuantity} items allowed per order for this product`
@@ -603,10 +657,8 @@
         return;
       }
       
-      // Mark as updating
       updateInProgress.add(productId);
       
-      // Add loading state
       const increaseBtn = itemRow.querySelector('.qty-increase');
       const decreaseBtn = itemRow.querySelector('.qty-decrease');
       const originalIncreaseText = increaseBtn.textContent;
@@ -629,14 +681,11 @@
         const data = await response.json();
 
         if (data.success) {
-          // Update UI with server response
           if (qtyDisplay) qtyDisplay.textContent = newQuantity;
           if (priceAmount) priceAmount.textContent = `₹${(itemPrice * newQuantity).toFixed(2)}`;
           
-          // Update cart summary with real data from server
           updateCartSummaryFromResponse(data.cart);
           
-          // Show success feedback briefly
           qtyDisplay.style.color = '#2e7d32';
           setTimeout(() => {
             qtyDisplay.style.color = '';
@@ -644,10 +693,8 @@
           
           console.log('Quantity updated successfully:', { productId, newQuantity, serverData: data.cart });
         } else {
-          // Revert UI on error
           if (qtyDisplay) qtyDisplay.textContent = oldQuantity;
           
-          // Show error message
           if (data.message && (data.message.toLowerCase().includes('out of stock') || data.message.toLowerCase().includes('stock') && data.message.includes('0'))) {
             Swal.fire({
               icon: 'error',
@@ -682,7 +729,7 @@
         }
       } catch (error) {
         console.error('Update quantity error:', error);
-        // Revert UI on error
+        
         if (qtyDisplay) qtyDisplay.textContent = oldQuantity;
         
         Swal.fire({
@@ -692,16 +739,13 @@
           confirmButtonColor: '#2d1f14'
         });
       } finally {
-        // Restore button states
         increaseBtn.textContent = originalIncreaseText;
         decreaseBtn.textContent = originalDecreaseText;
         
-        // Set button states based on current quantity
         const currentQty = parseInt(qtyDisplay.textContent);
         decreaseBtn.disabled = currentQty <= 1;
         increaseBtn.disabled = currentQty >= effectiveMax;
         
-        // Remove from updating set
         updateInProgress.delete(productId);
       }
     }
@@ -715,7 +759,7 @@
       });
       
       const shippingCharge = subtotal >= 500 ? 0 : 50;
-      const discount = 0; // We'll get this from session in real update
+      const discount = 0; 
       const total = subtotal + shippingCharge - discount;
       
       const summaryRows = document.querySelectorAll('.summary-row');
@@ -807,8 +851,6 @@
           window.history.replaceState({}, '', url);
         });
       }
-
-      // Check for stock changes periodically (reduced frequency)
       setInterval(checkStockUpdates, 60000);
     });
     
@@ -822,20 +864,17 @@
       
       const summaryRows = document.querySelectorAll('.summary-row:not(.total)');
       if (summaryRows.length >= 2) {
-        // Update subtotal
         const subtotalSpan = summaryRows[0].querySelector('span:last-child');
         if (subtotalSpan && cartData.subtotal !== undefined) {
           subtotalSpan.textContent = `₹${cartData.subtotal.toFixed(2)}`;
         }
         
-        // Update shipping
         const shippingSpan = summaryRows[1].querySelector('span:last-child');
         if (shippingSpan && cartData.shippingCharge !== undefined) {
           shippingSpan.textContent = cartData.shippingCharge === 0 ? 'FREE' : `₹${cartData.shippingCharge.toFixed(2)}`;
         }
       }
       
-      // Update total
       const totalRow = document.querySelector('.summary-row.total');
       if (totalRow && cartData.total !== undefined) {
         const totalSpan = totalRow.querySelector('span:last-child');
@@ -843,12 +882,9 @@
           totalSpan.textContent = `₹${cartData.total.toFixed(2)}`;
         }
       }
-      
-      // Update discount if present
       if (cartData.discount > 0) {
         let discountRow = document.querySelector('.summary-row.discount');
         if (!discountRow) {
-          // Create discount row if it doesn't exist
           const totalRow = document.querySelector('.summary-row.total');
           discountRow = document.createElement('div');
           discountRow.className = 'summary-row discount';
@@ -864,7 +900,6 @@
           }
         }
       } else {
-        // Remove discount row if no discount
         const discountRow = document.querySelector('.summary-row.discount');
         if (discountRow) {
           discountRow.remove();
@@ -880,7 +915,6 @@
         if (data.success && data.cart) {
           updateCartSummaryFromResponse(data.cart);
           
-          // Update individual item prices
           data.cart.items.forEach(item => {
             const itemElement = document.querySelector(`[data-product-id="${item.productId}"] .price-amount`);
             if (itemElement) {

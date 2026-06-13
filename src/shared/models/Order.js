@@ -20,10 +20,20 @@ const orderItemSchema = new mongoose.Schema({
     required: true,
     min: 1,
   },
+  actualQuantity: {
+    type: Number,
+    default: function() { return this.quantity; },
+    min: 0,
+  },
   subtotal: {
     type: Number,
     required: true,
     min: 0,
+  },
+  status: {
+    type: String,
+    enum: ["Available", "Out of Stock"],
+    default: "Available",
   },
   itemStatus: {
     type: String,
