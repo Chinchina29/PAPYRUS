@@ -8,21 +8,20 @@ import {
 export const signup = async (req, res) => {
   try {
     const { firstName, lastName, email, password, confirmPassword } = req.body;
-    
     const signupData = {
       firstName: firstName?.trim(),
       lastName: lastName?.trim(),
       email: email?.trim(),
       password,
-      confirmPassword
+      confirmPassword,
     };
-    
+
     const result = await authService.signupUser(signupData);
     if (!result.success) {
-      return res.status(400).json({ 
-        success: false, 
+      return res.status(400).json({
+        success: false,
         message: result.message,
-        errorType: result.errorType || 'SIGNUP_FAILED'
+        errorType: result.errorType || "SIGNUP_FAILED",
       });
     }
     req.session.tempUserId = result.user._id.toString();
@@ -33,10 +32,10 @@ export const signup = async (req, res) => {
       redirectUrl: "/signup/verify-otp",
     });
   } catch (error) {
-    return res.status(500).json({ 
-      success: false, 
+    return res.status(500).json({
+      success: false,
       message: "Server error occurred. Please try again later.",
-      errorType: 'SERVER_ERROR'
+      errorType: "SERVER_ERROR",
     });
   }
 };
@@ -80,9 +79,9 @@ export const resendOTP = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     const result = await authService.loginUser(email?.trim(), password);
-    if (result.success) {
+    if (!result.success) {
       if (result.needsVerification) {
         req.session.tempUserId = result.userId.toString();
         req.session.tempUserEmail = email?.trim();
@@ -92,24 +91,24 @@ export const login = async (req, res) => {
           redirectUrl: "/signup/verify-otp",
         });
       }
-      return res.status(400).json({ 
-        success: false, 
+      return res.status(400).json({
+        success: false,
         message: result.message,
-        errorType: result.errorType || 'LOGIN_FAILED'
+        errorType: result.errorType || "LOGIN_FAILED",
       });
     }
     if (result.user.role === "admin") {
-      return res.status(403).json({ 
-        success: false, 
+      return res.status(403).json({
+        success: false,
         message: "Please use the admin login page.",
-        errorType: 'ADMIN_LOGIN_REQUIRED'
+        errorType: "ADMIN_LOGIN_REQUIRED",
       });
     }
     if (result.user.isBlocked) {
       return res.status(403).json({
         success: false,
         message: "Your account has been blocked. Please contact support.",
-        errorType: 'ACCOUNT_BLOCKED'
+        errorType: "ACCOUNT_BLOCKED",
       });
     }
     req.session.userId = result.user._id.toString();
@@ -127,10 +126,10 @@ export const login = async (req, res) => {
       redirectUrl: "/home",
     });
   } catch (error) {
-    return res.status(500).json({ 
-      success: false, 
+    return res.status(500).json({
+      success: false,
       message: "Server error occurred. Please try again later.",
-      errorType: 'SERVER_ERROR'
+      errorType: "SERVER_ERROR",
     });
   }
 };
@@ -144,7 +143,7 @@ export const logout = (req, res) => {
 
   req.session.destroy((err) => {
     res.clearCookie("papyrus.user.sid");
-    
+
     if (isAjax) {
       return res.json({
         success: true,
@@ -152,7 +151,7 @@ export const logout = (req, res) => {
         redirectUrl: "/",
       });
     }
-    
+
     return res.redirect("/");
   });
 };
@@ -178,9 +177,11 @@ export const saveGenrePreferences = async (req, res) => {
 
     const User = (await import("../../shared/models/User.js")).default;
     const Category = (await import("../../shared/models/Category.js")).default;
-    
-    const categories = await Category.find({ _id: { $in: genres } }).select('name');
-    const genreNames = categories.map(cat => cat.name);
+
+    const categories = await Category.find({ _id: { $in: genres } }).select(
+      "name",
+    );
+    const genreNames = categories.map((cat) => cat.name);
 
     await User.findByIdAndUpdate(userId, {
       favoriteGenres: genreNames,
@@ -213,7 +214,7 @@ export const skipGenreSelection = async (req, res) => {
     }
 
     const User = (await import("../../shared/models/User.js")).default;
-    
+
     await User.findByIdAndUpdate(userId, {
       hasSelectedGenres: true,
     });

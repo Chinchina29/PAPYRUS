@@ -365,6 +365,16 @@ export const returnOrder = async (req, res) => {
     order.returnRequestedAt = new Date();
     order.returnReason = reason.trim();
     order.returnComments = comments?.trim() || "";
+
+    for (const item of order.items) {
+      if (item.returnRequestStatus === "None" && item.itemStatus !== "Cancelled") {
+        item.returnRequestStatus = "Requested";
+        item.returnRequestedAt = new Date();
+        item.returnReason = reason.trim();
+        item.returnComments = comments?.trim() || "";
+      }
+    }
+
     await order.save();
 
     console.log("Full order return request saved");

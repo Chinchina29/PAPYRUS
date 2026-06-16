@@ -200,6 +200,11 @@ export const approveReturnRequest = async (req, res) => {
     order.returnedAt = new Date();
 
     for (const item of order.items) {
+      item.itemStatus = "Returned";
+      item.returnRequestStatus = "Approved";
+      item.returnedAt = new Date();
+      item.returnApprovedAt = new Date();
+      
       await Product.findByIdAndUpdate(
         item.product,
         { $inc: { stock: item.quantity } },
@@ -252,6 +257,15 @@ export const rejectReturnRequest = async (req, res) => {
     order.returnRequestStatus = "Rejected";
     order.returnRejectedAt = new Date();
     order.returnRejectionReason = reason.trim();
+    
+    for (const item of order.items) {
+      if (item.returnRequestStatus === "None" || item.returnRequestStatus === "Requested") {
+        item.returnRequestStatus = "Rejected";
+        item.returnRejectedAt = new Date();
+        item.returnRejectionReason = reason.trim();
+      }
+    }
+    
     await order.save();
 
     return res.json({
@@ -305,6 +319,27 @@ export const approveItemReturn = async (req, res) => {
       { $inc: { stock: item.quantity } },
       { new: true }
     );
+
+    let allReturnedOrCancelled = true;
+    let hasReturned = false;
+    for (const orderItem of order.items) {
+      const isCancelled = orderItem.itemStatus === "Cancelled" || orderItem.cancelledAt;
+      const isReturned = orderItem.itemStatus === "Returned" || orderItem.returnRequestStatus === "Approved";
+      
+      if (!isCancelled && !isReturned) {
+        allReturnedOrCancelled = false;
+      }
+      if (isReturned) {
+        hasReturned = true;
+      }
+    }
+
+    if (allReturnedOrCancelled && hasReturned) {
+      order.orderStatus = "Returned";
+      order.returnRequestStatus = "Approved";
+      order.returnedAt = new Date();
+      order.returnApprovedAt = new Date();
+    }
 
     await order.save();
 

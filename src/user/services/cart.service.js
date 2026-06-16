@@ -23,85 +23,89 @@ export const getOrCreateCart = async (userId, session = null) => {
       cart = new Cart({ user: userId, items: [] });
       await cart.save();
     } else {
-      let needsUpdate = false;
       const outOfStockItems = [];
       const stockAdjustedItems = [];
 
-      const validItems = [];
-
       cart.items.forEach((item) => {
-        if (
-          !item.product ||
-          !item.product.category ||
-          item.product.isDeleted ||
-          !item.product.isListed
-        ) {
-          needsUpdate = true;
+        // 1. Mock product if it's null (physically deleted from DB)
+        if (!item.product) {
+          item.product = {
+            _id: item._id, // fallback
+            title: "Unavailable Product",
+            author: "Unknown Author",
+            images: [],
+            stock: 0,
+            isDeleted: true,
+            isListed: false,
+            category: null
+          };
+        }
+
+        // 2. Check if item is blocked
+        const isProductDeletedOrUnlisted = item.product.isDeleted || !item.product.isListed;
+        const isCategoryUnavailable = !item.product.category || !item.product.category.isListed || item.product.category.isDeleted;
+        const isOwnProduct = item.product.hideFromSeller && item.product.seller && item.product.seller.toString() === userId.toString();
+        
+        const isBlocked = isProductDeletedOrUnlisted || isCategoryUnavailable || isOwnProduct;
+
+        if (isBlocked) {
+          item.isBlocked = true;
           return;
         }
 
-        if (
-          item.product.hideFromSeller &&
-          item.product.seller &&
-          item.product.seller.toString() === userId.toString()
-        ) {
-          needsUpdate = true;
-          return;
-        }
-
+        // 3. Check if out of stock
         if (item.product.stock === 0) {
           outOfStockItems.push({
             title: item.product.title,
             author: item.product.author,
             quantity: item.quantity,
           });
-          validItems.push(item);
           return;
         }
 
+        // 4. Check if quantity exceeds stock
         if (item.quantity > item.product.stock) {
           stockAdjustedItems.push({
             title: item.product.title,
             originalQuantity: item.quantity,
             newQuantity: item.product.stock,
           });
-          item.quantity = item.product.stock;
-          needsUpdate = true;
+          item.hasInsufficientStock = true;
+          item.availableStock = item.product.stock;
         }
-
-        validItems.push(item);
       });
 
-      if (needsUpdate) {
-        cart.items = validItems;
+      // Synchronize totals in DB if needed (e.g. if a product was unlisted or deleted recently)
+      let calculatedItems = 0;
+      let calculatedAmount = 0;
+      
+      cart.items.forEach(item => {
+        if (!item.isBlocked) {
+          calculatedItems += item.quantity;
+          calculatedAmount += item.price * item.quantity;
+        }
+      });
+      
+      if (cart.totalItems !== calculatedItems || cart.totalAmount !== calculatedAmount) {
+        cart.totalItems = calculatedItems;
+        cart.totalAmount = calculatedAmount;
         await cart.save();
+      }
 
-        cart = await Cart.findById(cart._id).populate({
-          path: "items.product",
-          select:
-            "title author price images stock condition isListed isDeleted seller hideFromSeller maxQuantityPerOrder",
-          populate: {
-            path: "category",
-            select: "name isListed",
-            match: { isListed: true, isDeleted: false },
-          },
-        });
-
-        if (outOfStockItems.length > 0) {
-          if (session) {
-            const existing = session.outOfStockItems || [];
-            session.outOfStockItems = [...existing, ...outOfStockItems];
-          }
-          cart.outOfStockItems = outOfStockItems;
+      if (outOfStockItems.length > 0) {
+        if (session) {
+          const existing = session.outOfStockItems || [];
+          session.outOfStockItems = [...existing, ...outOfStockItems];
         }
+        cart.outOfStockItems = outOfStockItems;
+      }
 
-        if (stockAdjustedItems.length > 0) {
-          if (session) {
-            const existing = session.stockAdjustedItems || [];
-            session.stockAdjustedItems = [...existing, ...stockAdjustedItems];
-          }
-          cart.stockAdjustedItems = stockAdjustedItems;
+      if (stockAdjustedItems.length > 0) {
+        if (session) {
+          const existing = session.stockAdjustedItems || [];
+          session.stockAdjustedItems = [...existing, ...stockAdjustedItems];
         }
+        cart.stockAdjustedItems = stockAdjustedItems;
       }
     }
 

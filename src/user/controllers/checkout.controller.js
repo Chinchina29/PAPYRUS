@@ -75,15 +75,13 @@ export const getCheckout = async (req, res) => {
         stockIssues.push(`"${item.product.title}" is no longer available`);
         hasStockChanges = true;
       } else if (product.stock > 0 && product.stock < item.quantity) {
+        // Only block if user wants more than available
         stockIssues.push(
           `"${item.product.title}" — only ${product.stock} left (you have ${item.quantity} in cart)`,
         );
         hasStockChanges = true;
-      } else if (product.stock > 0 && product.stock < 5) {
-        stockIssues.push(
-          `"${item.product.title}" — only ${product.stock} left in stock`,
-        );
       }
+      // Remove the low stock warning that was blocking checkout
     }
 
     if (hasStockChanges) {

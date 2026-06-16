@@ -19,7 +19,6 @@ export const signupUser = async (userData) => {
 
     const otp = otpService.setOTP(user);
     await user.save();
-
     const emailResult = await emailService.sendOTPEmail(
       user.email,
       user.firstName,

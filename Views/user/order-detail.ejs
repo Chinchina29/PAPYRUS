@@ -173,7 +173,7 @@
                     </button>
                   <% } %>
                   
-                  <% if ((item.itemStatus === 'Delivered' || (!item.itemStatus && order.orderStatus === 'Delivered')) && (item.returnRequestStatus === 'None' || !item.returnRequestStatus) && !item.cancelledAt) { %>
+                  <% if ((item.itemStatus === 'Delivered' || (!item.itemStatus && order.orderStatus === 'Delivered')) && (item.returnRequestStatus === 'None' || !item.returnRequestStatus) && !item.cancelledAt && order.orderStatus !== 'Returned' && order.returnRequestStatus !== 'Requested' && order.returnRequestStatus !== 'Approved') { %>
                     <button 
                       class="btn" 
                       onclick="returnItem('<%= order._id %>', '<%= item._id %>', '<%= item.title %>')"
@@ -342,26 +342,101 @@
         <div class="card">
           <div class="card-title">Payment Summary</div>
           
+          <% 
+            // Calculate adjusted totals excluding cancelled/returned items
+            let activeSubtotal = 0;
+            let cancelledAmount = 0;
+            let returnedAmount = 0;
+            let activeItems = [];
+            
+            order.items.forEach(item => {
+              if (item.itemStatus === 'Cancelled' || item.cancelledAt) {
+                cancelledAmount += item.subtotal;
+              } else if (item.itemStatus === 'Returned' || item.returnRequestStatus === 'Approved') {
+                returnedAmount += item.subtotal;
+              } else {
+                activeSubtotal += item.subtotal;
+                activeItems.push(item);
+              }
+            });
+            
+            // Validate coupon eligibility for active items only
+            let validDiscount = 0;
+            let couponInvalidReason = null;
+            
+            if (order.discount > 0 && order.couponCode) {
+              // Check if active subtotal meets minimum purchase requirement
+              // Note: This is a simplified check. In a real system, you'd fetch coupon details from DB
+              // For now, assume minimum purchase amount of ₹500 for most coupons
+              const assumedMinPurchase = 500; // This should come from coupon data
+              
+              if (activeSubtotal >= assumedMinPurchase) {
+                validDiscount = order.discount;
+              } else {
+                couponInvalidReason = `Coupon requires minimum ₹${assumedMinPurchase} purchase. Active items: ₹${activeSubtotal.toFixed(2)}`;
+              }
+            }
+            
+            const adjustedShipping = activeSubtotal >= 500 ? 0 : (activeSubtotal > 0 ? order.shippingCharge : 0);
+            const adjustedTotal = activeSubtotal + adjustedShipping - validDiscount;
+          %>
+          
+          <% if (order.subtotal !== activeSubtotal) { %>
           <div class="payment-row">
-            <span>Subtotal</span>
+            <span>Original Subtotal</span>
             <span>₹<%= order.subtotal.toFixed(2) %></span>
           </div>
           
+          <% if (cancelledAmount > 0) { %>
+          <div class="payment-row" style="color: #d32f2f;">
+            <span>Less: Cancelled Items</span>
+            <span>-₹<%= cancelledAmount.toFixed(2) %></span>
+          </div>
+          <% } %>
+          
+          <% if (returnedAmount > 0) { %>
+          <div class="payment-row" style="color: #f57c00;">
+            <span>Less: Returned Items</span>
+            <span>-₹<%= returnedAmount.toFixed(2) %></span>
+          </div>
+          <% } %>
+          
+          <div class="payment-row">
+            <span>Active Subtotal</span>
+            <span>₹<%= activeSubtotal.toFixed(2) %></span>
+          </div>
+          <% } else { %>
+          <div class="payment-row">
+            <span>Subtotal</span>
+            <span>₹<%= activeSubtotal.toFixed(2) %></span>
+          </div>
+          <% } %>
+          
           <div class="payment-row">
             <span>Shipping (Standard)</span>
-            <span>₹<%= order.shippingCharge.toFixed(2) %></span>
+            <span><%= adjustedShipping === 0 ? 'FREE' : '₹' + adjustedShipping.toFixed(2) %></span>
           </div>
           
           <% if (order.discount > 0) { %>
-          <div class="payment-row">
-            <span>Discount</span>
-            <span>-₹<%= order.discount.toFixed(2) %></span>
-          </div>
+            <% if (validDiscount > 0) { %>
+            <div class="payment-row">
+              <span>Discount (<%= order.couponCode %>)</span>
+              <span>-₹<%= validDiscount.toFixed(2) %></span>
+            </div>
+            <% } else if (couponInvalidReason) { %>
+            <div class="payment-row" style="color: #d32f2f;">
+              <span>Discount (<%= order.couponCode %>) - Invalid</span>
+              <span>₹0.00</span>
+            </div>
+            <div style="font-size: 12px; color: #d32f2f; margin: 8px 0; padding: 8px; background: #ffebee; border-radius: 4px;">
+              <strong>Note:</strong> <%= couponInvalidReason %>
+            </div>
+            <% } %>
           <% } %>
           
           <div class="payment-row total">
             <span>Total</span>
-            <span>₹<%= order.totalAmount.toFixed(2) %></span>
+            <span>₹<%= adjustedTotal.toFixed(2) %></span>
           </div>
 
           <div class="payment-method">

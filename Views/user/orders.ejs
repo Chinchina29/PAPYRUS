@@ -169,7 +169,7 @@
               <% if (order.orderStatus === 'Pending' || order.orderStatus === 'Processing') { %>
                 <button class="btn btn-danger" onclick="cancelOrder('<%= order._id %>')">Cancel Order</button>
               <% } %>
-              <% if (order.orderStatus === 'Delivered') { %>
+              <% if (order.orderStatus === 'Delivered' && (order.returnRequestStatus === 'None' || !order.returnRequestStatus)) { %>
                 <button class="btn btn-secondary" onclick="returnOrder('<%= order._id %>')">Return Order</button>
               <% } %>
             </div>

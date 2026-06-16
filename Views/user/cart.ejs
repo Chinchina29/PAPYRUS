@@ -500,16 +500,16 @@
         <div class="cart-items">
           
           <% cart.items.forEach(item => { %>
-            <div class="cart-item <% if (item.product.stock === 0) { %>out-of-stock<% } %>" data-product-id="<%= item.product._id %>" data-item-price="<%= item.price %>" data-max-stock="<%= item.product.stock %>" data-max-quantity="<%= item.product.maxQuantityPerOrder || 10 %>">
+            <div class="cart-item <% if (item.product.stock === 0) { %>out-of-stock<% } %> <% if (item.isBlocked) { %>blocked<% } %> <% if (item.hasInsufficientStock) { %>insufficient-stock<% } %>" data-product-id="<%= item.product._id %>" data-item-price="<%= item.price %>" data-max-stock="<%= item.product.stock %>" data-max-quantity="<%= item.product.maxQuantityPerOrder || 10 %>">
               <div class="item-image">
                 <% if (item.product.images && item.product.images.length > 0) { %>
-                  <% if (item.product.stock === 0) { %>
+                  <% if (item.product.stock === 0 || item.isBlocked) { %>
                     <img src="<%= item.product.images[0].url %>" alt="<%= item.product.title %>" style="opacity: 0.5;"/>
                   <% } else { %>
                     <img src="<%= item.product.images[0].url %>" alt="<%= item.product.title %>"/>
                   <% } %>
                 <% } else { %>
-                  <% if (item.product.stock === 0) { %>
+                  <% if (item.product.stock === 0 || item.isBlocked) { %>
                     <div style="font-size: 40px; color: #bbb; opacity: 0.5;">📚</div>
                   <% } else { %>
                     <div style="font-size: 40px; color: #bbb;">📚</div>
@@ -518,7 +518,9 @@
               </div>
 
               <div class="item-details">
-                <% if (item.product.stock === 0) { %>
+                <% if (item.isBlocked) { %>
+                  <div class="item-title out-of-stock-title"><%= item.product.title %> (Unavailable)</div>
+                <% } else if (item.product.stock === 0) { %>
                   <div class="item-title out-of-stock-title"><%= item.product.title %></div>
                 <% } else { %>
                   <div class="item-title"><%= item.product.title %></div>
@@ -531,19 +533,26 @@
                     <%= item.product.condition.replace('-', ' ') %> condition
                   </div>
                 <% } %>
-                <% if (item.product.stock === 0) { %>
+                <% if (item.isBlocked) { %>
+                  <div class="blocked-badge" style="display: inline-block; padding: 4px 8px; background: #ffebee; color: #d32f2f; border: 1px solid #ffcdd2; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px;">UNAVAILABLE</div>
+                  <div style="font-size: 12px; color: #d32f2f; margin-bottom: 8px;">This item is no longer available for purchase. Please remove it.</div>
+                <% } else if (item.product.stock === 0) { %>
                   <div class="out-of-stock-badge">OUT OF STOCK</div>
                 <% } %>
+                <% if (!item.isBlocked && item.hasInsufficientStock) { %>
+                  <div class="insufficient-stock-badge" style="display: inline-block; padding: 4px 8px; background: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px;">INSUFFICIENT STOCK</div>
+                  <div style="font-size: 12px; color: #856404; margin-bottom: 8px;">Only <%= item.availableStock %> copies left in stock. Please adjust quantity.</div>
+                <% } %>
                 <div class="quantity-controls">
-                  <button type="button" class="qty-btn qty-decrease" data-product-id="<%= item.product._id %>" <% if (item.product.stock === 0) { %>disabled<% } %>>−</button>
+                  <button type="button" class="qty-btn qty-decrease" data-product-id="<%= item.product._id %>" <% if (item.product.stock === 0 || item.isBlocked) { %>disabled<% } %>>−</button>
                   <span class="qty-display"><%= item.quantity %></span>
-                  <button type="button" class="qty-btn qty-increase" data-product-id="<%= item.product._id %>" <% if (item.product.stock === 0) { %>disabled<% } %>>+</button>
+                  <button type="button" class="qty-btn qty-increase" data-product-id="<%= item.product._id %>" <% if (item.product.stock === 0 || item.isBlocked) { %>disabled<% } %>>+</button>
                 </div>
                 <button type="button" class="remove-link" onclick="removeFromCart('<%= item.product._id %>')">REMOVE</button>
               </div>
 
               <div class="item-price">
-                <% if (item.product.stock === 0) { %>
+                <% if (item.product.stock === 0 || item.isBlocked) { %>
                   <div class="price-amount out-of-stock-price">₹<%= (item.price * item.quantity).toFixed(2) %></div>
                 <% } else { %>
                   <div class="price-amount">₹<%= (item.price * item.quantity).toFixed(2) %></div>
@@ -932,7 +941,7 @@
       }
     }
 
-    window.removeFromCart = throttle(async function(productId) {
+    const throttledRemoveFromCart = throttle(async function(productId) {
       const result = await Swal.fire({
         title: 'Remove Item?',
         text: 'Are you sure you want to remove this item from your cart?',
@@ -971,6 +980,42 @@
     }
 
     window.proceedToCheckout = function() {
+      // Check if there are any blocked items in the DOM
+      const blockedItems = document.querySelectorAll('.cart-item.blocked');
+      if (blockedItems.length > 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Blocked Items in Cart',
+          text: 'Please remove all unavailable/blocked items from your cart before proceeding.',
+          confirmButtonColor: '#2d1f14'
+        });
+        return;
+      }
+
+      // Check if there are any items with insufficient stock
+      const insufficientStockItems = document.querySelectorAll('.cart-item.insufficient-stock');
+      if (insufficientStockItems.length > 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Insufficient Stock',
+          text: 'Please adjust the quantities of items with insufficient stock before proceeding.',
+          confirmButtonColor: '#2d1f14'
+        });
+        return;
+      }
+
+      // Check if there are any items out of stock
+      const outOfStockItems = document.querySelectorAll('.cart-item.out-of-stock');
+      if (outOfStockItems.length > 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Out of Stock Items',
+          text: 'Please remove all out of stock items from your cart before proceeding.',
+          confirmButtonColor: '#2d1f14'
+        });
+        return;
+      }
+
       window.location.href = '/checkout';
     };
 
