@@ -15,7 +15,6 @@ export const otpEmailTemplate = (firstName, otp) => {
         </div>
     `;
 };
-
 export const emailChangeOTPTemplate = (firstName, otp, newEmail) => {
   return `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -35,7 +34,6 @@ export const emailChangeOTPTemplate = (firstName, otp, newEmail) => {
         </div>
     `;
 };
-
 export const passwordResetTemplate = (firstName, otp) => {
   return `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -53,7 +51,6 @@ export const passwordResetTemplate = (firstName, otp) => {
         </div>
     `;
 };
-
 const baseLayout = (content) => `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
     <div style="background: #7A5C3E; color: white; padding: 20px; text-align: center;">
@@ -69,7 +66,6 @@ const baseLayout = (content) => `
     </div>
   </div>
 `;
-
 const orderInfoBox = (order) => `
   <div style="background: white; border: 1px solid #e8dcc8; border-radius: 8px; padding: 16px; margin: 20px 0; font-size: 14px; color: #5a4a3a;">
     <strong>Order ID:</strong> ${order.orderId}<br>
@@ -77,7 +73,6 @@ const orderInfoBox = (order) => `
     <strong>Total:</strong> ₹${order.totalAmount.toFixed(2)}
   </div>
 `;
-
 export const orderStatusUpdateTemplate = (firstName, order, newStatus) => {
   const statusColors = {
     Processing: "#1976d2",
@@ -87,7 +82,6 @@ export const orderStatusUpdateTemplate = (firstName, order, newStatus) => {
     Returned: "#7b1fa2",
   };
   const color = statusColors[newStatus] || "#7A5C3E";
-
   return baseLayout(`
     <h2 style="color: #2d1f14; margin: 0 0 8px;">Hello ${firstName}!</h2>
     <p style="color: #5a4a3a; margin: 0 0 20px;">Your order status has been updated.</p>
@@ -102,7 +96,6 @@ export const orderStatusUpdateTemplate = (firstName, order, newStatus) => {
     </p>
   `);
 };
-
 export const orderCancelledByAdminTemplate = (firstName, order, reason) =>
   baseLayout(`
   <h2 style="color: #2d1f14; margin: 0 0 8px;">Hello ${firstName},</h2>
@@ -118,7 +111,6 @@ export const orderCancelledByAdminTemplate = (firstName, order, reason) =>
   }
   <p style="color: #5a4a3a; font-size: 14px;">If you have any questions, please contact our support team at <a href="mailto:support@papyrus.com" style="color: #7A5C3E;">support@papyrus.com</a>.</p>
 `);
-
 export const returnApprovedTemplate = (firstName, order) =>
   baseLayout(`
   <h2 style="color: #2d1f14; margin: 0 0 8px;">Hello ${firstName}!</h2>
@@ -129,7 +121,6 @@ export const returnApprovedTemplate = (firstName, order) =>
   </div>
   <p style="color: #5a4a3a; font-size: 14px;">For shipping instructions, contact us at <a href="mailto:support@papyrus.com" style="color: #7A5C3E;">support@papyrus.com</a>.</p>
 `);
-
 export const returnRejectedTemplate = (firstName, order, reason) =>
   baseLayout(`
   <h2 style="color: #2d1f14; margin: 0 0 8px;">Hello ${firstName},</h2>
@@ -145,7 +136,6 @@ export const returnRejectedTemplate = (firstName, order, reason) =>
   }
   <p style="color: #5a4a3a; font-size: 14px;">If you believe this is a mistake, please contact us at <a href="mailto:support@papyrus.com" style="color: #7A5C3E;">support@papyrus.com</a>.</p>
 `);
-
 export const cartOutOfStockTemplate = (firstName, removedItems) => {
   const itemRows = removedItems
     .map(
@@ -159,7 +149,6 @@ export const cartOutOfStockTemplate = (firstName, removedItems) => {
   `,
     )
     .join("");
-
   return baseLayout(`
     <h2 style="color: #2d1f14; margin: 0 0 8px;">Hello ${firstName},</h2>
     <p style="color: #5a4a3a; margin: 0 0 20px;">Some items in your cart have gone <strong style="color: #d32f2f;">out of stock</strong> and were automatically removed.</p>

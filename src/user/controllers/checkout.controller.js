@@ -4,22 +4,17 @@ import * as orderService from "../../shared/services/order.service.js";
 import * as couponService from "../../shared/services/coupon.service.js";
 import Product from "../../shared/models/Product.js";
 import Coupon from "../../shared/models/Coupon.js";
-
 export const getCheckout = async (req, res) => {
   try {
     const userId = req.session.userId;
-
     const cart = await cartService.getOrCreateCart(userId);
-
+    console.log('Checkout - Cart structure:', JSON.stringify(cart.items.slice(0, 1), null, 2)); // Log first item structure
     if (!cart || cart.items.length === 0) {
       return res.redirect("/cart");
     }
-
     const stockIssues = [];
     let hasStockChanges = false;
-
     const originalCart = await cartService.getOrCreateCart(userId, req.session);
-
     if (
       originalCart.outOfStockItems &&
       originalCart.outOfStockItems.length > 0
@@ -31,7 +26,6 @@ export const getCheckout = async (req, res) => {
         hasStockChanges = true;
       });
     }
-
     if (
       originalCart.stockAdjustedItems &&
       originalCart.stockAdjustedItems.length > 0
@@ -43,7 +37,6 @@ export const getCheckout = async (req, res) => {
         hasStockChanges = true;
       });
     }
-
     if (
       req.session.stockAdjustedItems &&
       req.session.stockAdjustedItems.length > 0
@@ -56,7 +49,6 @@ export const getCheckout = async (req, res) => {
       });
       delete req.session.stockAdjustedItems;
     }
-
     for (const item of cart.items) {
       const product = await Product.findById(item.product._id)
         .select("stock isListed isDeleted title category")
@@ -65,7 +57,6 @@ export const getCheckout = async (req, res) => {
           select: "isListed isDeleted",
           match: { isListed: true, isDeleted: false },
         });
-
       if (
         !product ||
         product.isDeleted ||
@@ -83,41 +74,33 @@ export const getCheckout = async (req, res) => {
       }
       // Remove the low stock warning that was blocking checkout
     }
-
     if (hasStockChanges) {
       req.session.stockIssues = stockIssues;
     } else if (req.session.stockIssues) {
       delete req.session.stockIssues;
     }
-
     const addresses = await addressService.getUserAddresses(userId);
     const defaultAddress =
       addresses.find((addr) => addr.isDefault) || addresses[0];
-
     const subtotal = cart.totalAmount;
     const shippingCharge = subtotal >= 500 ? 0 : 50;
     const discount = req.session.appliedCoupon?.discount || 0;
     const totalAmount = parseFloat(
       (subtotal + shippingCharge - discount).toFixed(2),
     );
-
     const now = new Date();
-    const availableCoupons = await Coupon.find({
-      isDeleted: false,
-      isActive: true,
-      validFrom: { $lte: now },
-      validUntil: { $gte: now },
-      $or: [
-        { usageLimit: { $exists: false } },
-        { $expr: { $lt: ["$usageCount", "$usageLimit"] } },
-      ],
-      minPurchaseAmount: { $lte: subtotal },
-    })
-      .populate("applicableCategories", "name")
-      .populate("applicableProducts", "title")
-      .sort({ discountValue: -1 })
-      .limit(10);
-
+    const availableCoupons = await couponService.getAvailableCoupons(
+      userId,
+      subtotal,
+      cart.items
+    );
+    console.log('Checkout - Available coupons:', availableCoupons.length);
+    console.log('Checkout - Cart total:', subtotal);
+    console.log('Checkout - Cart items count:', cart.items.length);
+    console.log('Rendering checkout with coupons:', availableCoupons.length);
+    availableCoupons.forEach((coupon, index) => {
+      console.log(`Coupon ${index + 1}: ${coupon.code} - ${coupon.discountType} ${coupon.discountValue}`);
+    });
     res.render("user/checkout", {
       cart,
       addresses,
@@ -136,28 +119,23 @@ export const getCheckout = async (req, res) => {
     res.redirect("/cart?error=An error occurred while loading checkout");
   }
 };
-
 export const placeOrder = async (req, res) => {
   try {
     const userId = req.session.userId;
     const { addressId, paymentMethod, orderNotes } = req.body;
-
     if (!addressId) {
       return res.status(400).json({
         success: false,
         message: "Please select a delivery address.",
       });
     }
-
     if (!paymentMethod) {
       return res.status(400).json({
         success: false,
         message: "Please select a payment method.",
       });
     }
-
     const cart = await cartService.getOrCreateCart(userId);
-
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({
         success: false,
@@ -167,7 +145,6 @@ export const placeOrder = async (req, res) => {
     }
     const availableItems = [];
     const outOfStockItems = [];
-
     for (const item of cart.items) {
       const product = await Product.findById(item.product._id)
         .select("stock isListed isDeleted category title")
@@ -176,7 +153,6 @@ export const placeOrder = async (req, res) => {
           select: "isListed",
           match: { isListed: true, isDeleted: false },
         });
-
       if (
         !product ||
         product.isDeleted ||
@@ -188,7 +164,6 @@ export const placeOrder = async (req, res) => {
           message: `Sorry, "${item.product.title}" is no longer available for purchase. Please remove it from your cart and try again.`,
         });
       }
-
       if (product.stock === 0) {
         outOfStockItems.push({
           ...item.toObject(),
@@ -208,16 +183,13 @@ export const placeOrder = async (req, res) => {
         });
       }
     }
-
     const address = await addressService.getAddressById(addressId, userId);
-
     if (!address) {
       return res.status(400).json({
         success: false,
         message: "Selected address not found. Please choose a valid address.",
       });
     }
-
     const availableSubtotal = availableItems.reduce(
       (total, item) => total + item.price * item.actualQuantity,
       0,
@@ -227,7 +199,6 @@ export const placeOrder = async (req, res) => {
     const totalAmount = parseFloat(
       (availableSubtotal + shippingCharge - discount).toFixed(2),
     );
-
     const orderItems = [...availableItems, ...outOfStockItems].map((item) => ({
       product: item.product._id,
       title: item.product.title,
@@ -237,7 +208,6 @@ export const placeOrder = async (req, res) => {
       subtotal: parseFloat((item.price * item.actualQuantity).toFixed(2)),
       status: item.status,
     }));
-
     const orderData = {
       user: userId,
       items: orderItems,
@@ -261,9 +231,7 @@ export const placeOrder = async (req, res) => {
       totalAmount,
       orderNotes: orderNotes || "",
     };
-
     const order = await orderService.createOrder(orderData);
-
     for (const item of availableItems) {
       const updateResult = await Product.findOneAndUpdate(
         {
@@ -275,17 +243,14 @@ export const placeOrder = async (req, res) => {
         },
         { new: true },
       );
-
       if (!updateResult) {
         await orderService.cancelOrder(
           order._id,
           "Stock unavailable during order processing",
         );
-
         const currentProduct = await Product.findById(item.product._id).select(
           "stock title",
         );
-
         if (!currentProduct || currentProduct.stock === 0) {
           return res.status(400).json({
             success: false,
@@ -299,10 +264,8 @@ export const placeOrder = async (req, res) => {
         }
       }
     }
-
     await cartService.clearCart(userId);
     req.session.appliedCoupon = null;
-
     res.json({
       success: true,
       message: "Order placed successfully!",
@@ -318,24 +281,83 @@ export const placeOrder = async (req, res) => {
     });
   }
 };
-
+export const validateOrderCoupon = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const userId = req.session.userId;
+    const order = await orderService.getOrderById(orderId);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+    if (order.user._id.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized access",
+      });
+    }
+    if (!order.couponCode || order.discount <= 0) {
+      return res.json({
+        success: true,
+        isValid: true,
+        discount: 0,
+        message: "No coupon applied",
+      });
+    }
+    // Calculate active subtotal (excluding cancelled/returned items)
+    const activeItems = order.items.filter(item => 
+      item.status !== 'Cancelled' && item.status !== 'Returned'
+    );
+    const activeSubtotal = activeItems.reduce((total, item) => {
+      return total + (item.price * item.actualQuantity);
+    }, 0);
+    try {
+      const coupon = await couponService.validateCouponForActiveItems(
+        order.couponCode,
+        userId,
+        activeSubtotal,
+        activeItems
+      );
+      const validDiscount = couponService.calculateDiscount(coupon, activeSubtotal);
+      return res.json({
+        success: true,
+        isValid: true,
+        discount: validDiscount,
+        activeSubtotal,
+        minPurchaseAmount: coupon.minPurchaseAmount,
+        message: "Coupon is valid for active items",
+      });
+    } catch (error) {
+      return res.json({
+        success: true,
+        isValid: false,
+        discount: 0,
+        activeSubtotal,
+        message: error.message,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to validate coupon",
+    });
+  }
+};
 export const getOrderSuccess = async (req, res) => {
   try {
     const { orderId } = req.params;
     const userId = req.session.userId;
-
     const order = await orderService.getOrderById(orderId);
-
     if (!order) {
       return res.redirect("/orders?error=Order not found");
     }
-
     if (order.user._id.toString() !== userId.toString()) {
       return res.redirect(
         "/orders?error=You do not have permission to view this order",
       );
     }
-
     res.render("user/order-success", {
       order,
       currentPage_name: "orders",

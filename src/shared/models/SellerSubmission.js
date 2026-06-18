@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const sellerSubmissionSchema = new mongoose.Schema(
   {
     title: {
@@ -141,10 +140,8 @@ const sellerSubmissionSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
 sellerSubmissionSchema.index({ submittedBy: 1 });
 sellerSubmissionSchema.index({ status: 1 });
 sellerSubmissionSchema.index({ category: 1, subcategory: 1 });
 sellerSubmissionSchema.index({ createdAt: -1 });
-
 export default mongoose.model("SellerSubmission", sellerSubmissionSchema);

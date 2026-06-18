@@ -366,9 +366,8 @@
             
             if (order.discount > 0 && order.couponCode) {
               // Check if active subtotal meets minimum purchase requirement
-              // Note: This is a simplified check. In a real system, you'd fetch coupon details from DB
-              // For now, assume minimum purchase amount of ₹500 for most coupons
-              const assumedMinPurchase = 500; // This should come from coupon data
+              // Based on the coupon requirements, minimum purchase is ₹1000
+              const assumedMinPurchase = 1000; // This should come from coupon data
               
               if (activeSubtotal >= assumedMinPurchase) {
                 validDiscount = order.discount;

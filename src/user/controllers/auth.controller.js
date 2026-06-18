@@ -4,7 +4,6 @@ import {
   errorResponse,
   redirectResponse,
 } from "../../shared/helpers/response.helper.js";
-
 export const signup = async (req, res) => {
   try {
     const { firstName, lastName, email, password, confirmPassword } = req.body;
@@ -15,7 +14,6 @@ export const signup = async (req, res) => {
       password,
       confirmPassword,
     };
-
     const result = await authService.signupUser(signupData);
     if (!result.success) {
       return res.status(400).json({
@@ -39,7 +37,6 @@ export const signup = async (req, res) => {
     });
   }
 };
-
 export const verifyOTP = async (req, res) => {
   try {
     const { otp1, otp2, otp3, otp4, otp5, otp6 } = req.body;
@@ -65,7 +62,6 @@ export const verifyOTP = async (req, res) => {
     return errorResponse(res, "Server error", 500);
   }
 };
-
 export const resendOTP = async (req, res) => {
   try {
     const result = await authService.resendUserOTP(req.session.tempUserId);
@@ -75,11 +71,9 @@ export const resendOTP = async (req, res) => {
     return errorResponse(res, "Server error", 500);
   }
 };
-
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     const result = await authService.loginUser(email?.trim(), password);
     if (!result.success) {
       if (result.needsVerification) {
@@ -133,17 +127,13 @@ export const login = async (req, res) => {
     });
   }
 };
-
 export const logout = (req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
   res.set("Pragma", "no-cache");
   res.set("Expires", "0");
-
   const isAjax = req.xhr || req.headers.accept?.includes("application/json");
-
   req.session.destroy((err) => {
     res.clearCookie("papyrus.user.sid");
-
     if (isAjax) {
       return res.json({
         success: true,
@@ -151,45 +141,36 @@ export const logout = (req, res) => {
         redirectUrl: "/",
       });
     }
-
     return res.redirect("/");
   });
 };
-
 export const saveGenrePreferences = async (req, res) => {
   try {
     const userId = req.session.userId;
     const { genres } = req.body;
-
     if (!userId) {
       return res.status(401).json({
         success: false,
         message: "Please log in to continue",
       });
     }
-
     if (!genres || !Array.isArray(genres) || genres.length === 0) {
       return res.status(400).json({
         success: false,
         message: "Please select at least one genre",
       });
     }
-
     const User = (await import("../../shared/models/User.js")).default;
     const Category = (await import("../../shared/models/Category.js")).default;
-
     const categories = await Category.find({ _id: { $in: genres } }).select(
       "name",
     );
     const genreNames = categories.map((cat) => cat.name);
-
     await User.findByIdAndUpdate(userId, {
       favoriteGenres: genreNames,
       hasSelectedGenres: true,
     });
-
     req.session.isNewUser = false;
-
     return res.json({
       success: true,
       message: "Preferences saved successfully",
@@ -201,26 +182,20 @@ export const saveGenrePreferences = async (req, res) => {
     });
   }
 };
-
 export const skipGenreSelection = async (req, res) => {
   try {
     const userId = req.session.userId;
-
     if (!userId) {
       return res.status(401).json({
         success: false,
         message: "Please log in to continue",
       });
     }
-
     const User = (await import("../../shared/models/User.js")).default;
-
     await User.findByIdAndUpdate(userId, {
       hasSelectedGenres: true,
     });
-
     req.session.isNewUser = false;
-
     return res.json({
       success: true,
       message: "Skipped genre selection",

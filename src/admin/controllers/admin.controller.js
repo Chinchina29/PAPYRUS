@@ -1,43 +1,35 @@
 import * as userService from "../../shared/services/user.service.js";
 import * as otpService from "../../shared/services/otp.service.js";
 import * as emailService from "../../shared/services/email.service.js";
-
 export const signin = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     if (!email || !password) {
       return res.status(400).json({
         success: false,
         message: "Email and password are required",
       });
     }
-
     const user = await userService.findUserByEmail(email);
-
     if (!user || user.role !== "admin") {
       return res.status(400).json({
         success: false,
         message: "Invalid admin credentials",
       });
     }
-
     if (user.isBlocked) {
       return res.status(403).json({
         success: false,
         message: "Account is blocked. Contact support.",
       });
     }
-
     const isMatch = await userService.comparePassword(password, user.password);
-    
     if (!isMatch) {
       return res.status(400).json({
         success: false,
         message: "Invalid admin credentials",
       });
     }
-    
     req.session.adminId = user._id.toString();
     req.session.adminUser = {
       id: user._id,
@@ -47,7 +39,6 @@ export const signin = async (req, res) => {
       role: user.role,
     };
     req.session.lastActivity = new Date();
-
     req.session.save((err) => {
       if (err) {
         return res.status(500).json({
@@ -68,12 +59,10 @@ export const signin = async (req, res) => {
     });
   }
 };
-
 export const dashboard = async (req, res) => {
   try {
     let stats = {};
     let recentUsers = [];
-    
     try {
       stats = await userService.getDashboardStats();
       recentUsers = await userService.getRecentUsers(5);
@@ -85,7 +74,6 @@ export const dashboard = async (req, res) => {
         newUsersToday: 0,
       };
     }
-
     res.render("admin/dashboard", {
       user: req.session.adminUser || req.adminUser,
       currentPage_name: "dashboard",
@@ -125,16 +113,13 @@ export const dashboard = async (req, res) => {
     res.status(500).render("error/500", { error: "Dashboard loading failed" });
   }
 };
-
 export const getUserManagement = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || "";
     const status = req.query.status || "";
-
     const result = await userService.getAllUsers(page, limit, search, status);
-
     res.render("admin/usermanagement", {
       user: req.session.adminUser,
       currentPage_name: "users",
@@ -149,27 +134,22 @@ export const getUserManagement = async (req, res) => {
     res.status(500).render("error/500", { error: "Failed to load users" });
   }
 };
-
 export const blockUnblockUser = async (req, res) => {
   try {
     const { userId } = req.body;
-
     if (!userId) {
       return res.status(400).json({
         success: false,
         message: "User ID is required",
       });
     }
-
     const user = await userService.toggleBlockUser(userId);
-
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
-
     return res.json({
       success: true,
       message: user.isBlocked
@@ -184,25 +164,20 @@ export const blockUnblockUser = async (req, res) => {
     });
   }
 };
-
 export const getUserDetail = async (req, res) => {
   try {
     const { userId } = req.params;
-
     if (!userId) {
       return res.status(400).render("error/404", {
         message: "User ID is required",
       });
     }
-
     const user = await userService.getUserById(userId);
-
     if (!user) {
       return res.status(404).render("error/404", {
         message: "User not found",
       });
     }
-
     res.render("admin/userdetail", {
       adminUser: req.session.adminUser,
       currentPage_name: "users",
@@ -214,14 +189,11 @@ export const getUserDetail = async (req, res) => {
     });
   }
 };
-
 export const logout = (req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
   res.set("Pragma", "no-cache");
   res.set("Expires", "0");
-
   const isAjax = req.xhr || req.headers.accept?.includes("application/json");
-
   if (!req.session) {
     res.clearCookie("papyrus.admin.sid");
     if (isAjax) {
@@ -229,29 +201,24 @@ export const logout = (req, res) => {
     }
     return res.redirect("/admin/signin");
   }
-
   req.session.destroy((err) => {
     res.clearCookie("papyrus.admin.sid");
-
     if (isAjax) {
       return res.json({ success: true, redirectUrl: "/admin/signin" });
     }
     return res.redirect("/admin/signin");
   });
 };
-
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
     const trimmedEmail = email?.trim();
-
     if (!trimmedEmail) {
       return res.status(400).json({
         success: false,
         message: "Email is required",
       });
     }
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(trimmedEmail)) {
       return res.status(400).json({
@@ -259,16 +226,13 @@ export const forgotPassword = async (req, res) => {
         message: "Please enter a valid email address",
       });
     }
-
     const user = await userService.findUserByEmail(trimmedEmail);
-
     if (!user || user.role !== "admin") {
       return res.json({
         success: true,
         message: "If that email exists, a reset code has been sent.",
       });
     }
-
     const throttle = otpService.checkThrottle(user);
     if (!throttle.allowed) {
       const statusCode = throttle.type === "lockout" ? 423 : 429;
@@ -280,25 +244,20 @@ export const forgotPassword = async (req, res) => {
         minutesLeft: throttle.minutesLeft,
       });
     }
-
     const otp = otpService.setOTP(user);
     await user.save();
-
     const emailResult = await emailService.sendPasswordResetOTP(
       user.email,
       user.firstName,
       otp,
     );
-
     if (!emailResult.success) {
       return res.status(500).json({
         success: false,
         message: "Failed to send reset code. Please try again.",
       });
     }
-
     req.session.adminResetEmail = trimmedEmail;
-
     return res.json({
       success: true,
       message: "Reset code sent to your email.",
@@ -308,12 +267,10 @@ export const forgotPassword = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 export const verifyForgotOTP = async (req, res) => {
   try {
     const { otp1, otp2, otp3, otp4, otp5, otp6 } = req.body;
     const otpCode = `${otp1}${otp2}${otp3}${otp4}${otp5}${otp6}`;
-
     const email = req.session.adminResetEmail;
     if (!email) {
       return res.status(400).json({
@@ -321,7 +278,6 @@ export const verifyForgotOTP = async (req, res) => {
         message: "Session expired. Please start over.",
       });
     }
-
     const user = await userService.findUserByEmail(email);
     if (!user) {
       return res.status(404).json({
@@ -329,7 +285,6 @@ export const verifyForgotOTP = async (req, res) => {
         message: "User not found.",
       });
     }
-
     const result = otpService.verifyUserOTP(user, otpCode);
     if (!result.success) {
       await user.save();
@@ -342,10 +297,8 @@ export const verifyForgotOTP = async (req, res) => {
         attemptsLeft: result.attemptsLeft,
       });
     }
-
     await user.save();
     req.session.adminResetVerified = true;
-
     return res.json({
       success: true,
       message: "OTP verified successfully.",
@@ -355,7 +308,6 @@ export const verifyForgotOTP = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 export const resendForgotOTP = async (req, res) => {
   try {
     const email = req.session.adminResetEmail;
@@ -365,7 +317,6 @@ export const resendForgotOTP = async (req, res) => {
         message: "Session expired. Please start over.",
       });
     }
-
     const user = await userService.findUserByEmail(email);
     if (!user) {
       return res.status(404).json({
@@ -373,7 +324,6 @@ export const resendForgotOTP = async (req, res) => {
         message: "User not found.",
       });
     }
-
     const throttle = otpService.checkThrottle(user);
     if (!throttle.allowed) {
       return res.status(429).json({
@@ -381,23 +331,19 @@ export const resendForgotOTP = async (req, res) => {
         message: throttle.reason,
       });
     }
-
     const otp = otpService.setOTP(user);
     await user.save();
-
     const emailResult = await emailService.sendPasswordResetOTP(
       user.email,
       user.firstName,
       otp,
     );
-
     if (!emailResult.success) {
       return res.status(500).json({
         success: false,
         message: "Failed to resend OTP.",
       });
     }
-
     return res.json({
       success: true,
       message: "New OTP sent to your email.",
@@ -407,34 +353,29 @@ export const resendForgotOTP = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 export const resetPassword = async (req, res) => {
   try {
     const { newPassword, confirmPassword } = req.body;
     const email = req.session.adminResetEmail;
     const verified = req.session.adminResetVerified;
-
     if (!email || !verified) {
       return res.status(401).json({
         success: false,
         message: "Unauthorized. Please complete verification first.",
       });
     }
-
     if (!newPassword || newPassword.length < 8) {
       return res.status(400).json({
         success: false,
         message: "Password must be at least 8 characters.",
       });
     }
-
     if (newPassword !== confirmPassword) {
       return res.status(400).json({
         success: false,
         message: "Passwords do not match.",
       });
     }
-
     const user = await userService.findUserByEmail(email);
     if (!user) {
       return res.status(404).json({
@@ -442,14 +383,11 @@ export const resetPassword = async (req, res) => {
         message: "User not found.",
       });
     }
-
     user.password = newPassword;
     otpService.clearOTP(user);
     await user.save();
-
     delete req.session.adminResetEmail;
     delete req.session.adminResetVerified;
-
     return res.json({
       success: true,
       message: "Password reset successful! You can now login.",

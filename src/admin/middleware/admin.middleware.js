@@ -1,12 +1,10 @@
 import * as userService from "../../shared/services/user.service.js";
-
 export const isAdmin = async (req, res, next) => {
   try {
     const isAjax =
       req.xhr ||
       req.headers.accept?.includes("application/json") ||
       req.get("X-Requested-With") === "XMLHttpRequest";
-
     if (!req.session || !req.session.adminId) {
       if (isAjax) {
         return res.status(401).json({
@@ -17,16 +15,13 @@ export const isAdmin = async (req, res, next) => {
       }
       return res.redirect("/admin/signin?error=auth");
     }
-
     const user = await userService.findUserById(req.session.adminId);
-
     if (!user) {
       return req.session.destroy(() => {
         res.clearCookie("papyrus.admin.sid");
         return res.redirect("/admin/signin?error=user");
       });
     }
-
     if (user.role !== "admin") {
       return req.session.destroy(() => {
         res.clearCookie("papyrus.admin.sid");
@@ -35,14 +30,12 @@ export const isAdmin = async (req, res, next) => {
         });
       });
     }
-
     if (user.isBlocked) {
       return req.session.destroy(() => {
         res.clearCookie("papyrus.admin.sid");
         return res.redirect("/admin/signin?error=blocked");
       });
     }
-
     if (req.session.lastActivity) {
       const timeDiff =
         Date.now() - new Date(req.session.lastActivity).getTime();
@@ -53,7 +46,6 @@ export const isAdmin = async (req, res, next) => {
         });
       }
     }
-
     req.session.adminUser = {
       id: user._id,
       firstName: user.firstName,
@@ -87,13 +79,11 @@ export const isAdminNotAuthenticated = async (req, res, next) => {
     return next();
   }
 };
-
 export const blockUserFromAdmin = (req, res, next) => {
   const isAjax =
     req.xhr ||
     req.get("X-Requested-With") === "XMLHttpRequest" ||
     req.headers.accept?.includes("application/json");
-
   if (
     req.session &&
     req.session.adminUser &&
@@ -111,24 +101,7 @@ export const blockUserFromAdmin = (req, res, next) => {
   }
   next();
 };
-
 export const preventUserFromAdminRoutes = (req, res, next) => {
-  if (req.session && req.session.userId && !req.session.adminId) {
-    const isAjax =
-      req.xhr ||
-      req.get("X-Requested-With") === "XMLHttpRequest" ||
-      req.headers.accept?.includes("application/json");
-
-    if (isAjax) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied. Please login as admin.",
-        redirectUrl: "/home",
-      });
-    }
-    return res.redirect("/home");
-  }
-
   const publicAdminRoutes = [
     "/admin/signin",
     "/admin/forgot-password",
@@ -137,15 +110,15 @@ export const preventUserFromAdminRoutes = (req, res, next) => {
     "/admin/forgot-password/resend",
     "/admin/forgot-password/reset",
   ];
-
   const isPublicRoute = publicAdminRoutes.some(
     (route) => req.path === route.replace("/admin", ""),
   );
-
-  if (!isPublicRoute && !req.session.adminId) {
+  if (isPublicRoute) {
+    return next();
+  }
+  if (!req.session.adminId) {
     return res.redirect("/admin/signin");
   }
-
   next();
 };
 export const noCache = (req, res, next) => {

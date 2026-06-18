@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const productSchema = new mongoose.Schema(
   {
     title: {
@@ -145,12 +144,10 @@ const productSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
 productSchema.index({ title: "text", author: "text", description: "text" });
 productSchema.index({ category: 1, subcategory: 1 });
 productSchema.index({ seller: 1 });
 productSchema.index({ isListed: 1, isDeleted: 1 });
 productSchema.index({ price: 1 });
 productSchema.index({ createdAt: -1 });
-
 export default mongoose.model("Product", productSchema);

@@ -16,16 +16,13 @@ import {
   emailLimiter,
   searchLimiter,
 } from "../../shared/middleware/rateLimiting.middleware.js";
-
 const router = express.Router();
-
 const requireAuth = (req, res, next) => {
   if (!req.session?.userId) {
     const isAjax =
       req.xhr ||
       req.headers.accept?.includes("application/json") ||
       req.get("X-Requested-With") === "XMLHttpRequest";
-
     if (isAjax) {
       return res.status(401).json({
         success: false,
@@ -38,10 +35,8 @@ const requireAuth = (req, res, next) => {
   }
   next();
 };
-
 router.get("/shop", searchLimiter, productController.getShop);
 router.get("/shop/:id", generalApiLimiter, productController.getProductDetail);
-
 router.get("/profile", requireAuth, profileController.showProfile);
 router.get("/profile/edit", requireAuth, profileController.showEditProfile);
 router.post(
@@ -104,7 +99,6 @@ router.post(
   generalApiLimiter,
   profileController.cancelEmailChange,
 );
-
 router.get("/profile/addresses", requireAuth, addressController.showAddresses);
 router.get(
   "/profile/addresses/add",
@@ -152,7 +146,6 @@ router.post(
   generalApiLimiter,
   addressController.setDefaultAddress,
 );
-
 router.get("/cart", requireAuth, cartController.getCart);
 router.post("/cart/add", requireAuth, cartLimiter, cartController.addToCart);
 router.put(
@@ -175,6 +168,7 @@ router.delete(
 );
 router.get("/cart/count", cartController.getCartCount);
 router.get("/cart/summary", cartController.getCartSummary);
+router.get("/cart/available-coupons", requireAuth, cartController.getAvailableCoupons);
 router.post(
   "/cart/validate-coupon",
   requireAuth,
@@ -193,7 +187,6 @@ router.post(
   generalApiLimiter,
   cartController.checkStock,
 );
-
 router.get("/sell", requireAuth, sellerController.getSellPage);
 router.post("/sell", requireAuth, sellerController.submitBook);
 router.post(
@@ -217,7 +210,6 @@ router.patch(
   generalApiLimiter,
   sellerController.updateProductStock,
 );
-
 router.post(
   "/reviews",
   requireAuth,
@@ -242,7 +234,6 @@ router.post(
   generalApiLimiter,
   reviewController.markHelpful,
 );
-
 router.get("/wishlist", requireAuth, wishlistController.getWishlist);
 router.post(
   "/wishlist/add",
@@ -268,7 +259,6 @@ router.get(
   requireAuth,
   wishlistController.checkWishlistStatus,
 );
-
 router.get("/orders", requireAuth, orderController.getUserOrders);
 router.get("/orders/:id", requireAuth, orderController.getOrderDetail);
 router.get("/orders/:id/invoice", requireAuth, orderController.downloadInvoice);
@@ -290,9 +280,13 @@ router.post(
   checkoutController.placeOrder,
 );
 router.get(
+  "/checkout/validate-coupon/:orderId", 
+  requireAuth, 
+  checkoutController.validateOrderCoupon
+);
+router.get(
   "/order-success/:orderId",
   requireAuth,
   checkoutController.getOrderSuccess,
 );
-
 export default router;

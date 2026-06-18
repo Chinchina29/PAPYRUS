@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const couponSchema = new mongoose.Schema(
   {
     code: {
@@ -77,9 +76,7 @@ const couponSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
 couponSchema.index({ code: 1 });
 couponSchema.index({ isActive: 1, isDeleted: 1 });
 couponSchema.index({ validFrom: 1, validUntil: 1 });
-
 export default mongoose.model("Coupon", couponSchema);

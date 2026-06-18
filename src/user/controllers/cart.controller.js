@@ -1,25 +1,20 @@
 import * as cartService from "../services/cart.service.js";
 import * as couponService from "../../shared/services/coupon.service.js";
-
 export const getCart = async (req, res) => {
   try {
     if (!req.session?.userId) {
       return res.redirect("/login?message=Please log in to access your cart");
     }
-
     const cart = await cartService.getOrCreateCart(
       req.session.userId,
       req.session,
     );
-
     const outOfStockItems =
       req.session.outOfStockItems || cart.outOfStockItems || [];
     const stockAdjustedItems =
       req.session.stockAdjustedItems || cart.stockAdjustedItems || [];
-
     req.session.outOfStockItems = null;
     req.session.stockAdjustedItems = null;
-
     res.render("user/cart", {
       cart,
       currentPage_name: "cart",
@@ -37,11 +32,9 @@ export const getCart = async (req, res) => {
     );
   }
 };
-
 export const addToCart = async (req, res) => {
   try {
     const { productId, quantity } = req.body;
-
     if (!productId) {
       return res.status(400).json({
         success: false,
@@ -50,7 +43,6 @@ export const addToCart = async (req, res) => {
         errorType: "MISSING_PRODUCT_ID"
       });
     }
-
     if (!quantity) {
       return res.status(400).json({
         success: false,
@@ -59,9 +51,7 @@ export const addToCart = async (req, res) => {
         errorType: "MISSING_QUANTITY"
       });
     }
-
     const qty = Number(quantity);
-
     if (isNaN(qty)) {
       return res.status(400).json({
         success: false,
@@ -70,7 +60,6 @@ export const addToCart = async (req, res) => {
         errorType: "INVALID_QUANTITY_FORMAT"
       });
     }
-
     if (qty < 1) {
       return res.status(400).json({
         success: false,
@@ -79,7 +68,6 @@ export const addToCart = async (req, res) => {
         errorType: "INVALID_QUANTITY_MINIMUM"
       });
     }
-
     if (!Number.isInteger(qty)) {
       return res.status(400).json({
         success: false,
@@ -88,13 +76,11 @@ export const addToCart = async (req, res) => {
         errorType: "INVALID_QUANTITY_DECIMAL"
       });
     }
-
     const cart = await cartService.addToCart(
       req.session.userId,
       productId,
       qty,
     );
-
     res.json({
       success: true,
       message: "Item added to cart successfully",
@@ -107,7 +93,6 @@ export const addToCart = async (req, res) => {
     let userMessage = error.message;
     let errorType = "GENERIC_ERROR";
     let field = null;
-
     if (
       error.message.includes("not found") ||
       error.message.includes("not available")
@@ -136,7 +121,6 @@ export const addToCart = async (req, res) => {
       errorType = "CATEGORY_DISABLED";
       field = "productId";
     }
-
     res.status(400).json({
       success: false,
       message: userMessage,
@@ -145,12 +129,10 @@ export const addToCart = async (req, res) => {
     });
   }
 };
-
 export const updateCartItem = async (req, res) => {
   try {
     const { productId } = req.params;
     const { quantity } = req.body;
-
     if (!productId) {
       return res.status(400).json({
         success: false,
@@ -159,7 +141,6 @@ export const updateCartItem = async (req, res) => {
         errorType: "MISSING_PRODUCT_ID"
       });
     }
-
     if (!quantity && quantity !== 0) {
       return res.status(400).json({
         success: false,
@@ -168,7 +149,6 @@ export const updateCartItem = async (req, res) => {
         errorType: "MISSING_QUANTITY"
       });
     }
-
     if (quantity < 0) {
       return res.status(400).json({
         success: false,
@@ -177,7 +157,6 @@ export const updateCartItem = async (req, res) => {
         errorType: "INVALID_QUANTITY_NEGATIVE"
       });
     }
-
     if (!Number.isInteger(Number(quantity))) {
       return res.status(400).json({
         success: false,
@@ -186,18 +165,15 @@ export const updateCartItem = async (req, res) => {
         errorType: "INVALID_QUANTITY_DECIMAL"
       });
     }
-
     const cart = await cartService.updateCartItem(
       req.session.userId,
       productId,
       parseInt(quantity),
     );
-
     const subtotal = cart.totalAmount;
     const shippingCharge = subtotal >= 500 ? 0 : 50;
     const discount = req.session.appliedCoupon?.discount || 0;
     const total = subtotal + shippingCharge - discount;
-
     res.json({
       success: true,
       message: "Cart updated successfully",
@@ -220,7 +196,6 @@ export const updateCartItem = async (req, res) => {
     let userMessage = error.message;
     let errorType = "GENERIC_ERROR";
     let field = null;
-
     if (error.message.includes("not found")) {
       userMessage = "The product was not found in your cart. It may have been removed already.";
       errorType = "PRODUCT_NOT_FOUND";
@@ -238,7 +213,6 @@ export const updateCartItem = async (req, res) => {
       errorType = "MAXIMUM_QUANTITY_EXCEEDED";
       field = "quantity";
     }
-
     res.status(400).json({
       success: false,
       message: userMessage,
@@ -247,16 +221,13 @@ export const updateCartItem = async (req, res) => {
     });
   }
 };
-
 export const removeFromCart = async (req, res) => {
   try {
     const { productId } = req.params;
-
     const cart = await cartService.removeFromCart(
       req.session.userId,
       productId,
     );
-
     res.json({
       success: true,
       message: "Item removed from cart successfully",
@@ -274,11 +245,9 @@ export const removeFromCart = async (req, res) => {
     });
   }
 };
-
 export const clearCart = async (req, res) => {
   try {
     await cartService.clearCart(req.session.userId);
-
     res.json({
       success: true,
       message: "Cart cleared successfully",
@@ -290,7 +259,6 @@ export const clearCart = async (req, res) => {
     });
   }
 };
-
 export const getCartCount = async (req, res) => {
   try {
     if (!req.session?.userId) {
@@ -299,9 +267,7 @@ export const getCartCount = async (req, res) => {
         count: 0,
       });
     }
-
     const count = await cartService.getCartItemCount(req.session.userId);
-
     res.json({
       success: true,
       count,
@@ -313,12 +279,10 @@ export const getCartCount = async (req, res) => {
     });
   }
 };
-
 export const validateCoupon = async (req, res) => {
   try {
     const { code } = req.body;
     const userId = req.session.userId;
-
     if (!code) {
       return res.status(400).json({
         success: false,
@@ -327,7 +291,6 @@ export const validateCoupon = async (req, res) => {
         errorType: "MISSING_COUPON_CODE"
       });
     }
-
     if (!code.trim()) {
       return res.status(400).json({
         success: false,
@@ -336,7 +299,6 @@ export const validateCoupon = async (req, res) => {
         errorType: "EMPTY_COUPON_CODE"
       });
     }
-
     if (code.trim().length < 3) {
       return res.status(400).json({
         success: false,
@@ -345,9 +307,7 @@ export const validateCoupon = async (req, res) => {
         errorType: "COUPON_CODE_TOO_SHORT"
       });
     }
-
     const cart = await cartService.getOrCreateCart(userId);
-
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({
         success: false,
@@ -356,16 +316,13 @@ export const validateCoupon = async (req, res) => {
         errorType: "EMPTY_CART"
       });
     }
-
     const coupon = await couponService.validateCoupon(
       code.trim().toUpperCase(),
       userId,
       cart.totalAmount,
       cart.items,
     );
-
     const discount = couponService.calculateDiscount(coupon, cart.totalAmount);
-
     req.session.appliedCoupon = {
       code: coupon.code,
       discountType: coupon.discountType,
@@ -373,7 +330,6 @@ export const validateCoupon = async (req, res) => {
       discount: discount,
       couponId: coupon._id,
     };
-
     res.json({
       success: true,
       message: `Coupon "${coupon.code}" applied successfully! You saved ₹${discount.toFixed(2)}`,
@@ -389,7 +345,6 @@ export const validateCoupon = async (req, res) => {
     let userMessage = error.message;
     let errorType = "GENERIC_ERROR";
     let field = "code";
-
     if (error.message.includes("not found")) {
       userMessage = "Invalid coupon code. Please check the spelling and try again.";
       errorType = "INVALID_COUPON";
@@ -407,7 +362,6 @@ export const validateCoupon = async (req, res) => {
       userMessage = "This coupon has reached its usage limit and is no longer available.";
       errorType = "USAGE_LIMIT_REACHED";
     }
-
     res.status(400).json({
       success: false,
       message: userMessage,
@@ -416,11 +370,9 @@ export const validateCoupon = async (req, res) => {
     });
   }
 };
-
 export const removeCoupon = async (req, res) => {
   try {
     req.session.appliedCoupon = null;
-
     res.json({
       success: true,
       message: "Coupon removed successfully",
@@ -432,7 +384,6 @@ export const removeCoupon = async (req, res) => {
     });
   }
 };
-
 export const getCartSummary = async (req, res) => {
   try {
     if (!req.session?.userId) {
@@ -449,13 +400,11 @@ export const getCartSummary = async (req, res) => {
         },
       });
     }
-
     const cart = await cartService.getOrCreateCart(req.session.userId);
     const subtotal = cart.totalAmount;
     const shippingCharge = subtotal >= 500 ? 0 : 50;
     const discount = req.session.appliedCoupon?.discount || 0;
     const totalAmount = subtotal + shippingCharge - discount;
-
     res.json({
       success: true,
       cart: {
@@ -481,34 +430,71 @@ export const getCartSummary = async (req, res) => {
     });
   }
 };
-
+export const getAvailableCoupons = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Please login to view available coupons",
+      });
+    }
+    const cart = await cartService.getOrCreateCart(userId);
+    if (!cart || cart.items.length === 0) {
+      return res.json({
+        success: true,
+        coupons: [],
+        message: "Add items to cart to see available coupons",
+      });
+    }
+    const availableCoupons = await couponService.getAvailableCoupons(
+      userId,
+      cart.totalAmount,
+      cart.items,
+    );
+    const couponsWithDetails = availableCoupons.map((coupon) => ({
+      code: coupon.code,
+      description: coupon.description,
+      discountType: coupon.discountType,
+      discountValue: coupon.discountValue,
+      maxDiscountAmount: coupon.maxDiscountAmount,
+      minPurchaseAmount: coupon.minPurchaseAmount,
+      potentialDiscount: coupon.potentialDiscount,
+      validUntil: coupon.validUntil,
+    }));
+    res.json({
+      success: true,
+      coupons: couponsWithDetails,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch available coupons",
+    });
+  }
+};
 export const checkStock = async (req, res) => {
   try {
     const { productIds } = req.body;
-
     if (!productIds || !Array.isArray(productIds)) {
       return res.status(400).json({
         success: false,
         message: "Invalid request",
       });
     }
-
     const cart = await cartService.getOrCreateCart(
       req.session.userId,
       req.session,
     );
-
     const currentProductIds = cart.items.map((item) =>
       item.product._id.toString(),
     );
     const removedItems = productIds.filter(
       (id) => !currentProductIds.includes(id),
     );
-
     const hasChanges =
       removedItems.length > 0 ||
       (cart.outOfStockItems && cart.outOfStockItems.length > 0);
-
     res.json({
       success: true,
       hasChanges,

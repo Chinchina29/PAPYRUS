@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const wishlistItemSchema = new mongoose.Schema({
   product: {
     type: mongoose.Schema.Types.ObjectId,
@@ -11,7 +10,6 @@ const wishlistItemSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
-
 const wishlistSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -23,8 +21,6 @@ const wishlistSchema = new mongoose.Schema({
 }, {
   timestamps: true,
 });
-
 wishlistSchema.index({ user: 1 });
 wishlistSchema.index({ "items.product": 1 });
-
 export default mongoose.model("Wishlist", wishlistSchema);

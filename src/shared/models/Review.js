@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const reviewSchema = new mongoose.Schema(
   {
     product: {
@@ -56,10 +55,8 @@ const reviewSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
 reviewSchema.index({ product: 1, user: 1 }, { unique: true });
 reviewSchema.index({ product: 1, isDeleted: 1 });
 reviewSchema.index({ user: 1 });
 reviewSchema.index({ rating: 1 });
-
 export default mongoose.model("Review", reviewSchema);

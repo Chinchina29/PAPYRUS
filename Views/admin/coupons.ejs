@@ -538,13 +538,204 @@
             }, 100);
         }
 
-        function editCoupon(id) {
-            Swal.fire({
-                icon: 'info',
-                title: 'Edit Coupon',
-                text: 'Coupon edit functionality will be implemented soon.',
-                confirmButtonColor: '#3d5a3d'
-            });
+        async function editCoupon(id) {
+            try {
+                // First, fetch the existing coupon data
+                const response = await fetch(`/admin/coupons/edit/${id}`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to load coupon data',
+                        confirmButtonColor: '#3d5a3d'
+                    });
+                    return;
+                }
+
+                const coupon = data.coupon;
+
+                Swal.fire({
+                    title: 'Edit Coupon',
+                    html: `
+                        <form id="editCouponForm" style="text-align: left;">
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Coupon Code *</label>
+                                <input type="text" id="editCode" name="code" required 
+                                    style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;"
+                                    placeholder="e.g., SUMMER2024" maxlength="20" value="${coupon.code}">
+                            </div>
+                            
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Description</label>
+                                <textarea id="editDescription" name="description" rows="2"
+                                    style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;"
+                                    placeholder="Brief description of the coupon" maxlength="200">${coupon.description}</textarea>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Discount Type *</label>
+                                    <select id="editDiscountType" name="discountType" required
+                                        style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                                        <option value="percentage" ${coupon.discountType === 'percentage' ? 'selected' : ''}>Percentage</option>
+                                        <option value="fixed" ${coupon.discountType === 'fixed' ? 'selected' : ''}>Fixed Amount</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Discount Value *</label>
+                                    <input type="number" id="editDiscountValue" name="discountValue" required min="0" step="0.01"
+                                        style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;"
+                                        placeholder="e.g., 20" value="${coupon.discountValue}">
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Min Purchase Amount</label>
+                                    <input type="number" id="editMinPurchaseAmount" name="minPurchaseAmount" min="0" step="0.01"
+                                        style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;"
+                                        placeholder="0" value="${coupon.minPurchaseAmount || ''}">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Max Discount Amount</label>
+                                    <input type="number" id="editMaxDiscountAmount" name="maxDiscountAmount" min="0" step="0.01"
+                                        style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;"
+                                        placeholder="Optional" value="${coupon.maxDiscountAmount || ''}">
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Usage Limit</label>
+                                    <input type="number" id="editUsageLimit" name="usageLimit" min="1"
+                                        style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;"
+                                        placeholder="Optional" value="${coupon.usageLimit || ''}">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Per User Limit</label>
+                                    <input type="number" id="editPerUserLimit" name="perUserLimit" min="1" value="${coupon.perUserLimit || 1}"
+                                        style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Valid From *</label>
+                                    <input type="date" id="editValidFrom" name="validFrom" required
+                                        style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;"
+                                        value="${coupon.validFrom}">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Valid Until *</label>
+                                    <input type="date" id="editValidUntil" name="validUntil" required
+                                        style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;"
+                                        value="${coupon.validUntil}">
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+                                    <input type="checkbox" id="editIsActive" name="isActive" ${coupon.isActive ? 'checked' : ''}
+                                        style="width: 16px; height: 16px;">
+                                    <span>Active (coupon can be used)</span>
+                                </label>
+                            </div>
+                        </form>
+                    `,
+                    width: 600,
+                    showCancelButton: true,
+                    confirmButtonText: 'Update Coupon',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#3d5a3d',
+                    cancelButtonColor: '#6b7280',
+                    preConfirm: () => {
+                        const code = document.getElementById('editCode').value.trim();
+                        const description = document.getElementById('editDescription').value.trim();
+                        const discountType = document.getElementById('editDiscountType').value;
+                        const discountValue = document.getElementById('editDiscountValue').value;
+                        const minPurchaseAmount = document.getElementById('editMinPurchaseAmount').value;
+                        const maxDiscountAmount = document.getElementById('editMaxDiscountAmount').value;
+                        const usageLimit = document.getElementById('editUsageLimit').value;
+                        const perUserLimit = document.getElementById('editPerUserLimit').value;
+                        const validFrom = document.getElementById('editValidFrom').value;
+                        const validUntil = document.getElementById('editValidUntil').value;
+                        const isActive = document.getElementById('editIsActive').checked;
+
+                        if (!code || !discountValue || !validFrom || !validUntil) {
+                            Swal.showValidationMessage('Please fill in all required fields');
+                            return false;
+                        }
+
+                        if (new Date(validFrom) >= new Date(validUntil)) {
+                            Swal.showValidationMessage('Valid Until date must be after Valid From date');
+                            return false;
+                        }
+
+                        return {
+                            code,
+                            description,
+                            discountType,
+                            discountValue,
+                            minPurchaseAmount,
+                            maxDiscountAmount,
+                            usageLimit,
+                            perUserLimit,
+                            validFrom,
+                            validUntil,
+                            isActive
+                        };
+                    }
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            const updateResponse = await fetch(`/admin/coupons/edit/${id}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(result.value)
+                            });
+
+                            const updateData = await updateResponse.json();
+
+                            if (updateData.success) {
+                                await Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: updateData.message,
+                                    confirmButtonColor: '#3d5a3d'
+                                });
+                                window.location.reload();
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: updateData.message || 'Failed to update coupon',
+                                    confirmButtonColor: '#3d5a3d'
+                                });
+                            }
+                        } catch (error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Something went wrong. Please try again.',
+                                confirmButtonColor: '#3d5a3d'
+                            });
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error('Edit coupon error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to load coupon for editing. Please try again.',
+                    confirmButtonColor: '#3d5a3d'
+                });
+            }
         }
 
         async function deleteCoupon(id, code) {

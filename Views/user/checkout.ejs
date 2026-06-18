@@ -413,6 +413,30 @@
         position: static;
       }
     }
+
+    .coupon-option:hover {
+      background-color: #f8f6f3 !important;
+    }
+
+    .coupon-popup {
+      font-family: inherit;
+    }
+
+    #couponDropdownBtn:hover {
+      border-color: #2d1f14;
+    }
+
+    #couponCode {
+      transition: border-color 0.2s;
+    }
+
+    #couponCode:focus {
+      border-color: #2d1f14;
+    }
+
+    .coupon-option:last-child {
+      border-bottom: none;
+    }
   </style>
 </head>
 <body>
@@ -590,41 +614,97 @@
               </button>
             </div>
           <% } else { %>
-            <div style="font-weight: 600; color: #2d1f14; margin-bottom: 10px; font-size: 14px;">Have a Coupon Code?</div>
+            <div style="font-weight: 600; color: #2d1f14; margin-bottom: 16px; font-size: 14px;">Have a Coupon Code?</div>
             
             <% if (availableCoupons && availableCoupons.length > 0) { %>
-              <div style="margin-bottom: 12px;">
-                <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px;">Select from available coupons:</label>
-                <select id="couponSelect" onchange="selectCoupon()" style="width: 100%; padding: 10px 12px; border: 1.5px solid #e8dcc8; border-radius: 6px; font-size: 14px; outline: none; font-family: inherit; background: white; cursor: pointer;">
-                  <option value="">-- Select a coupon --</option>
-                  <% availableCoupons.forEach(coupon => { %>
-                    <% 
-                      let discountText = '';
-                      if (coupon.discountType === 'percentage') {
-                        discountText = `${coupon.discountValue}% OFF`;
-                        if (coupon.maxDiscountAmount) {
-                          discountText += ` (Max ₹${coupon.maxDiscountAmount})`;
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 13px; color: #666; margin-bottom: 8px; font-weight: 500;">Choose from available offers:</label>
+                <div id="couponDropdown" style="position: relative;">
+                  <button type="button" id="couponDropdownBtn" onclick="toggleCouponDropdown()" 
+                    style="width: 100%; padding: 12px 16px; border: 1.5px solid #e8dcc8; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-align: left; transition: all 0.2s;">
+                    <span id="couponDropdownText" style="color: #666;">Select a coupon offer...</span>
+                    <span id="couponDropdownArrow" style="transition: transform 0.2s;">▼</span>
+                  </button>
+                  
+                  <div id="couponDropdownMenu" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1.5px solid #e8dcc8; border-top: none; border-radius: 0 0 8px 8px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                    <% availableCoupons.forEach(coupon => { %>
+                      <% 
+                        let discountText = '';
+                        let savingsText = '';
+                        if (coupon.discountType === 'percentage') {
+                          discountText = `${coupon.discountValue}% OFF`;
+                          if (coupon.maxDiscountAmount) {
+                            discountText += ` (Max ₹${coupon.maxDiscountAmount})`;
+                          }
+                          savingsText = `Save ₹${((subtotal * coupon.discountValue) / 100).toFixed(2)}`;
+                        } else {
+                          discountText = `₹${coupon.discountValue} OFF`;
+                          savingsText = `Save ₹${coupon.discountValue}`;
                         }
-                      } else {
-                        discountText = `₹${coupon.discountValue} OFF`;
-                      }
-                    %>
-                    <option value="<%= coupon.code %>" data-description="<%= coupon.description || '' %>">
-                      <%= coupon.code %> - <%= discountText %>
-                    </option>
-                  <% }) %>
-                </select>
+                      %>
+                      <div class="coupon-option" onclick="selectCouponFromDropdown('<%= coupon.code %>', '<%= discountText %>', '<%= coupon.description || '' %>')"
+                        style="padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f0f0f0; transition: background 0.2s; hover:background: #f8f6f3;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                          <div>
+                            <div style="font-weight: 600; font-size: 13px; color: #2d1f14; margin-bottom: 2px;">
+                              <%= coupon.code %>
+                            </div>
+                            <div style="font-size: 11px; color: #666;">
+                              <%= discountText %> • Min ₹<%= coupon.minPurchaseAmount %>
+                            </div>
+                            <% if (coupon.description) { %>
+                              <div style="font-size: 11px; color: #888; margin-top: 2px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                <%= coupon.description %>
+                              </div>
+                            <% } %>
+                          </div>
+                          <div style="text-align: right;">
+                            <div style="font-size: 12px; font-weight: 600; color: #2e7d32;">
+                              <%= savingsText %>
+                            </div>
+                            <div style="font-size: 10px; color: #999;">
+                              Valid until <%= new Date(coupon.validUntil).toLocaleDateString('en-GB') %>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    <% }) %>
+                  </div>
+                </div>
+                
+                <div id="selectedCouponInfo" style="display: none; margin-top: 12px; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e8dcc8;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                      <div id="selectedCouponCode" style="font-weight: 600; font-size: 13px; color: #2d1f14;"></div>
+                      <div id="selectedCouponDesc" style="font-size: 11px; color: #666; margin-top: 2px;"></div>
+                    </div>
+                    <button type="button" onclick="clearSelectedCoupon()" style="padding: 4px 8px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; cursor: pointer; color: #666;">
+                      Clear
+                    </button>
+                  </div>
+                </div>
               </div>
               
-              <div id="couponDescription" style="display: none; font-size: 12px; color: #666; margin-bottom: 12px; padding: 8px; background: white; border-radius: 4px; border: 1px solid #e8dcc8;"></div>
-              
-              <div style="text-align: center; margin: 12px 0; color: #999; font-size: 12px;">OR</div>
+              <div style="text-align: center; margin: 16px 0; color: #999; font-size: 12px; display: flex; align-items: center;">
+                <div style="flex: 1; height: 1px; background: #e0e0e0;"></div>
+                <span style="padding: 0 12px;">OR</span>
+                <div style="flex: 1; height: 1px; background: #e0e0e0;"></div>
+              </div>
             <% } %>
             
-            <div style="display: flex; gap: 8px;">
-              <input type="text" id="couponCode" placeholder="Enter coupon code" style="flex: 1; padding: 10px 12px; border: 1.5px solid #e8dcc8; border-radius: 6px; font-size: 14px; outline: none; font-family: inherit;">
-              <button type="button" onclick="applyCoupon()" style="padding: 10px 20px; background: #2d1f14; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.2s; white-space: nowrap;">
-                Apply
+            <div style="margin-bottom: 12px;">
+              <label style="display: block; font-size: 13px; color: #666; margin-bottom: 6px; font-weight: 500;">Enter coupon code manually:</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="couponCode" placeholder="Enter coupon code" style="flex: 1; padding: 10px 12px; border: 1.5px solid #e8dcc8; border-radius: 6px; font-size: 14px; outline: none; font-family: inherit; text-transform: uppercase;">
+                <button type="button" onclick="applyCoupon()" style="padding: 10px 20px; background: #2d1f14; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.2s; white-space: nowrap;">
+                  Apply
+                </button>
+              </div>
+            </div>
+            
+            <div style="text-align: center;">
+              <button type="button" onclick="loadMoreCoupons()" style="padding: 8px 16px; background: transparent; border: 1px solid #e8dcc8; border-radius: 6px; font-size: 12px; color: #666; cursor: pointer; transition: all 0.2s;">
+                🔄 Refresh Available Offers
               </button>
             </div>
           <% } %>
@@ -817,6 +897,125 @@
       }
     }
 
+    function toggleCouponDropdown() {
+      const menu = document.getElementById('couponDropdownMenu');
+      const arrow = document.getElementById('couponDropdownArrow');
+      const btn = document.getElementById('couponDropdownBtn');
+      
+      if (menu.style.display === 'none' || menu.style.display === '') {
+        menu.style.display = 'block';
+        arrow.style.transform = 'rotate(180deg)';
+        btn.style.borderRadius = '8px 8px 0 0';
+        btn.style.borderColor = '#2d1f14';
+      } else {
+        menu.style.display = 'none';
+        arrow.style.transform = 'rotate(0deg)';
+        btn.style.borderRadius = '8px';
+        btn.style.borderColor = '#e8dcc8';
+      }
+    }
+
+    function selectCouponFromDropdown(code, discountText, description) {
+      const couponInput = document.getElementById('couponCode');
+      const dropdownText = document.getElementById('couponDropdownText');
+      const selectedInfo = document.getElementById('selectedCouponInfo');
+      const selectedCode = document.getElementById('selectedCouponCode');
+      const selectedDesc = document.getElementById('selectedCouponDesc');
+      
+      couponInput.value = code;
+      dropdownText.innerHTML = `<span style="color: #2d1f14; font-weight: 600;">${code}</span> - ${discountText}`;
+      
+      selectedCode.textContent = `${code} - ${discountText}`;
+      selectedDesc.textContent = description || 'No description available';
+      selectedInfo.style.display = 'block';
+      
+      toggleCouponDropdown();
+    }
+
+    function clearSelectedCoupon() {
+      const couponInput = document.getElementById('couponCode');
+      const dropdownText = document.getElementById('couponDropdownText');
+      const selectedInfo = document.getElementById('selectedCouponInfo');
+      
+      couponInput.value = '';
+      dropdownText.innerHTML = '<span style="color: #666;">Select a coupon offer...</span>';
+      selectedInfo.style.display = 'none';
+    }
+
+    async function loadMoreCoupons() {
+      try {
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '⏳ Loading...';
+        button.disabled = true;
+
+        const response = await fetch('/cart/available-coupons');
+        const data = await response.json();
+
+        if (data.success && data.coupons.length > 0) {
+          Swal.fire({
+            title: 'Available Coupons',
+            html: `
+              <div style="max-height: 300px; overflow-y: auto; text-align: left;">
+                ${data.coupons.map(coupon => {
+                  const discountText = coupon.discountType === 'percentage' 
+                    ? `${coupon.discountValue}% OFF${coupon.maxDiscountAmount ? ' (Max ₹' + coupon.maxDiscountAmount + ')' : ''}` 
+                    : `₹${coupon.discountValue} OFF`;
+                  const savingsText = coupon.discountType === 'percentage' 
+                    ? `Save ₹${coupon.potentialDiscount.toFixed(2)}` 
+                    : `Save ₹${coupon.discountValue}`;
+                  
+                  return `
+                    <div style="border: 1px solid #e8dcc8; border-radius: 8px; padding: 12px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s;" 
+                         onclick="document.getElementById('couponCode').value = '${coupon.code}'; Swal.close();">
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                          <div style="font-weight: 600; color: #2d1f14; margin-bottom: 4px;">${coupon.code}</div>
+                          <div style="font-size: 12px; color: #666;">${discountText} • Min ₹${coupon.minPurchaseAmount}</div>
+                          ${coupon.description ? `<div style="font-size: 11px; color: #888; margin-top: 4px;">${coupon.description}</div>` : ''}
+                        </div>
+                        <div style="text-align: right;">
+                          <div style="font-weight: 600; color: #2e7d32; font-size: 12px;">${savingsText}</div>
+                          <div style="font-size: 10px; color: #999;">Valid until ${new Date(coupon.validUntil).toLocaleDateString('en-GB')}</div>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `,
+            showConfirmButton: false,
+            showCloseButton: true,
+            width: 500,
+            customClass: {
+              popup: 'coupon-popup'
+            }
+          });
+        } else {
+          Swal.fire({
+            icon: 'info',
+            title: 'No Coupons Available',
+            text: data.message || 'No coupons are currently available for your cart',
+            confirmButtonColor: '#2d1f14'
+          });
+        }
+
+        button.innerHTML = originalText;
+        button.disabled = false;
+      } catch (error) {
+        console.error('Load coupons error:', error);
+        button.innerHTML = originalText;
+        button.disabled = false;
+        
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to load coupons. Please try again.',
+          confirmButtonColor: '#2d1f14'
+        });
+      }
+    }
+
     async function applyCoupon() {
       const couponCode = document.getElementById('couponCode').value.trim();
 
@@ -921,7 +1120,22 @@
             applyCoupon();
           }
         });
+
+        // Auto-uppercase coupon codes
+        couponInput.addEventListener('input', function(e) {
+          e.target.value = e.target.value.toUpperCase();
+        });
       }
+
+      // Click outside to close dropdown
+      document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('couponDropdown');
+        const menu = document.getElementById('couponDropdownMenu');
+        
+        if (dropdown && !dropdown.contains(e.target) && menu && menu.style.display === 'block') {
+          toggleCouponDropdown();
+        }
+      });
       
       const urlParams = new URLSearchParams(window.location.search);
       const error = urlParams.get('error');

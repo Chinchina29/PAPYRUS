@@ -1,5 +1,4 @@
 import Product from "../models/Product.js";
-
 export const getAllProducts = async ({
   search = "",
   page = 1,
@@ -35,7 +34,6 @@ export const getAllProducts = async ({
     ...(stock === "out-of-stock" && { stock: 0 }),
     ...(stock === "low-stock" && { stock: { $gt: 0, $lte: 5 } }),
   };
-
   const sortOptions = {
     "date-desc": { createdAt: -1 },
     "date-asc": { createdAt: 1 },
@@ -46,9 +44,7 @@ export const getAllProducts = async ({
     "stock-asc": { stock: 1 },
     "stock-desc": { stock: -1 },
   };
-
   const skip = (page - 1) * limit;
-
   const [products, total] = await Promise.all([
     Product.find(query)
       .populate("category", "name")
@@ -58,7 +54,6 @@ export const getAllProducts = async ({
       .limit(limit),
     Product.countDocuments(query),
   ]);
-
   return {
     products,
     total,
@@ -66,14 +61,12 @@ export const getAllProducts = async ({
     currentPage: page,
   };
 };
-
 export const getProductById = async (id) => {
   return await Product.findOne({ _id: id, isDeleted: false })
     .populate("category", "name")
     .populate("subcategory", "name")
     .populate("seller", "firstName lastName email");
 };
-
 export const productTitleExists = async (title, excludeId = null) => {
   const escapedTitle = title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const query = {
@@ -83,16 +76,13 @@ export const productTitleExists = async (title, excludeId = null) => {
   if (excludeId) query._id = { $ne: excludeId };
   return await Product.findOne(query);
 };
-
 export const createProduct = async (data) => {
   const product = new Product(data);
   return await product.save();
 };
-
 export const updateProduct = async (id, data) => {
   return await Product.findByIdAndUpdate(id, data, { returnDocument: "after" });
 };
-
 export const softDeleteProduct = async (id) => {
   return await Product.findByIdAndUpdate(
     id,
@@ -100,14 +90,12 @@ export const softDeleteProduct = async (id) => {
     { returnDocument: "after" },
   );
 };
-
 export const toggleProductListed = async (id) => {
   const product = await Product.findById(id);
   if (!product) return null;
   product.isListed = !product.isListed;
   return await product.save();
 };
-
 export const getListedProducts = async ({
   search = "",
   page = 1,
@@ -124,11 +112,9 @@ export const getListedProducts = async ({
     isDeleted: false,
     isListed: true,
   };
-
   if (userId) {
     query.seller = { $ne: userId };
   }
-
   if (search) {
     query.$and = query.$and || [];
     query.$and.push({
@@ -139,14 +125,12 @@ export const getListedProducts = async ({
       ],
     });
   }
-
   if (category) {
     query.$and = query.$and || [];
     query.$and.push({
       $or: [{ category }, { subcategory: category }],
     });
   }
-
   if (condition) query.condition = condition;
   if (brand) query.brand = { $regex: brand, $options: "i" };
   if (minPrice || maxPrice) {
@@ -155,7 +139,6 @@ export const getListedProducts = async ({
       ...(maxPrice && { $lte: parseFloat(maxPrice) }),
     };
   }
-
   const sortOptions = {
     newest: { createdAt: -1 },
     "price-low": { price: 1 },
@@ -164,9 +147,7 @@ export const getListedProducts = async ({
     "z-a": { title: -1 },
     popular: { views: -1 },
   };
-
   const skip = (page - 1) * limit;
-
   const [rawProducts, total] = await Promise.all([
     Product.find(query)
       .populate({
@@ -185,9 +166,7 @@ export const getListedProducts = async ({
       .limit(limit),
     Product.countDocuments(query),
   ]);
-
   const products = rawProducts.filter((p) => p.category !== null);
-
   return {
     products,
     total,
@@ -195,7 +174,6 @@ export const getListedProducts = async ({
     currentPage: page,
   };
 };
-
 export const getListedProductById = async (id) => {
   const product = await Product.findOne({
     _id: id,
@@ -213,16 +191,12 @@ export const getListedProductById = async (id) => {
       match: { isListed: true, isDeleted: false },
     })
     .populate("seller", "name email");
-
   if (product && !product.category) return null;
-
   if (product) {
     await Product.findByIdAndUpdate(id, { $inc: { views: 1 } });
   }
-
   return product;
 };
-
 export const getRelatedProducts = async (categoryId, excludeId, limit = 4) => {
   const products = await Product.find({
     category: categoryId,
@@ -238,10 +212,8 @@ export const getRelatedProducts = async (categoryId, excludeId, limit = 4) => {
     })
     .populate("seller", "name")
     .sort({ createdAt: -1 });
-
   return products.filter((p) => p.category !== null);
 };
-
 export const getAllBrands = async () => {
   return await Product.distinct("brand", {
     isDeleted: false,

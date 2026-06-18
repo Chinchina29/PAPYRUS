@@ -1,5 +1,4 @@
 import * as categoryService from "../services/category.service.js";
-
 export const getCategories = async (req, res) => {
   try {
     const search = req.query.search?.trim() || "";
@@ -8,7 +7,6 @@ export const getCategories = async (req, res) => {
     const sort = req.query.sort || "";
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
-
     const { categories, total, totalPages, currentPage } =
       await categoryService.getAllCategories({
         search,
@@ -18,9 +16,7 @@ export const getCategories = async (req, res) => {
         status,
         sort,
       });
-
     const hierarchy = await categoryService.getCategoryHierarchy();
-
     res.render("admin/category/list", {
       categories,
       total,
@@ -41,11 +37,9 @@ export const getCategories = async (req, res) => {
     });
   }
 };
-
 export const getAddCategory = async (req, res) => {
   try {
     const mainCategories = await categoryService.getMainCategories();
-
     res.render("admin/category/add", {
       mainCategories,
       currentPage_name: "categories",
@@ -58,20 +52,16 @@ export const getAddCategory = async (req, res) => {
     });
   }
 };
-
 export const addCategory = async (req, res) => {
   try {
     const { name, description, parentCategory, subcategories } = req.body;
-
     if (!name?.trim()) {
       return res
         .status(400)
         .json({ success: false, message: "Category name is required" });
     }
-
     let isSubcategory = false;
     let parentId = null;
-
     if (parentCategory && parentCategory !== "") {
       const parent = await categoryService.getCategoryById(parentCategory);
       if (!parent) {
@@ -79,25 +69,21 @@ export const addCategory = async (req, res) => {
           .status(400)
           .json({ success: false, message: "Invalid parent category" });
       }
-
       if (parent.isSubcategory) {
         return res.status(400).json({
           success: false,
           message: "Cannot create subcategory under another subcategory",
         });
       }
-
       isSubcategory = true;
       parentId = parentCategory;
     }
-
     const category = await categoryService.createCategory({
       name: name.trim(),
       description: description?.trim(),
       parentCategory: parentId,
       isSubcategory,
     });
-
     if (
       subcategories &&
       Array.isArray(subcategories) &&
@@ -118,7 +104,6 @@ export const addCategory = async (req, res) => {
         }
       }
     }
-
     return res.status(200).json({
       success: true,
       message: "Category added successfully",
@@ -131,36 +116,30 @@ export const addCategory = async (req, res) => {
         message: error.message,
       });
     }
-
     return res.status(500).json({
       success: false,
       message: "Failed to add category. Please try again.",
     });
   }
 };
-
 export const getEditCategory = async (req, res) => {
   try {
     const { id } = req.params;
     const category = await categoryService.getCategoryById(id);
-
     if (!category) {
       return res.status(404).render("error/404", {
         message: "Category not found",
       });
     }
-
     const allCategories = await categoryService.getAllCategories({
       limit: 1000,
     });
-
     const availableParents = allCategories.categories.filter(
       (cat) =>
         cat._id.toString() !== id &&
         !cat.isSubcategory &&
         !cat.parentCategory?.equals(id),
     );
-
     res.render("admin/category/edit", {
       category,
       availableParents,
@@ -174,20 +153,17 @@ export const getEditCategory = async (req, res) => {
     });
   }
 };
-
 export const editCategory = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description, isListed, parentCategory, subcategories } =
       req.body;
-
     if (!name?.trim()) {
       return res.status(400).json({
         success: false,
         message: "Category name is required",
       });
     }
-
     let parentId = null;
     if (parentCategory && parentCategory !== "") {
       const parent = await categoryService.getCategoryById(parentCategory);
@@ -197,31 +173,26 @@ export const editCategory = async (req, res) => {
           message: "Invalid parent category",
         });
       }
-
       if (parent.isSubcategory) {
         return res.status(400).json({
           success: false,
           message: "Cannot move category under a subcategory",
         });
       }
-
       if (parent._id.toString() === id) {
         return res.status(400).json({
           success: false,
           message: "Category cannot be its own parent",
         });
       }
-
       parentId = parentCategory;
     }
-
     await categoryService.updateCategory(id, {
       name: name.trim(),
       description: description?.trim(),
       isListed: isListed === true || isListed === "true",
       parentCategory: parentId,
     });
-
     const category = await categoryService.getCategoryById(id);
     if (
       subcategories &&
@@ -243,7 +214,6 @@ export const editCategory = async (req, res) => {
         }
       }
     }
-
     return res.status(200).json({
       success: true,
       message: "Category updated successfully",
@@ -256,18 +226,15 @@ export const editCategory = async (req, res) => {
         message: error.message,
       });
     }
-
     return res.status(500).json({
       success: false,
       message: "Failed to update category. Please try again.",
     });
   }
 };
-
 export const deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
-
     const category = await categoryService.getCategoryById(id);
     if (!category) {
       return res.status(404).json({
@@ -275,7 +242,6 @@ export const deleteCategory = async (req, res) => {
         message: "Category not found",
       });
     }
-
     if (category.subcategories && category.subcategories.length > 0) {
       return res.status(400).json({
         success: false,
@@ -283,9 +249,7 @@ export const deleteCategory = async (req, res) => {
           "Cannot delete category with subcategories. Delete subcategories first.",
       });
     }
-
     await categoryService.softDeleteCategory(id);
-
     return res.status(200).json({
       success: true,
       message: "Category deleted successfully",
@@ -297,19 +261,16 @@ export const deleteCategory = async (req, res) => {
     });
   }
 };
-
 export const toggleCategory = async (req, res) => {
   try {
     const { id } = req.params;
     const category = await categoryService.toggleCategoryListed(id);
-
     if (!category) {
       return res.status(404).json({
         success: false,
         message: "Category not found",
       });
     }
-
     return res.status(200).json({
       success: true,
       message: `Category ${category.isListed ? "listed" : "unlisted"} successfully`,
@@ -322,12 +283,10 @@ export const toggleCategory = async (req, res) => {
     });
   }
 };
-
 export const getSubcategories = async (req, res) => {
   try {
     const { parentId } = req.params;
     const subcategories = await categoryService.getSubcategories(parentId);
-
     return res.json({
       success: true,
       data: subcategories,

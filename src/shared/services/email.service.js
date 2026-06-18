@@ -4,7 +4,6 @@ import {
   passwordResetTemplate,
   emailChangeOTPTemplate,
 } from "../config/email.config.js";
-
 const createTransporter = () => {
   return nodemailer.createTransport({
     service: "gmail",
@@ -14,39 +13,32 @@ const createTransporter = () => {
     },
   });
 };
-
 export const sendEmail = async (to, subject, html) => {
   try {
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
       return { success: false, error: "Email credentials missing" };
     }
-
     const transporter = createTransporter();
     await transporter.verify();
-
     const info = await transporter.sendMail({
       from: `Papyrus <${process.env.EMAIL_USER}>`,
       to: to,
       subject: subject,
       html: html,
     });
-
     return { success: true, messageId: info.messageId };
   } catch (error) {
     return { success: false, error: error.message };
   }
 };
-
 export const sendOTPEmail = async (email, firstName, otp) => {
   const html = otpEmailTemplate(firstName, otp);
   return await sendEmail(email, "Verify Your Account - Papyrus", html);
 };
-
 export const sendPasswordResetOTP = async (email, firstName, otp) => {
   const html = passwordResetTemplate(firstName, otp);
   return await sendEmail(email, "Reset Your Password - Papyrus", html);
 };
-
 export const sendEmailChangeOTP = async (newEmail, firstName, otp) => {
   const html = emailChangeOTPTemplate(firstName, otp, newEmail);
   return await sendEmail(newEmail, "Verify Your New Email - Papyrus", html);

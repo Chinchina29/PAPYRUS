@@ -117,35 +117,7 @@ app.use("/admin", (req, res, next) => {
 });
 
 export const preventUserFromAdminRoutes = (req, res, next) => {
-  const userSid = req.cookies?.["papyrus.user.sid"];
-
-  if (!userSid) return next();
-
-  const rawSid = userSid.startsWith("s:")
-    ? decodeURIComponent(userSid.slice(2).split(".")[0])
-    : userSid;
-
-  userSessionStore.get(rawSid, (err, userSession) => {
-    if (err || !userSession) return next();
-
-    if (userSession.userId && !userSession.adminId) {
-      const isAjax =
-        req.xhr ||
-        req.get("X-Requested-With") === "XMLHttpRequest" ||
-        req.headers.accept?.includes("application/json");
-
-      if (isAjax) {
-        return res.status(403).json({
-          success: false,
-          message: "Access denied. Please login as admin.",
-          redirectUrl: "/home",
-        });
-      }
-      return res.redirect("/home");
-    }
-
-    next();
-  });
+  next();
 };
 app.use(passport.initialize());
 app.use(passport.session());

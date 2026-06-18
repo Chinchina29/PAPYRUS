@@ -5,7 +5,6 @@ export const debounce = (func, delay) => {
     timeoutId = setTimeout(() => func.apply(this, args), delay);
   };
 };
-
 export const throttle = (func, delay) => {
   let lastCall = 0;
   return function (...args) {
@@ -16,14 +15,11 @@ export const throttle = (func, delay) => {
     }
   };
 };
-
 export const createAsyncDebounce = (func, delay) => {
   let timeoutId;
   let lastPromise = Promise.resolve();
-  
   return function (...args) {
     clearTimeout(timeoutId);
-    
     return new Promise((resolve, reject) => {
       timeoutId = setTimeout(async () => {
         try {

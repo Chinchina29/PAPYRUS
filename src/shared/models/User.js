@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -70,7 +69,6 @@ const userSchema = new mongoose.Schema(
       code: { type: String },
       expiresAt: { type: Date },
     },
-
     emailChangeRequest: {
       newEmail: String,
       otp: {
@@ -78,15 +76,12 @@ const userSchema = new mongoose.Schema(
         expiresAt: { type: Date },
       },
     },
-
     otpLastSentAt: { type: Date, select: false },
     otpRequestCount: { type: Number, default: 0, select: false },
     otpThrottleWindowStart: { type: Date, select: false },
     otpFailedAttempts: { type: Number, default: 0, select: false },
     otpLockoutUntil: { type: Date, select: false },
-
     googleId: String,
-
     profilePicture: {
       type: String,
       default: "/images/default-avatar.png",
@@ -106,26 +101,21 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
-
 userSchema.pre("save", async function () {
   try {
     if (this.gender === "") this.gender = null;
     if (this.favoriteGenre === "") this.favoriteGenre = null;
     if (this.primaryInterest === "") this.primaryInterest = null;
-
     if (!this.isModified("password") || !this.password) {
       return;
     }
-
     if (this.password.startsWith("$2")) {
       return;
     }
-
     this.password = await bcrypt.hash(this.password, 12);
   } catch (error) {
     throw error;
   }
 });
-
 const User = mongoose.model("User", userSchema);
 export default User;

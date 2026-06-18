@@ -1,7 +1,6 @@
 import * as productService from "../../shared/services/product.service.js";
 import * as categoryService from "../../admin/services/category.service.js";
 import Product from "../../shared/models/Product.js";
-
 export const getShop = async (req, res) => {
   try {
     const search = req.query.search?.trim() || "";
@@ -13,7 +12,6 @@ export const getShop = async (req, res) => {
     const brand = req.query.brand || "";
     const minPrice = req.query.minPrice || "";
     const maxPrice = req.query.maxPrice || "";
-
     const { products, total, totalPages, currentPage } =
       await productService.getListedProducts({
         search,
@@ -27,11 +25,8 @@ export const getShop = async (req, res) => {
         maxPrice,
         userId: req.session.userId || null,
       });
-
     const categories = await categoryService.getMainCategories();
-
     const brands = await productService.getAllBrands();
-
     res.render("user/shop", {
       products,
       total,
@@ -59,12 +54,10 @@ export const getShop = async (req, res) => {
     );
   }
 };
-
 export const getProductDetail = async (req, res) => {
   try {
     const fromMyListings = req.query.from === "my-listings";
     let product;
-
     if (fromMyListings) {
       product = await Product.findOne({
         _id: req.params.id,
@@ -74,19 +67,16 @@ export const getProductDetail = async (req, res) => {
         .populate("category", "name isListed")
         .populate("subcategory", "name isListed")
         .populate("seller", "name email");
-
       if (product) {
         await Product.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
       }
     } else {
       product = await productService.getListedProductById(req.params.id);
     }
-
     if (!product) {
       const rawProduct = await Product.findById(req.params.id)
         .select("isDeleted isListed title author images category")
         .populate("category", "name isListed isDeleted");
-
       if (rawProduct) {
         if (rawProduct.isDeleted) {
           return res.render("user/product-unavailable", {
@@ -116,7 +106,6 @@ export const getProductDetail = async (req, res) => {
           });
         }
       }
-
       return res.render("user/product-unavailable", {
         reason: "notfound",
         title: null,
@@ -124,12 +113,10 @@ export const getProductDetail = async (req, res) => {
         currentPage_name: "shop",
       });
     }
-
     const related = await productService.getRelatedProducts(
       product.category?._id,
       product._id,
     );
-
     res.render("user/product-detail", {
       product,
       related,

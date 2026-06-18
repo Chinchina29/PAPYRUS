@@ -1,6 +1,5 @@
 import * as addressService from "../../user/services/address.service.js";
 import { errorResponse } from "../../shared/helpers/response.helper.js";
-
 export const showAddresses = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -13,7 +12,6 @@ export const showAddresses = async (req, res) => {
     res.status(500).render("error/500");
   }
 };
-
 export const getAddressesList = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -25,16 +23,13 @@ export const getAddressesList = async (req, res) => {
       .json({ success: false, message: "Failed to fetch addresses" });
   }
 };
-
 export const showAddAddress = (req, res) => {
   const from = req.query.from || null;
   res.render("user/addaddress", { from });
 };
-
 export const addAddress = async (req, res) => {
   try {
     const userId = req.session.userId;
-
     const {
       fullName,
       phone,
@@ -47,7 +42,6 @@ export const addAddress = async (req, res) => {
       type,
       isDefault,
     } = req.body;
-
     if (
       !fullName ||
       !phone ||
@@ -62,7 +56,6 @@ export const addAddress = async (req, res) => {
         message: "All required fields must be filled",
       });
     }
-
     const phoneDigits = phone.replace(/\D/g, "").slice(-10);
     if (phoneDigits.length !== 10 || !/^[6-9]/.test(phoneDigits)) {
       return res.status(400).json({
@@ -71,14 +64,12 @@ export const addAddress = async (req, res) => {
       });
     }
     const normalizedPhone = "+91" + phoneDigits;
-
     if (!/^\d{6}$/.test(postalCode)) {
       return res.status(400).json({
         success: false,
         message: "Please enter a valid 6-digit postal code",
       });
     }
-
     const addressData = {
       userId,
       fullName: fullName.trim(),
@@ -92,14 +83,12 @@ export const addAddress = async (req, res) => {
       type: type || "home",
       isDefault: Boolean(isDefault),
     };
-
     const address = await addressService.createAddress(addressData);
     res.json({ success: true, message: "Address added successfully", address });
   } catch (error) {
     res.status(500).json({ success: false, message: "Failed to add address" });
   }
 };
-
 export const showEditAddress = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -111,7 +100,6 @@ export const showEditAddress = async (req, res) => {
     return errorResponse(res, "Server error", 500);
   }
 };
-
 export const updateAddress = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -128,7 +116,6 @@ export const updateAddress = async (req, res) => {
       type,
       isDefault,
     } = req.body;
-
     if (
       !fullName ||
       !phone ||
@@ -151,14 +138,12 @@ export const updateAddress = async (req, res) => {
       });
     }
     const normalizedPhone = "+91" + phoneDigits;
-
     if (!/^\d{6}$/.test(postalCode)) {
       return res.status(400).json({
         success: false,
         message: "Please enter a valid 6-digit postal code",
       });
     }
-
     const updateData = {
       fullName: fullName.trim(),
       phone: normalizedPhone,
@@ -171,7 +156,6 @@ export const updateAddress = async (req, res) => {
       type: type || "home",
       isDefault: Boolean(isDefault),
     };
-
     const address = await addressService.updateAddress(
       addressId,
       userId,
@@ -192,7 +176,6 @@ export const updateAddress = async (req, res) => {
       .json({ success: false, message: "Failed to update address" });
   }
 };
-
 export const deleteAddress = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -213,7 +196,6 @@ export const deleteAddress = async (req, res) => {
       .json({ success: false, message: "Failed to delete address" });
   }
 };
-
 export const setDefaultAddress = async (req, res) => {
   try {
     const userId = req.session.userId;

@@ -1,21 +1,17 @@
 import cloudinary from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
-
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
 const testCloudinaryConnection = async () => {
   try {
     await cloudinary.v2.api.ping();
   } catch (error) {}
 };
-
 testCloudinaryConnection();
-
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary.v2,
   params: {
@@ -27,7 +23,6 @@ const storage = new CloudinaryStorage({
     ],
   },
 });
-
 export const upload = multer({
   storage: storage,
   limits: {
@@ -41,7 +36,6 @@ export const upload = multer({
     }
   },
 });
-
 export const videoUpload = multer({
   storage: new CloudinaryStorage({
     cloudinary: cloudinary.v2,
@@ -66,7 +60,6 @@ export const videoUpload = multer({
     }
   },
 });
-
 export const deleteImage = async (publicId) => {
   try {
     const result = await cloudinary.v2.uploader.destroy(publicId);
@@ -75,5 +68,4 @@ export const deleteImage = async (publicId) => {
     throw error;
   }
 };
-
 export default cloudinary.v2;

@@ -1,6 +1,5 @@
 import Notification from "../models/Notification.js";
 import User from "../models/User.js";
-
 export const createNotification = async ({
   userId,
   type,
@@ -24,7 +23,6 @@ export const createNotification = async ({
     throw error;
   }
 };
-
 export const notifyReturnApproved = async ({ userId, orderId, itemTitle }) => {
   return createNotification({
     userId,
@@ -36,7 +34,6 @@ export const notifyReturnApproved = async ({ userId, orderId, itemTitle }) => {
     relatedOrder: orderId,
   });
 };
-
 export const notifyReturnRejected = async ({
   userId,
   orderId,
@@ -53,7 +50,6 @@ export const notifyReturnRejected = async ({
     relatedOrder: orderId,
   });
 };
-
 export const notifyProductOutOfStock = async ({
   userId,
   productId,
@@ -67,7 +63,6 @@ export const notifyProductOutOfStock = async ({
     relatedProduct: productId,
   });
 };
-
 export const notifyAdminsReturnRequest = async ({
   orderId,
   customerName,
@@ -75,7 +70,6 @@ export const notifyAdminsReturnRequest = async ({
 }) => {
   try {
     const admins = await User.find({ role: "admin" });
-
     const notifications = admins.map((admin) =>
       createNotification({
         userId: admin._id,
@@ -87,14 +81,12 @@ export const notifyAdminsReturnRequest = async ({
         relatedOrder: orderId,
       }),
     );
-
     await Promise.all(notifications);
   } catch (error) {
     console.error("Error notifying admins:", error);
     throw error;
   }
 };
-
 export const getUnreadNotifications = async (userId) => {
   return Notification.find({ user: userId, isRead: false })
     .populate("relatedOrder", "orderId")
@@ -102,14 +94,12 @@ export const getUnreadNotifications = async (userId) => {
     .sort({ createdAt: -1 })
     .limit(10);
 };
-
 export const getUserNotifications = async ({
   userId,
   page = 1,
   limit = 20,
 }) => {
   const skip = (page - 1) * limit;
-
   const [notifications, total] = await Promise.all([
     Notification.find({ user: userId })
       .populate("relatedOrder", "orderId")
@@ -119,7 +109,6 @@ export const getUserNotifications = async ({
       .limit(limit),
     Notification.countDocuments({ user: userId }),
   ]);
-
   return {
     notifications,
     total,
@@ -131,7 +120,6 @@ export const getUserNotifications = async ({
     }),
   };
 };
-
 export const markAsRead = async (notificationId, userId) => {
   return Notification.findOneAndUpdate(
     { _id: notificationId, user: userId },
@@ -139,18 +127,15 @@ export const markAsRead = async (notificationId, userId) => {
     { new: true },
   );
 };
-
 export const markAllAsRead = async (userId) => {
   return Notification.updateMany(
     { user: userId, isRead: false },
     { isRead: true, readAt: new Date() },
   );
 };
-
 export const deleteNotification = async (notificationId, userId) => {
   return Notification.findOneAndDelete({ _id: notificationId, user: userId });
 };
-
 export const getUnreadCount = async (userId) => {
   return Notification.countDocuments({ user: userId, isRead: false });
 };

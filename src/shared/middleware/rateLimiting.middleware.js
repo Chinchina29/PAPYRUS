@@ -1,7 +1,5 @@
 import rateLimit from "express-rate-limit";
-
 const isDevelopment = process.env.NODE_ENV !== "production";
-
 export const generalApiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: isDevelopment ? 1000 : 100,
@@ -12,7 +10,6 @@ export const generalApiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: isDevelopment ? 50 : 5,
@@ -23,7 +20,6 @@ export const authLimiter = rateLimit({
   },
   skipSuccessfulRequests: true,
 });
-
 export const emailLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: isDevelopment ? 30 : 3,
@@ -33,7 +29,6 @@ export const emailLimiter = rateLimit({
       "Too many email requests, please wait a minute before trying again.",
   },
 });
-
 export const uploadLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: isDevelopment ? 100 : 10,
@@ -42,7 +37,6 @@ export const uploadLimiter = rateLimit({
     message: "Too many upload requests, please wait a minute.",
   },
 });
-
 export const cartLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: isDevelopment ? 300 : 30,
@@ -51,7 +45,6 @@ export const cartLimiter = rateLimit({
     message: "Too many cart operations, please slow down.",
   },
 });
-
 export const searchLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: isDevelopment ? 500 : 50,
@@ -60,7 +53,6 @@ export const searchLimiter = rateLimit({
     message: "Too many search requests, please wait a moment.",
   },
 });
-
 export const createCustomLimiter = (windowMs, max, message) => {
   return rateLimit({
     windowMs,

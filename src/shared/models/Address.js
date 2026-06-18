@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const addressSchema = new mongoose.Schema(
   {
     userId: {
@@ -61,7 +60,6 @@ const addressSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
-
 addressSchema.pre("save", async function (next) {
   if (this.isDefault) {
     await this.constructor.updateMany(
@@ -70,6 +68,5 @@ addressSchema.pre("save", async function (next) {
     );
   }
 });
-
 const Address = mongoose.model("Address", addressSchema);
 export default Address;

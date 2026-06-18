@@ -1,5 +1,4 @@
 import { body, validationResult } from "express-validator";
-
 export const signupValidation = [
   body("firstName")
     .trim()
@@ -46,7 +45,6 @@ export const signupValidation = [
       return true;
     }),
 ];
-
 export const loginValidation = [
   body("email")
     .trim()
@@ -63,7 +61,6 @@ export const loginValidation = [
     .isLength({ max: 128 })
     .withMessage("Password must not exceed 128 characters"),
 ];
-
 export const passwordResetValidation = [
   body("newPassword")
     .notEmpty()
@@ -85,7 +82,6 @@ export const passwordResetValidation = [
       return true;
     }),
 ];
-
 export const changePasswordValidation = [
   body("currentPassword")
     .notEmpty()
@@ -110,7 +106,6 @@ export const changePasswordValidation = [
       return true;
     }),
 ];
-
 export const adminLoginValidation = [
   body("email")
     .trim()
@@ -127,7 +122,6 @@ export const adminLoginValidation = [
     .isLength({ max: 128 })
     .withMessage("Password must not exceed 128 characters"),
 ];
-
 export const addressValidation = [
   body("fullName")
     .trim()
@@ -178,7 +172,6 @@ export const addressValidation = [
     .isIn(["home", "work", "other"])
     .withMessage("Invalid address type"),
 ];
-
 export const profileUpdateValidation = [
   body("firstName")
     .trim()
@@ -221,7 +214,6 @@ export const profileUpdateValidation = [
     .isInt({ min: 1, max: 365 })
     .withMessage("Reading goal must be between 1 and 365"),
 ];
-
 export const emailChangeValidation = [
   body("newEmail")
     .trim()
@@ -233,18 +225,15 @@ export const emailChangeValidation = [
     .withMessage("Please enter a valid email")
     .normalizeEmail(),
 ];
-
 export const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const formattedErrors = {};
     const errorMessages = [];
-    
     errors.array().forEach((error) => {
       formattedErrors[error.path] = error.msg;
       errorMessages.push(`${error.path}: ${error.msg}`);
     });
-    
     return res.status(400).json({
       success: false,
       message: `Validation failed: ${errorMessages.join(', ')}`,

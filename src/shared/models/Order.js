@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const orderItemSchema = new mongoose.Schema({
   product: {
     type: mongoose.Schema.Types.ObjectId,
@@ -84,7 +83,6 @@ const orderItemSchema = new mongoose.Schema({
     type: Date,
   },
 });
-
 const orderSchema = new mongoose.Schema(
   {
     orderId: {
@@ -208,17 +206,14 @@ const orderSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
-
 orderSchema.index({ orderId: 1 });
 orderSchema.index({ user: 1 });
 orderSchema.index({ orderStatus: 1 });
 orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ createdAt: -1 });
-
 orderSchema.pre("validate", function () {
   if (!this.orderId) {
     this.orderId = `PY-${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 1000)}`;
   }
 });
-
 export default mongoose.model("Order", orderSchema);

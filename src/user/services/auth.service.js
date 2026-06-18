@@ -1,14 +1,12 @@
 import * as userService from "../../shared/services/user.service.js";
 import * as otpService from "../../shared/services/otp.service.js";
 import * as emailService from "../../shared/services/email.service.js";
-
 export const signupUser = async (userData) => {
   try {
     const existingUser = await userService.findUserByEmail(userData.email);
     if (existingUser) {
       return { success: false, message: "Email already registered" };
     }
-
     const user = await userService.createUser({
       firstName: userData.firstName,
       lastName: userData.lastName,
@@ -16,7 +14,6 @@ export const signupUser = async (userData) => {
       password: userData.password,
       role: "user",
     });
-
     const otp = otpService.setOTP(user);
     await user.save();
     const emailResult = await emailService.sendOTPEmail(
@@ -24,7 +21,6 @@ export const signupUser = async (userData) => {
       user.firstName,
       otp,
     );
-
     if (!emailResult.success) {
       await userService.deleteUser(user._id);
       return {
@@ -32,7 +28,6 @@ export const signupUser = async (userData) => {
         message: "Failed to send verification email. Please try again.",
       };
     }
-
     return {
       success: true,
       user,
@@ -43,28 +38,24 @@ export const signupUser = async (userData) => {
     return { success: false, message: "Server error during signup" };
   }
 };
-
 export const loginUser = async (email, password) => {
   try {
     const user = await userService.findUserByEmail(email);
     if (!user) {
       return { success: false, message: "Invalid email or password" };
     }
-
     if (!user.password) {
       return {
         success: false,
         message: "This account uses Google Sign-In. Please login with Google.",
       };
     }
-
     if (user.isBlocked) {
       return {
         success: false,
         message: "Your account has been blocked. Please contact support.",
       };
     }
-
     if (!user.isVerified) {
       const throttle = otpService.checkThrottle(user);
       if (!throttle.allowed) {
@@ -75,7 +66,6 @@ export const loginUser = async (email, password) => {
           userId: user._id,
         };
       }
-
       const otp = otpService.setOTP(user);
       await user.save();
       await emailService.sendOTPEmail(user.email, user.firstName, otp);
@@ -88,52 +78,43 @@ export const loginUser = async (email, password) => {
         userId: user._id,
       };
     }
-
     const isMatch = await userService.comparePassword(password, user.password);
     if (!isMatch) {
       return { success: false, message: "Invalid email or password" };
     }
-
     if (user.gender === "") user.gender = null;
     if (user.favoriteGenre === "") user.favoriteGenre = null;
     if (user.primaryInterest === "") user.primaryInterest = null;
     await user.save();
-
     return { success: true, user, message: "Login successful" };
   } catch (error) {
     return { success: false, message: "Server error during login" };
   }
 };
-
 export const verifyUserOTP = async (userId, otp) => {
   try {
     const user = await userService.findUserById(userId);
     if (!user) {
       return { success: false, message: "User not found" };
     }
-
     const otpResult = otpService.verifyUserOTP(user, otp);
     if (!otpResult.success) {
       return otpResult;
     }
-
     user.isVerified = true;
     otpService.clearOTP(user);
     await user.save();
-
     return { success: true, user, message: "Email verified successfully" };
   } catch (error) {
     return { success: false, message: "Server error during verification" };
   }
 };
-
 export const resendUserOTP = async (userId) => {
   try {
     const user = await userService.findUserById(userId);
     if (!user) {
       return { success: false, message: "User not found" };
     }
-
     if (user.isBlocked) {
       return {
         success: false,
@@ -148,26 +129,21 @@ export const resendUserOTP = async (userId) => {
         secondsLeft: throttle.secondsLeft,
       };
     }
-
     const otp = otpService.setOTP(user);
     await user.save();
-
     const emailResult = await emailService.sendOTPEmail(
       user.email,
       user.firstName,
       otp,
     );
-
     if (!emailResult.success) {
       return { success: false, message: "Failed to send OTP email" };
     }
-
     return { success: true, message: "OTP sent successfully" };
   } catch (error) {
     return { success: false, message: "Server error" };
   }
 };
-
 export const forgotPassword = async (email) => {
   try {
     const user = await userService.findUserByEmail(email);
@@ -177,14 +153,12 @@ export const forgotPassword = async (email) => {
         message: "No account found with this email address",
       };
     }
-
     if (user.isBlocked) {
       return {
         success: false,
         message: "Your account has been blocked. Please contact support.",
       };
     }
-
     const throttle = otpService.checkThrottle(user);
     if (!throttle.allowed) {
       return {
@@ -193,42 +167,34 @@ export const forgotPassword = async (email) => {
         secondsLeft: throttle.secondsLeft,
       };
     }
-
     const otp = otpService.setOTP(user);
     await user.save();
-
     const emailResult = await emailService.sendPasswordResetOTP(
       user.email,
       user.firstName,
       otp,
     );
-
     if (!emailResult.success) {
       return { success: false, message: "Failed to send reset email" };
     }
-
     return { success: true, message: "Password reset OTP sent to your email" };
   } catch (error) {
     return { success: false, message: "Server error" };
   }
 };
-
 export const resetPassword = async (email, otp, newPassword) => {
   try {
     const user = await userService.findUserByEmail(email);
     if (!user) {
       return { success: false, message: "User not found" };
     }
-
     const otpResult = otpService.verifyUserOTP(user, otp);
     if (!otpResult.success) {
       return otpResult;
     }
-
     user.password = newPassword;
     otpService.clearOTP(user);
     await user.save();
-
     return { success: true, message: "Password reset successfully" };
   } catch (error) {
     return { success: false, message: "Server error" };
