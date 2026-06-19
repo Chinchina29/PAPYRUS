@@ -1,6 +1,8 @@
 import Coupon from "../models/Coupon.js";
 export const createCoupon = async (data) => {
-  const existingCoupon = await Coupon.findOne({ code: data.code.toUpperCase() });
+  const existingCoupon = await Coupon.findOne({
+    code: data.code.toUpperCase(),
+  });
   if (existingCoupon) {
     throw new Error("Coupon code already exists");
   }
@@ -56,7 +58,7 @@ export const deleteCoupon = async (id) => {
   return await Coupon.findByIdAndUpdate(
     id,
     { isDeleted: true },
-    { returnDocument: "after" }
+    { returnDocument: "after" },
   );
 };
 export const toggleCouponActive = async (id) => {
@@ -84,14 +86,14 @@ export const validateCoupon = async (code, userId, cartTotal, cartItems) => {
   }
   if (cartTotal < coupon.minPurchaseAmount) {
     throw new Error(
-      `Minimum purchase amount of ₹${coupon.minPurchaseAmount} required`
+      `Minimum purchase amount of ₹${coupon.minPurchaseAmount} required`,
     );
   }
   if (coupon.applicableCategories.length > 0) {
     const hasApplicableProduct = cartItems.some((item) =>
       coupon.applicableCategories.some(
-        (cat) => cat._id.toString() === item.product.category.toString()
-      )
+        (cat) => cat._id.toString() === item.product.category.toString(),
+      ),
     );
     if (!hasApplicableProduct) {
       throw new Error("Coupon not applicable to items in cart");
@@ -100,8 +102,8 @@ export const validateCoupon = async (code, userId, cartTotal, cartItems) => {
   if (coupon.applicableProducts.length > 0) {
     const hasApplicableProduct = cartItems.some((item) =>
       coupon.applicableProducts.some(
-        (prod) => prod._id.toString() === item.product._id.toString()
-      )
+        (prod) => prod._id.toString() === item.product._id.toString(),
+      ),
     );
     if (!hasApplicableProduct) {
       throw new Error("Coupon not applicable to items in cart");
@@ -144,11 +146,17 @@ export const getAvailableCoupons = async (userId, cartTotal, cartItems) => {
   for (const coupon of coupons) {
     try {
       let isValidForCart = true;
-      if ((!coupon.applicableCategories || coupon.applicableCategories.length === 0) && 
-          (!coupon.applicableProducts || coupon.applicableProducts.length === 0)) {
+      if (
+        (!coupon.applicableCategories ||
+          coupon.applicableCategories.length === 0) &&
+        (!coupon.applicableProducts || coupon.applicableProducts.length === 0)
+      ) {
         isValidForCart = true;
       } else {
-        if (coupon.applicableCategories && coupon.applicableCategories.length > 0) {
+        if (
+          coupon.applicableCategories &&
+          coupon.applicableCategories.length > 0
+        ) {
           const hasApplicableProduct = cartItems.some((item) => {
             if (!item.product.category) return false;
             return coupon.applicableCategories.some((cat) => {
@@ -159,11 +167,15 @@ export const getAvailableCoupons = async (userId, cartTotal, cartItems) => {
             isValidForCart = false;
           }
         }
-        if (isValidForCart && coupon.applicableProducts && coupon.applicableProducts.length > 0) {
+        if (
+          isValidForCart &&
+          coupon.applicableProducts &&
+          coupon.applicableProducts.length > 0
+        ) {
           const hasApplicableProduct = cartItems.some((item) =>
             coupon.applicableProducts.some((prod) => {
               return prod._id.toString() === item.product._id.toString();
-            })
+            }),
           );
           if (!hasApplicableProduct) {
             isValidForCart = false;
@@ -178,7 +190,7 @@ export const getAvailableCoupons = async (userId, cartTotal, cartItems) => {
         });
       }
     } catch (error) {
-      console.error('Error processing coupon:', coupon.code, error);
+      console.error("Error processing coupon:", coupon.code, error);
       continue;
     }
   }
@@ -196,13 +208,20 @@ export const getAvailableCouponsSimple = async () => {
     .populate("applicableProducts", "title")
     .sort({ discountValue: -1 })
     .limit(15);
-  console.log('Simple coupon fetch - found:', coupons.length);
-  coupons.forEach(coupon => {
-    console.log(`Coupon: ${coupon.code}, Min: ${coupon.minPurchaseAmount}, Active: ${coupon.isActive}, ValidUntil: ${coupon.validUntil}`);
+  console.log("Simple coupon fetch - found:", coupons.length);
+  coupons.forEach((coupon) => {
+    console.log(
+      `Coupon: ${coupon.code}, Min: ${coupon.minPurchaseAmount}, Active: ${coupon.isActive}, ValidUntil: ${coupon.validUntil}`,
+    );
   });
   return coupons;
 };
-export const validateCouponForActiveItems = async (code, userId, activeSubtotal, cartItems) => {
+export const validateCouponForActiveItems = async (
+  code,
+  userId,
+  activeSubtotal,
+  cartItems,
+) => {
   const coupon = await getCouponByCode(code);
   if (!coupon) {
     throw new Error("Invalid coupon code");
@@ -217,19 +236,19 @@ export const validateCouponForActiveItems = async (code, userId, activeSubtotal,
   if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit) {
     throw new Error("Coupon usage limit reached");
   }
-  // Check minimum purchase amount against ACTIVE items only
   if (activeSubtotal < coupon.minPurchaseAmount) {
     throw new Error(
-      `Minimum purchase amount of ₹${coupon.minPurchaseAmount} required for active items. Current active total: ₹${activeSubtotal}`
+      `Minimum purchase amount of ₹${coupon.minPurchaseAmount} required for active items. Current active total: ₹${activeSubtotal}`,
     );
   }
-  // Only check applicable categories/products for active items
-  const activeItems = cartItems.filter(item => item.status !== 'Cancelled' && item.status !== 'Returned');
+  const activeItems = cartItems.filter(
+    (item) => item.status !== "Cancelled" && item.status !== "Returned",
+  );
   if (coupon.applicableCategories.length > 0) {
     const hasApplicableProduct = activeItems.some((item) =>
       coupon.applicableCategories.some(
-        (cat) => cat._id.toString() === item.product.category.toString()
-      )
+        (cat) => cat._id.toString() === item.product.category.toString(),
+      ),
     );
     if (!hasApplicableProduct) {
       throw new Error("Coupon not applicable to active items in cart");
@@ -238,8 +257,8 @@ export const validateCouponForActiveItems = async (code, userId, activeSubtotal,
   if (coupon.applicableProducts.length > 0) {
     const hasApplicableProduct = activeItems.some((item) =>
       coupon.applicableProducts.some(
-        (prod) => prod._id.toString() === item.product._id.toString()
-      )
+        (prod) => prod._id.toString() === item.product._id.toString(),
+      ),
     );
     if (!hasApplicableProduct) {
       throw new Error("Coupon not applicable to active items in cart");

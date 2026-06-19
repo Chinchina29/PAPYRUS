@@ -198,11 +198,10 @@ export const generateInvoicePDF = (order, res) => {
   });
   const adjustedShipping =
     activeSubtotal >= 500 ? 0 : activeSubtotal > 0 ? order.shippingCharge : 0;
-  // Apply the same coupon validation logic as order details
+
   let adjustedDiscount = 0;
   let couponInvalidReason = null;
   if (order.discount > 0 && order.couponCode) {
-    // Check if active subtotal meets minimum purchase requirement of ₹1000
     const assumedMinPurchase = 1000;
     if (activeSubtotal >= assumedMinPurchase) {
       adjustedDiscount = order.discount;
@@ -263,11 +262,12 @@ export const generateInvoicePDF = (order, res) => {
   }
   if (order.discount > 0) {
     if (adjustedDiscount > 0) {
-      addTotalsRow("Discount:", `-Rs.${parseFloat(adjustedDiscount).toFixed(2)}`);
+      addTotalsRow(
+        "Discount:",
+        `-Rs.${parseFloat(adjustedDiscount).toFixed(2)}`,
+      );
     } else if (couponInvalidReason) {
-      // Show invalid coupon with reason
       addTotalsRow(`Discount (${order.couponCode}) - Invalid:`, `Rs.0.00`);
-      // Add a note about the coupon being invalid
       doc
         .fontSize(8)
         .font("Helvetica")
@@ -354,7 +354,6 @@ export const generateInvoiceHTML = (order) => {
     month: "long",
     year: "numeric",
   });
-  // Calculate active, cancelled, and returned amounts
   let activeSubtotal = 0;
   let cancelledAmount = 0;
   let returnedAmount = 0;
@@ -369,7 +368,6 @@ export const generateInvoiceHTML = (order) => {
       activeSubtotal += item.subtotal;
     }
   });
-  // Apply coupon validation logic
   let adjustedDiscount = 0;
   let couponInvalidReason = null;
   if (order.discount > 0 && order.couponCode) {
@@ -380,20 +378,27 @@ export const generateInvoiceHTML = (order) => {
       couponInvalidReason = `Coupon requires minimum ₹${assumedMinPurchase} purchase. Active items: ₹${activeSubtotal.toFixed(2)}`;
     }
   }
-  const adjustedShipping = activeSubtotal >= 500 ? 0 : (activeSubtotal > 0 ? order.shippingCharge : 0);
+  const adjustedShipping =
+    activeSubtotal >= 500 ? 0 : activeSubtotal > 0 ? order.shippingCharge : 0;
   const adjustedTotal = activeSubtotal + adjustedShipping - adjustedDiscount;
   let itemsHTML = "";
   order.items.forEach((item) => {
     const isCancelled = item.itemStatus === "Cancelled";
     const isReturned = item.itemStatus === "Returned";
-    const statusStyle = (isCancelled || isReturned) ? 'color: #6b7280; text-decoration: line-through;' : '';
-    const statusBadge = isCancelled ? '<span style="font-size: 10px; color: #dc2626; font-weight: bold;">CANCELLED</span>' : 
-                       isReturned ? '<span style="font-size: 10px; color: #ea580c; font-weight: bold;">RETURNED</span>' : '';
+    const statusStyle =
+      isCancelled || isReturned
+        ? "color: #6b7280; text-decoration: line-through;"
+        : "";
+    const statusBadge = isCancelled
+      ? '<span style="font-size: 10px; color: #dc2626; font-weight: bold;">CANCELLED</span>'
+      : isReturned
+        ? '<span style="font-size: 10px; color: #ea580c; font-weight: bold;">RETURNED</span>'
+        : "";
     itemsHTML += `
       <tr>
         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; ${statusStyle}">
           ${item.title}
-          ${statusBadge ? `<br>${statusBadge}` : ''}
+          ${statusBadge ? `<br>${statusBadge}` : ""}
         </td>
         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center; ${statusStyle}">${item.quantity}</td>
         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; ${statusStyle}">₹${item.price.toFixed(2)}</td>
@@ -401,7 +406,7 @@ export const generateInvoiceHTML = (order) => {
       </tr>
     `;
   });
-  let totalsHTML = '';
+  let totalsHTML = "";
   if (order.subtotal !== activeSubtotal) {
     totalsHTML += `
       <tr><td colspan="3" style="text-align: right; padding: 8px; font-weight: 500;">Original Subtotal:</td><td style="text-align: right; padding: 8px;">₹${order.subtotal.toFixed(2)}</td></tr>
@@ -476,7 +481,7 @@ export const generateInvoiceHTML = (order) => {
             <strong>BILL TO:</strong><br>
             ${order.shippingAddress.fullName}<br>
             ${order.shippingAddress.addressLine1}<br>
-            ${order.shippingAddress.addressLine2 ? order.shippingAddress.addressLine2 + '<br>' : ''}
+            ${order.shippingAddress.addressLine2 ? order.shippingAddress.addressLine2 + "<br>" : ""}
             ${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.pincode}<br>
             ${order.shippingAddress.phone}
         </div>

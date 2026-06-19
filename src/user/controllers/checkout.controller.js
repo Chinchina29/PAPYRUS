@@ -8,7 +8,10 @@ export const getCheckout = async (req, res) => {
   try {
     const userId = req.session.userId;
     const cart = await cartService.getOrCreateCart(userId);
-    console.log('Checkout - Cart structure:', JSON.stringify(cart.items.slice(0, 1), null, 2)); // Log first item structure
+    console.log(
+      "Checkout - Cart structure:",
+      JSON.stringify(cart.items.slice(0, 1), null, 2),
+    );
     if (!cart || cart.items.length === 0) {
       return res.redirect("/cart");
     }
@@ -72,7 +75,6 @@ export const getCheckout = async (req, res) => {
         );
         hasStockChanges = true;
       }
-      // Remove the low stock warning that was blocking checkout
     }
     if (hasStockChanges) {
       req.session.stockIssues = stockIssues;
@@ -92,14 +94,16 @@ export const getCheckout = async (req, res) => {
     const availableCoupons = await couponService.getAvailableCoupons(
       userId,
       subtotal,
-      cart.items
+      cart.items,
     );
-    console.log('Checkout - Available coupons:', availableCoupons.length);
-    console.log('Checkout - Cart total:', subtotal);
-    console.log('Checkout - Cart items count:', cart.items.length);
-    console.log('Rendering checkout with coupons:', availableCoupons.length);
+    console.log("Checkout - Available coupons:", availableCoupons.length);
+    console.log("Checkout - Cart total:", subtotal);
+    console.log("Checkout - Cart items count:", cart.items.length);
+    console.log("Rendering checkout with coupons:", availableCoupons.length);
     availableCoupons.forEach((coupon, index) => {
-      console.log(`Coupon ${index + 1}: ${coupon.code} - ${coupon.discountType} ${coupon.discountValue}`);
+      console.log(
+        `Coupon ${index + 1}: ${coupon.code} - ${coupon.discountType} ${coupon.discountValue}`,
+      );
     });
     res.render("user/checkout", {
       cart,
@@ -306,21 +310,23 @@ export const validateOrderCoupon = async (req, res) => {
         message: "No coupon applied",
       });
     }
-    // Calculate active subtotal (excluding cancelled/returned items)
-    const activeItems = order.items.filter(item => 
-      item.status !== 'Cancelled' && item.status !== 'Returned'
+    const activeItems = order.items.filter(
+      (item) => item.status !== "Cancelled" && item.status !== "Returned",
     );
     const activeSubtotal = activeItems.reduce((total, item) => {
-      return total + (item.price * item.actualQuantity);
+      return total + item.price * item.actualQuantity;
     }, 0);
     try {
       const coupon = await couponService.validateCouponForActiveItems(
         order.couponCode,
         userId,
         activeSubtotal,
-        activeItems
+        activeItems,
       );
-      const validDiscount = couponService.calculateDiscount(coupon, activeSubtotal);
+      const validDiscount = couponService.calculateDiscount(
+        coupon,
+        activeSubtotal,
+      );
       return res.json({
         success: true,
         isValid: true,
