@@ -182,19 +182,19 @@
                     </button>
                   <% } %>
 
-                  <% if (item.returnRequestStatus === 'Requested') { %>
+                  <% if (item.returnRequestStatus === 'Requested' && !item.cancelledAt) { %>
                     <span style="padding: 6px 12px; font-size: 12px; background: #fff3e0; color: #f57c00; border-radius: 6px; display: inline-block;">
                       Return Pending
                     </span>
                   <% } %>
 
-                  <% if (item.returnRequestStatus === 'Approved') { %>
+                  <% if (item.returnRequestStatus === 'Approved' && !item.cancelledAt) { %>
                     <span style="padding: 6px 12px; font-size: 12px; background: #e8f5e9; color: #2e7d32; border-radius: 6px; display: inline-block;">
                       Return Approved
                     </span>
                   <% } %>
 
-                  <% if (item.returnRequestStatus === 'Rejected') { %>
+                  <% if (item.returnRequestStatus === 'Rejected' && !item.cancelledAt) { %>
                     <span style="padding: 6px 12px; font-size: 12px; background: #ffebee; color: #d32f2f; border-radius: 6px; display: inline-block;">
                       Return Rejected
                     </span>
