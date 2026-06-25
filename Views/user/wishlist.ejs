@@ -326,9 +326,9 @@
                 </a>
 
                 <div class="wishlist-price-row">
-                  <span class="wishlist-price">$<%= item.product.price.toFixed(2) %></span>
+                  <span class="wishlist-price">₹<%= item.product.price.toFixed(2) %></span>
                   <% if (item.product.originalPrice && item.product.originalPrice > item.product.price) { %>
-                    <span class="wishlist-original-price">$<%= item.product.originalPrice.toFixed(2) %></span>
+                    <span class="wishlist-original-price">₹<%= item.product.originalPrice.toFixed(2) %></span>
                   <% } %>
                 </div>
 

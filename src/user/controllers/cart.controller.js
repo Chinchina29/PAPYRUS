@@ -372,15 +372,95 @@ export const validateCoupon = async (req, res) => {
 };
 export const removeCoupon = async (req, res) => {
   try {
-    req.session.appliedCoupon = null;
+    const previousCoupon = req.session.appliedCoupon;
+    delete req.session.appliedCoupon;
+    
     res.json({
       success: true,
-      message: "Coupon removed successfully",
+      message: previousCoupon 
+        ? `Coupon "${previousCoupon.code}" removed successfully`
+        : "Coupon removed successfully",
+      removedCoupon: previousCoupon || null,
     });
   } catch (error) {
     res.status(400).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+export const checkCouponStatus = async (req, res) => {
+  try {
+    const appliedCoupon = req.session.appliedCoupon;
+    
+    if (!appliedCoupon) {
+      return res.json({
+        success: true,
+        hasCoupon: false,
+        coupon: null,
+      });
+    }
+
+    const userId = req.session.userId;
+    const cart = await cartService.getOrCreateCart(userId);
+    
+    if (!cart || cart.items.length === 0) {
+      delete req.session.appliedCoupon;
+      return res.json({
+        success: true,
+        hasCoupon: false,
+        coupon: null,
+        message: "Coupon removed due to empty cart",
+      });
+    }
+
+    try {
+      const activeItems = cart.items.filter(item => !item.isBlocked);
+      const activeSubtotal = activeItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+      
+      await couponService.validateCouponForActiveItems(
+        appliedCoupon.code,
+        userId,
+        activeSubtotal,
+        cart.items
+      );
+
+      const recalculatedDiscount = couponService.calculateDiscount(
+        { 
+          discountType: appliedCoupon.discountType,
+          discountValue: appliedCoupon.discountValue,
+          maxDiscountAmount: appliedCoupon.maxDiscountAmount 
+        }, 
+        activeSubtotal
+      );
+
+      if (recalculatedDiscount !== appliedCoupon.discount) {
+        req.session.appliedCoupon.discount = recalculatedDiscount;
+      }
+
+      res.json({
+        success: true,
+        hasCoupon: true,
+        coupon: {
+          ...appliedCoupon,
+          discount: recalculatedDiscount,
+        },
+      });
+    } catch (validationError) {
+      delete req.session.appliedCoupon;
+      res.json({
+        success: true,
+        hasCoupon: false,
+        coupon: null,
+        message: `Coupon removed: ${validationError.message}`,
+        invalidationReason: validationError.message,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to check coupon status",
     });
   }
 };
@@ -447,10 +527,22 @@ export const getAvailableCoupons = async (req, res) => {
         message: "Add items to cart to see available coupons",
       });
     }
+
+    const activeItems = cart.items.filter(item => !item.isBlocked);
+    const activeTotal = activeItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+
+    if (activeItems.length === 0 || activeTotal === 0) {
+      return res.json({
+        success: true,
+        coupons: [],
+        message: "No eligible items in cart for coupons",
+      });
+    }
+
     const availableCoupons = await couponService.getAvailableCoupons(
       userId,
-      cart.totalAmount,
-      cart.items,
+      activeTotal,
+      activeItems,
     );
     const couponsWithDetails = availableCoupons.map((coupon) => ({
       code: coupon.code,
@@ -505,6 +597,115 @@ export const checkStock = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to check stock",
+    });
+  }
+};
+export const checkCouponStatus = async (req, res) => {
+  try {
+    const appliedCoupon = req.session.appliedCoupon;
+    
+    if (!appliedCoupon) {
+      return res.json({
+        success: true,
+        hasCoupon: false,
+        coupon: null,
+      });
+    }
+
+    const userId = req.session.userId;
+    const cart = await cartService.getOrCreateCart(userId);
+    
+    if (!cart || cart.items.length === 0) {
+      delete req.session.appliedCoupon;
+      return res.json({
+        success: true,
+        hasCoupon: false,
+        coupon: null,
+        message: "Coupon removed due to empty cart",
+      });
+    }
+
+    try {
+      const activeItems = cart.items.filter(item => !item.isBlocked);
+      const activeSubtotal = activeItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+      
+      await couponService.validateCouponForActiveItems(
+        appliedCoupon.code,
+        userId,
+        activeSubtotal,
+        cart.items
+      );
+
+      const recalculatedDiscount = couponService.calculateDiscount(
+        { 
+          discountType: appliedCoupon.discountType,
+          discountValue: appliedCoupon.discountValue,
+          maxDiscountAmount: appliedCoupon.maxDiscountAmount 
+        }, 
+        activeSubtotal
+      );
+
+      if (recalculatedDiscount !== appliedCoupon.discount) {
+        req.session.appliedCoupon.discount = recalculatedDiscount;
+      }
+
+      res.json({
+        success: true,
+        hasCoupon: true,
+        coupon: {
+          ...appliedCoupon,
+          discount: recalculatedDiscount,
+        },
+      });
+    } catch (validationError) {
+      delete req.session.appliedCoupon;
+      res.json({
+        success: true,
+        hasCoupon: false,
+        coupon: null,
+        message: `Coupon removed: ${validationError.message}`,
+        invalidationReason: validationError.message,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to check coupon status",
+    });
+  }
+};
+
+export const getAvailableCoupons = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const cart = await cartService.getOrCreateCart(userId);
+    
+    if (!cart || cart.items.length === 0) {
+      return res.json({
+        success: true,
+        coupons: [],
+        message: "Cart is empty",
+      });
+    }
+
+    const activeItems = cart.items.filter(item => !item.isBlocked);
+    const activeSubtotal = activeItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    
+    const availableCoupons = await couponService.getAvailableCoupons(
+      userId, 
+      activeSubtotal, 
+      activeItems
+    );
+
+    res.json({
+      success: true,
+      coupons: availableCoupons,
+      subtotal: activeSubtotal,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch available coupons",
     });
   }
 };

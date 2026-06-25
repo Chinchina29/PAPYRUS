@@ -2,6 +2,8 @@ import * as cartService from "../services/cart.service.js";
 import * as addressService from "../services/address.service.js";
 import * as orderService from "../../shared/services/order.service.js";
 import * as couponService from "../../shared/services/coupon.service.js";
+import * as paymentService from "../../shared/services/payment.service.js";
+import { paymentConfig } from "../../shared/config/payment.config.js";
 import Product from "../../shared/models/Product.js";
 import Coupon from "../../shared/models/Coupon.js";
 export const getCheckout = async (req, res) => {
@@ -84,8 +86,9 @@ export const getCheckout = async (req, res) => {
     const addresses = await addressService.getUserAddresses(userId);
     const defaultAddress =
       addresses.find((addr) => addr.isDefault) || addresses[0];
-    const subtotal = cart.totalAmount;
-    const shippingCharge = subtotal >= 500 ? 0 : 50;
+    const activeItems = cart.items.filter(item => !item.isBlocked);
+    const subtotal = activeItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    const shippingCharge = subtotal >= 500 ? 0 : subtotal > 0 ? 50 : 0;
     const discount = req.session.appliedCoupon?.discount || 0;
     const totalAmount = parseFloat(
       (subtotal + shippingCharge - discount).toFixed(2),
@@ -94,7 +97,7 @@ export const getCheckout = async (req, res) => {
     const availableCoupons = await couponService.getAvailableCoupons(
       userId,
       subtotal,
-      cart.items,
+      activeItems,
     );
     console.log("Checkout - Available coupons:", availableCoupons.length);
     console.log("Checkout - Cart total:", subtotal);
@@ -118,6 +121,11 @@ export const getCheckout = async (req, res) => {
       stockIssues,
       currentPage_name: "checkout",
       user: req.session.user || null,
+      razorpayKeyId: process.env.RAZORPAY_KEY_ID,
+      paymentGateways: {
+        razorpay: !!process.env.RAZORPAY_KEY_ID,
+        cod: true,
+      },
     });
   } catch (error) {
     res.redirect("/cart?error=An error occurred while loading checkout");

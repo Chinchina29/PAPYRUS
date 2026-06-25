@@ -8,6 +8,7 @@ import * as reviewController from "../controllers/review.controller.js";
 import * as wishlistController from "../controllers/wishlist.controller.js";
 import * as orderController from "../controllers/order.controller.js";
 import * as checkoutController from "../controllers/checkout.controller.js";
+import paymentRoutes from "./payment.routes.js";
 import { upload, videoUpload } from "../../shared/config/cloudinary.config.js";
 import {
   generalApiLimiter,
@@ -289,4 +290,7 @@ router.get(
   requireAuth,
   checkoutController.getOrderSuccess,
 );
+
+router.use("/payment", paymentRoutes);
+
 export default router;

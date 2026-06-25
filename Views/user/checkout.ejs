@@ -514,23 +514,27 @@
               </div>
             </label>
 
-            <label class="payment-option" style="opacity: 0.5; cursor: not-allowed;">
-              <input type="radio" name="paymentMethod" value="UPI" disabled/>
-              <div class="payment-icon">📱</div>
-              <div class="payment-info">
-                <div class="payment-name">UPI Payment</div>
-                <div class="payment-desc">Coming Soon</div>
-              </div>
-            </label>
-
-            <label class="payment-option" style="opacity: 0.5; cursor: not-allowed;">
-              <input type="radio" name="paymentMethod" value="Card" disabled/>
+            <% if (paymentConfig && paymentConfig.availableGateways.includes('razorpay')) { %>
+            <label class="payment-option">
+              <input type="radio" name="paymentMethod" value="Razorpay" onchange="selectPayment(this)"/>
               <div class="payment-icon">💳</div>
               <div class="payment-info">
-                <div class="payment-name">Credit/Debit Card</div>
+                <div class="payment-name">Online Payment</div>
+                <div class="payment-desc">Credit/Debit Card, UPI, Net Banking</div>
+              </div>
+            </label>
+            <% } %>
+
+            <% if (paymentConfig && paymentConfig.availableGateways.includes('paypal')) { %>
+            <label class="payment-option" style="opacity: 0.5; cursor: not-allowed;">
+              <input type="radio" name="paymentMethod" value="PayPal" disabled/>
+              <div class="payment-icon">🅿️</div>
+              <div class="payment-info">
+                <div class="payment-name">PayPal</div>
                 <div class="payment-desc">Coming Soon</div>
               </div>
             </label>
+            <% } %>
           </div>
         </div>
 
@@ -636,7 +640,7 @@
                           if (coupon.maxDiscountAmount) {
                             discountText += ` (Max ₹${coupon.maxDiscountAmount})`;
                           }
-                          savingsText = `Save ₹${((subtotal * coupon.discountValue) / 100).toFixed(2)}`;
+                          savingsText = `Save ₹${((subtotal * coupon.discountValue) / 100).toFixed(3)}`;
                         } else {
                           discountText = `₹${coupon.discountValue} OFF`;
                           savingsText = `Save ₹${coupon.discountValue}`;

@@ -108,13 +108,70 @@ const orderSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       required: true,
-      enum: ["COD", "UPI", "Wallet", "Card"],
+      enum: ["COD", "Razorpay", "PayPal", "UPI", "Wallet", "Card"],
     },
     paymentStatus: {
       type: String,
       required: true,
-      enum: ["Pending", "Paid", "Failed", "Refunded"],
+      enum: ["Pending", "Paid", "Failed", "Refunded", "Processing"],
       default: "Pending",
+    },
+    paymentDetails: {
+      gateway: {
+        type: String,
+        enum: ["razorpay", "paypal", "cod"],
+      },
+      transactionId: String,
+      paymentOrderId: String,
+      paidAt: Date,
+      amount: Number,
+      currency: {
+        type: String,
+        default: "INR",
+      },
+    },
+    paymentAttempts: {
+      type: Number,
+      default: 0,
+    },
+    paymentFailureReason: {
+      type: String,
+      maxlength: 500,
+    },
+    webhookProcessed: {
+      type: Boolean,
+      default: false,
+    },
+    webhookProcessedAt: {
+      type: Date,
+    },
+    lastModifiedBy: {
+      type: String,
+      enum: ['user', 'admin', 'system'],
+      default: 'user',
+    },
+    modificationHistory: [{
+      action: String,
+      timestamp: {
+        type: Date,
+        default: Date.now,
+      },
+      actor: String,
+      metadata: mongoose.Schema.Types.Mixed,
+    }],
+    appliedCoupon: {
+      code: String,
+      discountType: String,
+      discountAmount: Number,
+      discountPercentage: Number,
+    },
+    returnProcessedAmount: {
+      type: Number,
+      default: 0,
+    },
+    partialReturnAllowed: {
+      type: Boolean,
+      default: true,
     },
     orderStatus: {
       type: String,
@@ -211,6 +268,10 @@ orderSchema.index({ user: 1 });
 orderSchema.index({ orderStatus: 1 });
 orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ createdAt: -1 });
+orderSchema.index({ paymentStatus: 1, paymentAttempts: 1 });
+orderSchema.index({ orderStatus: 1, returnRequestStatus: 1 });
+orderSchema.index({ webhookProcessed: 1 });
+orderSchema.index({ 'paymentDetails.transactionId': 1 });
 orderSchema.pre("validate", function () {
   if (!this.orderId) {
     this.orderId = `PY-${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 1000)}`;

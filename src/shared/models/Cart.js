@@ -37,6 +37,38 @@ const cartSchema = new mongoose.Schema({
     default: 0,
     min: 0,
   },
+  activeItemsCount: {
+    type: Number,
+    default: 0,
+  },
+  blockedItemsCount: {
+    type: Number,
+    default: 0,
+  },
+  calculatedSubtotal: {
+    type: Number,
+    default: 0,
+  },
+  calculatedShipping: {
+    type: Number,
+    default: 0,
+  },
+  appliedDiscount: {
+    type: Number,
+    default: 0,
+  },
+  finalTotal: {
+    type: Number,
+    default: 0,
+  },
+  lastCalculatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+  calculationVersion: {
+    type: Number,
+    default: 1,
+  },
   isActive: {
     type: Boolean,
     default: true,
@@ -49,8 +81,13 @@ cartSchema.pre('save', async function() {
   const products = await Product.find({ _id: { $in: productIds } })
     .populate('category');
   const productMap = new Map(products.map(p => [p._id.toString(), p]));
+  
   let totalItems = 0;
   let totalAmount = 0;
+  let activeItemsCount = 0;
+  let blockedItemsCount = 0;
+  let calculatedSubtotal = 0;
+
   this.items.forEach(item => {
     const product = productMap.get(item.product.toString());
     const isBlocked = !product || 
@@ -60,13 +97,26 @@ cartSchema.pre('save', async function() {
                       !product.category.isListed || 
                       product.category.isDeleted ||
                       (product.hideFromSeller && product.seller && product.seller.toString() === this.user.toString());
+    
     if (!isBlocked) {
       totalItems += item.quantity;
       totalAmount += item.price * item.quantity;
+      calculatedSubtotal += item.price * item.quantity;
+      activeItemsCount += 1;
+    } else {
+      blockedItemsCount += 1;
     }
   });
+
   this.totalItems = totalItems;
   this.totalAmount = totalAmount;
+  this.activeItemsCount = activeItemsCount;
+  this.blockedItemsCount = blockedItemsCount;
+  this.calculatedSubtotal = Math.round(calculatedSubtotal * 100) / 100;
+  this.calculatedShipping = calculatedSubtotal >= 500 ? 0 : 50;
+  this.finalTotal = Math.round((this.calculatedSubtotal + this.calculatedShipping - this.appliedDiscount) * 100) / 100;
+  this.lastCalculatedAt = new Date();
+  this.calculationVersion += 1;
 });
 cartSchema.index({ user: 1, isActive: 1 });
 cartSchema.index({ "items.product": 1 });
