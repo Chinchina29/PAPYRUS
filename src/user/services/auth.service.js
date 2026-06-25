@@ -109,6 +109,8 @@ export const verifyUserOTP = async (userId, otp) => {
     return { success: false, message: "Server error during verification" };
   }
 };
+
+//testing
 export const resendUserOTP = async (userId) => {
   try {
     const user = await userService.findUserById(userId);
