@@ -1,4 +1,6 @@
 import express from "express";
+import HTTP_STATUS from "../../shared/constants/httpStatus.js";
+import MESSAGES from "../../shared/constants/messages.js";
 import * as productController from "../controllers/product.controller.js";
 import * as profileController from "../controllers/profile.controller.js";
 import * as addressController from "../controllers/address.controller.js";
@@ -8,6 +10,7 @@ import * as reviewController from "../controllers/review.controller.js";
 import * as wishlistController from "../controllers/wishlist.controller.js";
 import * as orderController from "../controllers/order.controller.js";
 import * as checkoutController from "../controllers/checkout.controller.js";
+import * as walletController from "../controllers/wallet.controller.js";
 import paymentRoutes from "./payment.routes.js";
 import { upload, videoUpload } from "../../shared/config/cloudinary.config.js";
 import {
@@ -25,9 +28,9 @@ const requireAuth = (req, res, next) => {
       req.headers.accept?.includes("application/json") ||
       req.get("X-Requested-With") === "XMLHttpRequest";
     if (isAjax) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
-        message: "Please log in to continue",
+        message: MESSAGES.CUSTOM.PLEASE_LOG_IN_TO_CONTINUE,
         redirectUrl: "/login",
       });
     } else {
@@ -147,6 +150,7 @@ router.post(
   generalApiLimiter,
   addressController.setDefaultAddress,
 );
+router.get("/profile/wallet", requireAuth, walletController.getWallet);
 router.get("/cart", requireAuth, cartController.getCart);
 router.post("/cart/add", requireAuth, cartLimiter, cartController.addToCart);
 router.put(
@@ -290,7 +294,5 @@ router.get(
   requireAuth,
   checkoutController.getOrderSuccess,
 );
-
 router.use("/payment", paymentRoutes);
-
 export default router;

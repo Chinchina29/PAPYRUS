@@ -1,4 +1,5 @@
 import { body, validationResult } from "express-validator";
+import HTTP_STATUS from "../constants/httpStatus.js";
 export const signupValidation = [
   body("firstName")
     .trim()
@@ -234,7 +235,7 @@ export const validate = (req, res, next) => {
       formattedErrors[error.path] = error.msg;
       errorMessages.push(`${error.path}: ${error.msg}`);
     });
-    return res.status(400).json({
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: `Validation failed: ${errorMessages.join(', ')}`,
       errors: errors.array(),

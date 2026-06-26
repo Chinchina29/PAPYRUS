@@ -1,0 +1,487 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #d4c4b0;
+    color: #2c2416;
+}
+
+.admin-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.admin-main {
+    margin-left: 240px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - 240px);
+}
+
+.admin-content {
+    flex: 1;
+    padding: 2rem;
+    width: 100%;
+}
+
+.financial-overview {
+    width: 100%;
+}
+
+.overview-header {
+    margin-bottom: 2rem;
+}
+
+.overview-header h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #2c2416;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: #6b5d4f;
+    font-size: 0.95rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon {
+    width: 56px;
+    height: 56px;
+    background: #f5f1eb;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #6b5d4f;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b5d4f;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #2c2416;
+}
+
+.ledger-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.ledger-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e0d8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ledger-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c2416;
+}
+
+.ledger-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-secondary {
+    padding: 0.5rem 1rem;
+    background: #f5f1eb;
+    color: #2c2416;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+    background: #e8e1d5;
+}
+
+.btn-secondary i {
+    font-size: 0.875rem;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.ledger-table thead {
+    background: #f9f7f4;
+}
+
+.ledger-table th {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b5d4f;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.ledger-table th:nth-child(1) { width: 15%; }
+.ledger-table th:nth-child(2) { width: 12%; }
+.ledger-table th:nth-child(3) { width: 15%; }
+.ledger-table th:nth-child(4) { width: 25%; }
+.ledger-table th:nth-child(5) { width: 20%; }
+.ledger-table th:nth-child(6) { width: 13%; text-align: center; }
+
+.ledger-table td {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e0d8;
+    font-size: 0.875rem;
+}
+
+.ledger-table td:last-child {
+    text-align: center;
+}
+
+.transaction-id {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: #2c2416;
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-credit {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-debit {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.amount {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.amount.credit {
+    color: #28a745;
+}
+
+.amount.debit {
+    color: #dc3545;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.user-info i {
+    color: #6b5d4f;
+}
+
+.btn-icon {
+    padding: 0.4rem 0.6rem;
+    background: transparent;
+    border: none;
+    color: #6b5d4f;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.btn-icon:hover {
+    background: #f5f1eb;
+    color: #2c2416;
+}
+
+.no-data {
+    text-align: center;
+    padding: 3rem 1rem !important;
+    color: #6b5d4f;
+}
+
+.no-data i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+    opacity: 0.5;
+}
+
+.no-data p {
+    margin-top: 0.5rem;
+}
+
+.pagination {
+    padding: 1.5rem;
+    border-top: 1px solid #e5e0d8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pagination-info {
+    font-size: 0.875rem;
+    color: #6b5d4f;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.page-link {
+    padding: 0.5rem 0.75rem;
+    min-width: 36px;
+    text-align: center;
+    background: white;
+    border: 1px solid #e5e0d8;
+    border-radius: 6px;
+    color: #2c2416;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.page-link:hover {
+    background: #f5f1eb;
+    border-color: #d4c4b0;
+}
+
+.page-link.active {
+    background: #2c2416;
+    color: white;
+    border-color: #2c2416;
+}
+
+.page-ellipsis {
+    padding: 0.5rem 0.25rem;
+    color: #6b5d4f;
+}
+
+.error-message {
+    padding: 1rem 1.5rem;
+    background: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid #dc3545;
+    margin: 1rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.2s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: slideDown 0.3s;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e0d8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c2416;
+}
+
+.close-modal {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #6b5d4f;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.close-modal:hover {
+    background: #f5f1eb;
+    color: #2c2416;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f5f1eb;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #6b5d4f;
+    font-size: 0.875rem;
+}
+
+.detail-value {
+    color: #2c2416;
+    font-size: 0.875rem;
+}
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #6b5d4f;
+}
+
+.loading i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.text-muted {
+    color: #6b5d4f;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .admin-content {
+        padding: 1rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ledger-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .ledger-actions {
+        width: 100%;
+    }
+
+    .btn-secondary {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .pagination {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .ledger-table th,
+    .ledger-table td {
+        padding: 0.75rem;
+        font-size: 0.8rem;
+    }
+}

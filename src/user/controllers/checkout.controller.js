@@ -1,3 +1,5 @@
+import HTTP_STATUS from "../../shared/constants/httpStatus.js";
+import MESSAGES from "../../shared/constants/messages.js";
 import * as cartService from "../services/cart.service.js";
 import * as addressService from "../services/address.service.js";
 import * as orderService from "../../shared/services/order.service.js";
@@ -5,15 +7,12 @@ import * as couponService from "../../shared/services/coupon.service.js";
 import * as paymentService from "../../shared/services/payment.service.js";
 import { paymentConfig } from "../../shared/config/payment.config.js";
 import Product from "../../shared/models/Product.js";
-import Coupon from "../../shared/models/Coupon.js";
+import User from "../../shared/models/User.js";
+import WalletTransaction from "../../shared/models/WalletTransaction.js";
 export const getCheckout = async (req, res) => {
   try {
     const userId = req.session.userId;
     const cart = await cartService.getOrCreateCart(userId);
-    console.log(
-      "Checkout - Cart structure:",
-      JSON.stringify(cart.items.slice(0, 1), null, 2),
-    );
     if (!cart || cart.items.length === 0) {
       return res.redirect("/cart");
     }
@@ -71,7 +70,6 @@ export const getCheckout = async (req, res) => {
         stockIssues.push(`"${item.product.title}" is no longer available`);
         hasStockChanges = true;
       } else if (product.stock > 0 && product.stock < item.quantity) {
-        // Only block if user wants more than available
         stockIssues.push(
           `"${item.product.title}" — only ${product.stock} left (you have ${item.quantity} in cart)`,
         );
@@ -93,21 +91,11 @@ export const getCheckout = async (req, res) => {
     const totalAmount = parseFloat(
       (subtotal + shippingCharge - discount).toFixed(2),
     );
-    const now = new Date();
     const availableCoupons = await couponService.getAvailableCoupons(
       userId,
       subtotal,
       activeItems,
     );
-    console.log("Checkout - Available coupons:", availableCoupons.length);
-    console.log("Checkout - Cart total:", subtotal);
-    console.log("Checkout - Cart items count:", cart.items.length);
-    console.log("Rendering checkout with coupons:", availableCoupons.length);
-    availableCoupons.forEach((coupon, index) => {
-      console.log(
-        `Coupon ${index + 1}: ${coupon.code} - ${coupon.discountType} ${coupon.discountValue}`,
-      );
-    });
     res.render("user/checkout", {
       cart,
       addresses,
@@ -137,23 +125,22 @@ export const placeOrder = async (req, res) => {
     const userId = req.session.userId;
     const { addressId, paymentMethod, orderNotes } = req.body;
     if (!addressId) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Please select a delivery address.",
+        message: MESSAGES.CUSTOM.PLEASE_SELECT_A_DELIVERY_ADDRESS,
       });
     }
     if (!paymentMethod) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Please select a payment method.",
+        message: MESSAGES.CUSTOM.PLEASE_SELECT_A_PAYMENT_METHOD,
       });
     }
     const cart = await cartService.getOrCreateCart(userId);
     if (!cart || cart.items.length === 0) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message:
-          "Your cart is empty. Please add items before placing an order.",
+        message: MESSAGES.CUSTOM.YOUR_CART_IS_EMPTY_PLEASE_ADD_ITEMS_BEFORE_PLACING_AN_ORDER,
       });
     }
     const availableItems = [];
@@ -172,9 +159,9 @@ export const placeOrder = async (req, res) => {
         !product.isListed ||
         !product.category
       ) {
-        return res.status(400).json({
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
           success: false,
-          message: `Sorry, "${item.product.title}" is no longer available for purchase. Please remove it from your cart and try again.`,
+          message: MESSAGES.CUSTOM.PRODUCT_NOT_FOUND_OR_NO_LONGER_AVAILABLE,
         });
       }
       if (product.stock === 0) {
@@ -184,7 +171,7 @@ export const placeOrder = async (req, res) => {
           actualQuantity: 0,
         });
       } else if (product.stock < item.quantity) {
-        return res.status(400).json({
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
           success: false,
           message: `Insufficient stock for "${item.product.title}". Only ${product.stock} ${product.stock === 1 ? "copy" : "copies"} available, but you have ${item.quantity} in your cart. Please update the quantity.`,
         });
@@ -198,9 +185,9 @@ export const placeOrder = async (req, res) => {
     }
     const address = await addressService.getAddressById(addressId, userId);
     if (!address) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Selected address not found. Please choose a valid address.",
+        message: MESSAGES.CUSTOM.SELECTED_ADDRESS_NOT_FOUND_PLEASE_CHOOSE_A_VALID_ADDRESS,
       });
     }
     const availableSubtotal = availableItems.reduce(
@@ -254,7 +241,7 @@ export const placeOrder = async (req, res) => {
         {
           $inc: { stock: -item.actualQuantity },
         },
-        { new: true },
+        { returnDocument: 'after' },
       );
       if (!updateResult) {
         await orderService.cancelOrder(
@@ -265,19 +252,18 @@ export const placeOrder = async (req, res) => {
           "stock title",
         );
         if (!currentProduct || currentProduct.stock === 0) {
-          return res.status(400).json({
+          return res.status(HTTP_STATUS.BAD_REQUEST).json({
             success: false,
             message: `Sorry, "${item.product.title}" just went out of stock. Your order has been cancelled. Please refresh your cart and try again.`,
           });
         } else {
-          return res.status(400).json({
+          return res.status(HTTP_STATUS.BAD_REQUEST).json({
             success: false,
             message: `Sorry, only ${currentProduct.stock} ${currentProduct.stock === 1 ? "copy" : "copies"} of "${item.product.title}" ${currentProduct.stock === 1 ? "is" : "are"} now available. Your order has been cancelled. Please update your cart quantity and try again.`,
           });
         }
       }
     }
-    
     let razorpayOrderData = null;
     if (paymentMethod === 'Razorpay') {
       try {
@@ -285,23 +271,36 @@ export const placeOrder = async (req, res) => {
           amount: totalAmount,
           orderId: order._id.toString()
         }, 'razorpay');
-        
         order.paymentDetails = {
           paymentOrderId: paymentOrder.id,
           gateway: 'razorpay'
         };
         await order.save();
-
         razorpayOrderData = paymentOrder;
       } catch (err) {
-        await orderService.cancelOrder(order._id, "Failed to initiate payment gateway");
-        return res.status(500).json({ success: false, message: "Failed to initiate payment gateway" });
+        await orderService.cancelOrder(order._id, MESSAGES.PAYMENT.ORDER_CREATION_FAILED);
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: MESSAGES.PAYMENT.ORDER_CREATION_FAILED });
       }
+    } else if (paymentMethod === 'Wallet') {
+      const user = await User.findById(userId);
+      if (user.walletBalance < totalAmount) {
+        await orderService.cancelOrder(order._id, "Insufficient wallet balance");
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Insufficient wallet balance" });
+      }
+      user.walletBalance -= totalAmount;
+      await user.save();
+      await WalletTransaction.create({
+        user: userId,
+        type: 'debit',
+        amount: totalAmount,
+        description: `Payment for order ${order.orderId}`,
+        orderId: order._id
+      });
+      order.paymentStatus = 'Paid';
+      await order.save();
     }
-
     await cartService.clearCart(userId);
     req.session.appliedCoupon = null;
-
     if (paymentMethod === 'Razorpay' && razorpayOrderData) {
       res.json({
         success: true,
@@ -315,16 +314,16 @@ export const placeOrder = async (req, res) => {
     } else {
       res.json({
         success: true,
-        message: MESSAGES.CUSTOM ? MESSAGES.CUSTOM.ORDER_PLACED_SUCCESSFULLY : "Order placed successfully!",
+        message: MESSAGES.CUSTOM.ORDER_PLACED_SUCCESSFULLY,
         orderId: order._id,
         orderNumber: order.orderId,
       });
     }
   } catch (error) {
     console.error("Place order error:", error);
-    res.status(500).json({
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: error.message || "Failed to place order. Please try again later.",
+      message: error.message || MESSAGES.COMMON.INTERNAL_ERROR,
     });
   }
 };
@@ -334,15 +333,15 @@ export const validateOrderCoupon = async (req, res) => {
     const userId = req.session.userId;
     const order = await orderService.getOrderById(orderId);
     if (!order) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Order not found",
+        message: MESSAGES.ORDER.NOT_FOUND,
       });
     }
     if (order.user._id.toString() !== userId.toString()) {
-      return res.status(403).json({
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,
-        message: "Unauthorized access",
+        message: MESSAGES.COMMON.UNAUTHORIZED,
       });
     }
     if (!order.couponCode || order.discount <= 0) {
@@ -350,7 +349,7 @@ export const validateOrderCoupon = async (req, res) => {
         success: true,
         isValid: true,
         discount: 0,
-        message: "No coupon applied",
+        message: MESSAGES.CUSTOM.NO_COUPON_APPLIED,
       });
     }
     const activeItems = order.items.filter(
@@ -376,7 +375,7 @@ export const validateOrderCoupon = async (req, res) => {
         discount: validDiscount,
         activeSubtotal,
         minPurchaseAmount: coupon.minPurchaseAmount,
-        message: "Coupon is valid for active items",
+        message: MESSAGES.CUSTOM.COUPON_IS_VALID_FOR_ACTIVE_ITEMS,
       });
     } catch (error) {
       return res.json({
@@ -388,9 +387,9 @@ export const validateOrderCoupon = async (req, res) => {
       });
     }
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to validate coupon",
+      message: MESSAGES.CUSTOM.FAILED_TO_VALIDATE_COUPON,
     });
   }
 };

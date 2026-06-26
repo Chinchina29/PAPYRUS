@@ -525,6 +525,19 @@
             </label>
             <% } %>
 
+            <label class="payment-option <%= (user && user.walletBalance >= totalAmount) ? '' : 'disabled' %>" <%= (user && user.walletBalance < totalAmount) ? 'style="opacity: 0.5; cursor: not-allowed;"' : '' %>>
+              <input type="radio" name="paymentMethod" value="Wallet" <%= (user && user.walletBalance < totalAmount) ? 'disabled' : '' %> onchange="selectPayment(this)"/>
+              <div class="payment-icon">👛</div>
+              <div class="payment-info">
+                <div class="payment-name">My Wallet</div>
+                <div class="payment-desc">Balance: ₹<%= (user && user.walletBalance) ? user.walletBalance.toFixed(2) : '0.00' %>
+                  <% if (user && user.walletBalance < totalAmount) { %>
+                    <span style="color: #dc3545; font-size: 12px; display: block;">Insufficient balance</span>
+                  <% } %>
+                </div>
+              </div>
+            </label>
+
             <% if (paymentGateways && paymentGateways.paypal) { %>
             <label class="payment-option" style="opacity: 0.5; cursor: not-allowed;">
               <input type="radio" name="paymentMethod" value="PayPal" disabled/>

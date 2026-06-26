@@ -108,8 +108,6 @@ export const verifyUserOTP = async (userId, otp) => {
     return { success: false, message: MESSAGES.CUSTOM.SERVER_ERROR_DURING_VERIFICATION };
   }
 };
-
-//testing
 export const resendUserOTP = async (userId) => {
   try {
     const user = await userService.findUserById(userId);

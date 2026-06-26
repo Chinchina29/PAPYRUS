@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Papyrus - My Wallet</title>
+    <link rel="stylesheet" href="/css/profile.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .wallet-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .wallet-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .wallet-header h2 {
+            font-size: 20px;
+            color: #333;
+            margin: 0 0 8px 0;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .wallet-header p {
+            color: #777;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .balance-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .balance-amount {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .balance-label {
+            font-size: 12px;
+            color: #777;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .balance-value {
+            font-size: 36px;
+            color: #333;
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .transaction-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .transaction-table th {
+            text-align: left;
+            padding: 12px 0;
+            font-size: 11px;
+            color: #777;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #eee;
+        }
+
+        .transaction-table td {
+            padding: 16px 0;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .transaction-table th:last-child,
+        .transaction-table td:last-child {
+            text-align: right;
+        }
+
+        .amount-credit {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .amount-debit {
+            color: #d32f2f;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: #777;
+        }
+        
+        .info-box {
+            background-color: #f9f9f9;
+            border: 1px dashed #ddd;
+            padding: 16px;
+            border-radius: 4px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin-top: 24px;
+        }
+        
+        .info-box svg {
+            width: 20px;
+            height: 20px;
+            color: #777;
+            flex-shrink: 0;
+        }
+        
+        .info-box p {
+            margin: 0;
+            font-size: 12px;
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        .pagination-container {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .pagination-info {
+            font-size: 13px;
+            color: #777;
+        }
+        
+        .pagination {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .page-link {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+            font-size: 13px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+        }
+        
+        .page-link:hover {
+            background-color: #f5f5f5;
+            border-color: #7A5C3E;
+        }
+        
+        .page-link.active {
+            background-color: #7A5C3E;
+            color: white;
+            border-color: #7A5C3E;
+        }
+        
+        .page-link svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .page-ellipsis {
+            padding: 8px 4px;
+            color: #777;
+        }
+        
+        @media (max-width: 768px) {
+            .pagination-container {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="/home" class="logo" style="text-decoration: none; color: inherit; cursor: pointer;">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 70 L50 85 Q48 90 45 90 L15 90 Q10 90 10 85 Z" fill="#7A5C3E"/>
+                    <path d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 70 L50 85 Q52 90 55 90 L85 90 Q90 90 90 85 Z" fill="#7A5C3E"/>
+                    <path d="M50 70 L45 50 L50 30 L55 50 Z" fill="#5a4a3a"/>
+                    <circle cx="50" cy="25" r="6" fill="#5a4a3a"/>
+                    <ellipse cx="50" cy="15" rx="4" ry="7" fill="#7A5C3E"/>
+                    <ellipse cx="42" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
+                    <ellipse cx="58" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
+                    <ellipse cx="38" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
+                    <ellipse cx="62" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
+                    <ellipse cx="35" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
+                    <ellipse cx="65" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
+                </svg>
+                <span>Papyrus</span>
+            </a>
+            <nav class="nav">
+                <a href="/home">Browse</a>
+                <a href="/shop">Books</a>
+                <a href="/sell">Sell</a>
+                <a href="/about">About</a>
+            </nav>
+            <div class="header-icons">
+                <a href="/cart" class="icon-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 2L7 6H21L19 2H9Z"/>
+                        <path d="M7 6L5 20H19L21 6"/>
+                    </svg>
+                </a>
+                <a href="/wishlist" class="icon-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                </a>
+                <a href="/profile" class="icon-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="breadcrumb">
+        <div class="container">
+            <a href="/home">SHOP</a> / <a href="/profile">PROFILE</a> / <span>WALLET</span>
+        </div>
+    </div>
+
+    <section class="profile-section">
+        <div class="container">
+            <h1 class="page-title">My Account</h1>
+            
+            <div class="profile-layout">
+                <%- include('../partials/profile-sidebar', { currentPage: 'wallet' }) %>
+
+                <main class="main-content">
+                    <div class="wallet-card">
+                        <div class="wallet-header">
+                            <h2>Wallet Balance</h2>
+                            <p>Manage your funds for purchases and payouts.</p>
+                        </div>
+                        
+                        <div class="balance-section">
+                            <div class="balance-amount">
+                                <span class="balance-label">AVAILABLE FUNDS</span>
+                                <span class="balance-value">₹<%= (walletBalance || 0).toFixed(2) %></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wallet-card">
+                        <div class="wallet-header">
+                            <h2>Recent Transactions</h2>
+                            <p>Review your latest account activity.</p>
+                        </div>
+
+                        <% if (transactions && transactions.length > 0) { %>
+                            <table class="transaction-table">
+                                <thead>
+                                    <tr>
+                                        <th>DATE</th>
+                                        <th>DESCRIPTION</th>
+                                        <th>AMOUNT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% transactions.forEach(tx => { %>
+                                        <tr>
+                                            <td><%= new Date(tx.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+                                            <td><%= tx.description %></td>
+                                            <td class="<%= tx.type === 'credit' ? 'amount-credit' : 'amount-debit' %>">
+                                                <%= tx.type === 'credit' ? '+' : '-' %>₹<%= tx.amount.toFixed(2) %>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                            
+                            <% if (totalPages > 1) { %>
+                                <div class="pagination-container">
+                                    <div class="pagination-info">
+                                        Showing <%= (currentPage - 1) * 10 + 1 %> to <%= Math.min(currentPage * 10, total) %> of <%= total %> transactions
+                                    </div>
+                                    <div class="pagination">
+                                        <% if (currentPage > 1) { %>
+                                            <a href="?page=<%= currentPage - 1 %>" class="page-link">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="15 18 9 12 15 6"></polyline>
+                                                </svg>
+                                            </a>
+                                        <% } %>
+                                        
+                                        <% for (let i = 1; i <= totalPages; i++) { %>
+                                            <% if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) { %>
+                                                <a href="?page=<%= i %>" class="page-link <%= i === currentPage ? 'active' : '' %>">
+                                                    <%= i %>
+                                                </a>
+                                            <% } else if (i === currentPage - 2 || i === currentPage + 2) { %>
+                                                <span class="page-ellipsis">...</span>
+                                            <% } %>
+                                        <% } %>
+                                        
+                                        <% if (currentPage < totalPages) { %>
+                                            <a href="?page=<%= currentPage + 1 %>" class="page-link">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                                </svg>
+                                            </a>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            <% } %>
+                        <% } else { %>
+                            <div class="empty-state">
+                                <p>No transactions found in your wallet yet.</p>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <div class="info-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 16v-4"></path>
+                            <path d="M12 8h.01"></path>
+                        </svg>
+                        <p>Funds from cancelled orders or returned items are instantly credited to your wallet. You can use these funds for your next purchase during checkout.</p>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>© 2024 PAPYRUS. PRESERVING STORIES SINCE 1974.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        const success = urlParams.get('success');
+        
+        if (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops!',
+            text: decodeURIComponent(error),
+            confirmButtonColor: '#5a4a3a'
+          }).then(() => {
+            const url = new URL(window.location);
+            url.searchParams.delete('error');
+            window.history.replaceState({}, '', url);
+          });
+        }
+        
+        if (success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: decodeURIComponent(success),
+            confirmButtonColor: '#5a4a3a',
+            timer: 3000
+          }).then(() => {
+            const url = new URL(window.location);
+            url.searchParams.delete('success');
+            window.history.replaceState({}, '', url);
+          });
+        }
+      });
+    </script>
+</body>
+</html>

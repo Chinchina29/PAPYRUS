@@ -276,55 +276,43 @@ export const applyCoupon = async (couponId) => {
   await coupon.save();
   return coupon;
 };
-
 export const markCouponAsUsed = async (couponCode, userId) => {
   const coupon = await getCouponByCode(couponCode);
   if (!coupon) {
     throw new Error(MESSAGES.CUSTOM.COUPON_NOT_FOUND);
   }
-
   coupon.usageCount = (coupon.usageCount || 0) + 1;
-  
   if (!coupon.usedBy) {
     coupon.usedBy = [];
   }
-  
   if (!coupon.usedBy.includes(userId)) {
     coupon.usedBy.push(userId);
   }
-
   await coupon.save();
   return coupon;
 };
-
 export const checkCouponUsage = async (couponCode, userId) => {
   const coupon = await getCouponByCode(couponCode);
   if (!coupon) {
     return { used: false, reason: "Coupon not found" };
   }
-
   if (coupon.usedBy && coupon.usedBy.includes(userId)) {
     return { used: true, reason: "Coupon already used by this user" };
   }
-
   if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit) {
     return { used: true, reason: "Coupon usage limit exceeded" };
   }
-
   return { used: false };
 };
-
 export const removeCouponFromSession = (req) => {
   if (req.session.appliedCoupon) {
     delete req.session.appliedCoupon;
   }
 };
-
 export const validateCouponDuringCheckout = async (couponCode, userId, activeSubtotal, cartItems) => {
   const usageCheck = await checkCouponUsage(couponCode, userId);
   if (usageCheck.used) {
     throw new Error(usageCheck.reason);
   }
-
   return await validateCouponForActiveItems(couponCode, userId, activeSubtotal, cartItems);
 };

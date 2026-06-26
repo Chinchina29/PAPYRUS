@@ -17,5 +17,4 @@ const HTTP_STATUS = {
   GATEWAY_TIMEOUT: 504,
   NOT_IMPLEMENTED: 501
 };
-
 export default HTTP_STATUS;

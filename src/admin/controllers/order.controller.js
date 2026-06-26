@@ -183,7 +183,7 @@ export const approveReturnRequest = async (req, res) => {
       await Product.findByIdAndUpdate(
         item.product,
         { $inc: { stock: item.quantity } },
-        { new: true }
+        { returnDocument: 'after' }
       );
     }
     await order.save();
@@ -273,7 +273,7 @@ export const approveItemReturn = async (req, res) => {
     await Product.findByIdAndUpdate(
       item.product,
       { $inc: { stock: item.quantity } },
-      { new: true }
+      { returnDocument: 'after' }
     );
     let allReturnedOrCancelled = true;
     let hasReturned = false;

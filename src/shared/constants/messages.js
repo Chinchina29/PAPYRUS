@@ -18,7 +18,6 @@ const MESSAGES = {
     ACCOUNT_BLOCKED: 'Your account has been blocked',
     SESSION_EXPIRED: 'Session expired. Please login again'
   },
-  
   PAYMENT: {
     ORDER_CREATION_SUCCESS: 'Payment order created successfully',
     ORDER_CREATION_FAILED: 'Failed to create payment order',
@@ -34,7 +33,6 @@ const MESSAGES = {
     PAYMENT_FAILED: 'Payment processing failed',
     MAX_ATTEMPTS_EXCEEDED: 'Maximum payment attempts exceeded'
   },
-  
   PRODUCT: {
     CREATED: 'Product created successfully',
     UPDATED: 'Product updated successfully',
@@ -44,7 +42,6 @@ const MESSAGES = {
     INSUFFICIENT_STOCK: 'Insufficient stock available',
     BLOCKED: 'Product is currently unavailable'
   },
-  
   CART: {
     ADDED: 'Item added to cart',
     UPDATED: 'Cart updated successfully',
@@ -55,7 +52,6 @@ const MESSAGES = {
     ITEM_NOT_FOUND: 'Item not found in cart',
     STOCK_UNAVAILABLE: 'Some items are no longer available'
   },
-  
   ORDER: {
     CREATED: 'Order placed successfully',
     UPDATED: 'Order updated successfully',
@@ -67,7 +63,6 @@ const MESSAGES = {
     RETURN_NOT_ELIGIBLE: 'This order is not eligible for return',
     STATUS_UPDATED: 'Order status updated successfully'
   },
-  
   COUPON: {
     APPLIED: 'Coupon applied successfully',
     REMOVED: 'Coupon removed successfully',
@@ -78,7 +73,6 @@ const MESSAGES = {
     MINIMUM_PURCHASE_NOT_MET: 'Minimum purchase requirement not met',
     NOT_APPLICABLE: 'This coupon is not applicable to items in your cart'
   },
-  
   ADDRESS: {
     ADDED: 'Address added successfully',
     UPDATED: 'Address updated successfully',
@@ -86,14 +80,12 @@ const MESSAGES = {
     NOT_FOUND: 'Address not found',
     SET_DEFAULT: 'Default address updated'
   },
-  
   WISHLIST: {
     ADDED: 'Item added to wishlist',
     REMOVED: 'Item removed from wishlist',
     ALREADY_EXISTS: 'Item already in wishlist',
     NOT_FOUND: 'Item not found in wishlist'
   },
-  
   CATEGORY: {
     CREATED: 'Category created successfully',
     UPDATED: 'Category updated successfully',
@@ -101,7 +93,6 @@ const MESSAGES = {
     NOT_FOUND: 'Category not found',
     NAME_EXISTS: 'Category name already exists'
   },
-  
   REVIEW: {
     CREATED: 'Review submitted successfully',
     UPDATED: 'Review updated successfully',
@@ -110,19 +101,16 @@ const MESSAGES = {
     ALREADY_REVIEWED: 'You have already reviewed this product',
     NOT_PURCHASED: 'You must purchase this product to review it'
   },
-  
   USER: {
     PROFILE_UPDATED: 'Profile updated successfully',
     NOT_FOUND: 'User not found',
     BLOCKED: 'User blocked successfully',
     UNBLOCKED: 'User unblocked successfully'
   },
-  
   ADMIN: {
     ACCESS_DENIED: 'Admin access required',
     UNAUTHORIZED: 'Unauthorized admin access'
   },
-  
   VALIDATION: {
     REQUIRED_FIELDS: 'Please fill all required fields',
     INVALID_EMAIL: 'Invalid email format',
@@ -131,7 +119,6 @@ const MESSAGES = {
     PASSWORD_MISMATCH: 'Passwords do not match',
     INVALID_INPUT: 'Invalid input provided'
   },
-  
   COMMON: {
     SUCCESS: 'Operation successful',
     FAILED: 'Operation failed',
@@ -341,5 +328,4 @@ CUSTOM: {
     CART_NOT_FOUND: "Cart not found",
   }
 };
-
 export default MESSAGES;

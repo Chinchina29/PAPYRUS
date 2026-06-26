@@ -376,7 +376,6 @@ export const removeCoupon = async (req, res) => {
   try {
     const previousCoupon = req.session.appliedCoupon;
     delete req.session.appliedCoupon;
-    
     res.json({
       success: true,
       message: previousCoupon 
@@ -391,11 +390,9 @@ export const removeCoupon = async (req, res) => {
     });
   }
 };
-
 export const checkCouponStatus = async (req, res) => {
   try {
     const appliedCoupon = req.session.appliedCoupon;
-    
     if (!appliedCoupon) {
       return res.json({
         success: true,
@@ -403,10 +400,8 @@ export const checkCouponStatus = async (req, res) => {
         coupon: null,
       });
     }
-
     const userId = req.session.userId;
     const cart = await cartService.getOrCreateCart(userId);
-    
     if (!cart || cart.items.length === 0) {
       delete req.session.appliedCoupon;
       return res.json({
@@ -416,18 +411,15 @@ export const checkCouponStatus = async (req, res) => {
         message: MESSAGES.CUSTOM.COUPON_REMOVED_DUE_TO_EMPTY_CART,
       });
     }
-
     try {
       const activeItems = cart.items.filter(item => !item.isBlocked);
       const activeSubtotal = activeItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-      
       await couponService.validateCouponForActiveItems(
         appliedCoupon.code,
         userId,
         activeSubtotal,
         cart.items
       );
-
       const recalculatedDiscount = couponService.calculateDiscount(
         { 
           discountType: appliedCoupon.discountType,
@@ -436,11 +428,9 @@ export const checkCouponStatus = async (req, res) => {
         }, 
         activeSubtotal
       );
-
       if (recalculatedDiscount !== appliedCoupon.discount) {
         req.session.appliedCoupon.discount = recalculatedDiscount;
       }
-
       res.json({
         success: true,
         hasCoupon: true,
@@ -529,10 +519,8 @@ export const getAvailableCoupons = async (req, res) => {
         message: MESSAGES.CUSTOM.ADD_ITEMS_TO_CART_TO_SEE_AVAILABLE_COUPONS,
       });
     }
-
     const activeItems = cart.items.filter(item => !item.isBlocked);
     const activeTotal = activeItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-
     if (activeItems.length === 0 || activeTotal === 0) {
       return res.json({
         success: true,
@@ -540,7 +528,6 @@ export const getAvailableCoupons = async (req, res) => {
         message: MESSAGES.CUSTOM.NO_ELIGIBLE_ITEMS_IN_CART_FOR_COUPONS,
       });
     }
-
     const availableCoupons = await couponService.getAvailableCoupons(
       userId,
       activeTotal,

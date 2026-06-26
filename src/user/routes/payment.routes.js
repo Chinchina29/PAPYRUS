@@ -1,13 +1,10 @@
 import express from 'express';
 import * as paymentController from '../controllers/payment.controller.js';
 import { isAuthenticated } from '../middleware/auth.middleware.js';
-
 const router = express.Router();
-
 router.post('/create-order', isAuthenticated, paymentController.createPaymentOrder);
 router.post('/verify', isAuthenticated, paymentController.verifyPayment);
 router.post('/failure', isAuthenticated, paymentController.handlePaymentFailure);
 router.get('/success', paymentController.getPaymentSuccess);
 router.get('/failure', paymentController.getPaymentFailure);
-
 export default router;

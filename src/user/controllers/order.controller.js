@@ -4,6 +4,8 @@ import * as orderService from "../../shared/services/order.service.js";
 import Product from "../../shared/models/Product.js";
 import { generateInvoicePDF } from "../../shared/utils/invoiceGenerator.js";
 import * as notificationService from "../../shared/services/notification.service.js";
+import User from "../../shared/models/User.js";
+import WalletTransaction from "../../shared/models/WalletTransaction.js";
 export const getUserOrders = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -132,13 +134,35 @@ export const cancelOrder = async (req, res) => {
         order.cancelledAt = new Date();
         order.cancellationReason = "All items cancelled";
       }
+      let refundAmount = 0;
+      if (order.paymentStatus === "Paid") {
+        for (const item of order.items) {
+          if (productIds.includes(item._id.toString()) && item.itemStatus === "Cancelled") {
+            refundAmount += (item.subtotal || item.price * item.quantity);
+          }
+        }
+        if (allItemsCancelled) {
+          refundAmount = order.totalAmount;
+          order.paymentStatus = 'Refunded';
+        }
+      }
+      if (refundAmount > 0) {
+        await User.findByIdAndUpdate(userId, { $inc: { walletBalance: refundAmount } });
+        await WalletTransaction.create({
+          user: userId,
+          type: 'credit',
+          amount: refundAmount,
+          description: `Refund for cancelled items (Order: ${order.orderId})`,
+          orderId: order._id
+        });
+      }
       await order.save();
       return res.json({
         success: true,
         message:
           cancelledCount === 1
-            ? "Item cancelled successfully"
-            : `${cancelledCount} items cancelled successfully`,
+            ? "Item cancelled successfully" + (refundAmount > 0 ? " and amount refunded to wallet." : "")
+            : `${cancelledCount} items cancelled successfully` + (refundAmount > 0 ? " and amount refunded to wallet." : ""),
       });
     }
     for (const item of order.items) {
@@ -158,10 +182,23 @@ export const cancelOrder = async (req, res) => {
     if (comments) {
       order.cancellationReason += ` - ${comments}`;
     }
+    let refundAmount = 0;
+    if (order.paymentStatus === "Paid") {
+      refundAmount = order.totalAmount;
+      await User.findByIdAndUpdate(userId, { $inc: { walletBalance: refundAmount } });
+      await WalletTransaction.create({
+        user: userId,
+        type: 'credit',
+        amount: refundAmount,
+        description: `Refund for cancelled order (${order.orderId})`,
+        orderId: order._id
+      });
+      order.paymentStatus = 'Refunded';
+    }
     await order.save();
     res.json({
       success: true,
-      message: MESSAGES.ORDER.CANCELLED,
+      message: MESSAGES.ORDER.CANCELLED + (refundAmount > 0 ? " Amount refunded to wallet." : ""),
     });
   } catch (error) {
     console.error("Cancel order error:", error);
