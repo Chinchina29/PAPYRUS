@@ -1,3 +1,5 @@
+import HTTP_STATUS from "../../shared/constants/httpStatus.js";
+import MESSAGES from "../../shared/constants/messages.js";
 import * as orderService from "../../shared/services/order.service.js";
 import { generateInvoicePDF } from "../../shared/utils/invoiceGenerator.js";
 import * as notificationService from "../../shared/services/notification.service.js";
@@ -74,8 +76,8 @@ export const getOrderDetail = async (req, res) => {
     const { id } = req.params;
     const order = await orderService.getOrderById(id);
     if (!order) {
-      return res.status(404).render("error/404", {
-        message: "Order not found",
+      return res.status(HTTP_STATUS.NOT_FOUND).render("error/404", {
+        message: MESSAGES.ORDER.NOT_FOUND,
       });
     }
     res.render("admin/order-detail", {
@@ -84,8 +86,8 @@ export const getOrderDetail = async (req, res) => {
       user: req.session.adminUser,
     });
   } catch (error) {
-    res.status(500).json({
-      error: "Internal server error",
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: MESSAGES.COMMON.INTERNAL_ERROR,
       message: error.message,
     });
   }
@@ -95,19 +97,19 @@ export const updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     if (!status) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Status is required",
+        message: MESSAGES.CUSTOM.STATUS_IS_REQUIRED,
       });
     }
     const order = await orderService.updateOrderStatus(id, status);
     return res.json({
       success: true,
-      message: "Order status updated successfully",
+      message: MESSAGES.ORDER.STATUS_UPDATED,
       order,
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: error.message,
     });
@@ -118,19 +120,19 @@ export const updatePaymentStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     if (!status) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Payment status is required",
+        message: MESSAGES.CUSTOM.PAYMENT_STATUS_IS_REQUIRED,
       });
     }
     const order = await orderService.updatePaymentStatus(id, status);
     return res.json({
       success: true,
-      message: "Payment status updated successfully",
+      message: MESSAGES.CUSTOM.PAYMENT_STATUS_UPDATED_SUCCESSFULLY,
       order,
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: error.message,
     });
@@ -143,11 +145,11 @@ export const cancelOrder = async (req, res) => {
     const order = await orderService.cancelOrder(id, reason);
     return res.json({
       success: true,
-      message: "Order cancelled successfully",
+      message: MESSAGES.ORDER.CANCELLED,
       order,
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: error.message,
     });
@@ -158,15 +160,15 @@ export const approveReturnRequest = async (req, res) => {
     const { id } = req.params;
     const order = await orderService.getOrderById(id);
     if (!order) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Order not found",
+        message: MESSAGES.ORDER.NOT_FOUND,
       });
     }
     if (order.returnRequestStatus !== "Requested") {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "No pending return request for this order",
+        message: MESSAGES.CUSTOM.NO_PENDING_RETURN_REQUEST_FOR_THIS_ORDER,
       });
     }
     order.returnRequestStatus = "Approved";
@@ -187,10 +189,10 @@ export const approveReturnRequest = async (req, res) => {
     await order.save();
     return res.json({
       success: true,
-      message: "Return request approved successfully and inventory restored",
+      message: MESSAGES.CUSTOM.RETURN_REQUEST_APPROVED_SUCCESSFULLY_AND_INVENTORY_RESTORED,
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message || "Failed to approve return request",
     });
@@ -201,22 +203,22 @@ export const rejectReturnRequest = async (req, res) => {
     const { id } = req.params;
     const { reason } = req.body;
     if (!reason || !reason.trim()) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Rejection reason is required",
+        message: MESSAGES.CUSTOM.REJECTION_REASON_IS_REQUIRED,
       });
     }
     const order = await orderService.getOrderById(id);
     if (!order) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Order not found",
+        message: MESSAGES.ORDER.NOT_FOUND,
       });
     }
     if (order.returnRequestStatus !== "Requested") {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "No pending return request for this order",
+        message: MESSAGES.CUSTOM.NO_PENDING_RETURN_REQUEST_FOR_THIS_ORDER,
       });
     }
     order.returnRequestStatus = "Rejected";
@@ -232,10 +234,10 @@ export const rejectReturnRequest = async (req, res) => {
     await order.save();
     return res.json({
       success: true,
-      message: "Return request rejected successfully",
+      message: MESSAGES.CUSTOM.RETURN_REQUEST_REJECTED_SUCCESSFULLY,
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message || "Failed to reject return request",
     });
@@ -246,22 +248,22 @@ export const approveItemReturn = async (req, res) => {
     const { orderId, itemId } = req.params;
     const order = await orderService.getOrderById(orderId);
     if (!order) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Order not found",
+        message: MESSAGES.ORDER.NOT_FOUND,
       });
     }
     const item = order.items.id(itemId);
     if (!item) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Item not found in order",
+        message: MESSAGES.CUSTOM.ITEM_NOT_FOUND_IN_ORDER,
       });
     }
     if (item.returnRequestStatus !== "Requested") {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "No pending return request for this item",
+        message: MESSAGES.CUSTOM.NO_PENDING_RETURN_REQUEST_FOR_THIS_ITEM,
       });
     }
     item.returnRequestStatus = "Approved";
@@ -299,11 +301,11 @@ export const approveItemReturn = async (req, res) => {
     });
     return res.json({
       success: true,
-      message: "Item return request approved successfully and inventory restored",
+      message: MESSAGES.CUSTOM.ITEM_RETURN_REQUEST_APPROVED_SUCCESSFULLY_AND_INVENTORY_RESTORED,
     });
   } catch (error) {
     console.error("Approve item return error:", error);
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message || "Failed to approve item return request",
     });
@@ -314,29 +316,29 @@ export const rejectItemReturn = async (req, res) => {
     const { orderId, itemId } = req.params;
     const { reason } = req.body;
     if (!reason || !reason.trim()) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Rejection reason is required",
+        message: MESSAGES.CUSTOM.REJECTION_REASON_IS_REQUIRED,
       });
     }
     const order = await orderService.getOrderById(orderId);
     if (!order) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Order not found",
+        message: MESSAGES.ORDER.NOT_FOUND,
       });
     }
     const item = order.items.id(itemId);
     if (!item) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Item not found in order",
+        message: MESSAGES.CUSTOM.ITEM_NOT_FOUND_IN_ORDER,
       });
     }
     if (item.returnRequestStatus !== "Requested") {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "No pending return request for this item",
+        message: MESSAGES.CUSTOM.NO_PENDING_RETURN_REQUEST_FOR_THIS_ITEM,
       });
     }
     item.returnRequestStatus = "Rejected";
@@ -351,11 +353,11 @@ export const rejectItemReturn = async (req, res) => {
     });
     return res.json({
       success: true,
-      message: "Item return request rejected successfully",
+      message: MESSAGES.CUSTOM.ITEM_RETURN_REQUEST_REJECTED_SUCCESSFULLY,
     });
   } catch (error) {
     console.error("Reject item return error:", error);
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message || "Failed to reject item return request",
     });
@@ -367,13 +369,13 @@ export const downloadInvoice = async (req, res) => {
     const order = await orderService.getOrderById(id);
     if (!order) {
       return res
-        .status(404)
-        .json({ success: false, message: "Order not found" });
+        .status(HTTP_STATUS.NOT_FOUND)
+        .json({ success: false, message: MESSAGES.ORDER.NOT_FOUND });
     }
     generateInvoicePDF(order, res);
   } catch (error) {
     res
-      .status(500)
-      .json({ success: false, message: "Failed to generate invoice" });
+      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+      .json({ success: false, message: MESSAGES.CUSTOM.FAILED_TO_GENERATE_INVOICE });
   }
 };

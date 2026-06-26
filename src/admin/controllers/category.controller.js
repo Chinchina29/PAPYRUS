@@ -1,3 +1,5 @@
+import HTTP_STATUS from "../../shared/constants/httpStatus.js";
+import MESSAGES from "../../shared/constants/messages.js";
 import * as categoryService from "../services/category.service.js";
 export const getCategories = async (req, res) => {
   try {
@@ -31,8 +33,8 @@ export const getCategories = async (req, res) => {
       user: req.session.adminUser,
     });
   } catch (error) {
-    res.status(500).json({
-      error: "Internal server error",
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: MESSAGES.COMMON.INTERNAL_ERROR,
       message: error.message,
     });
   }
@@ -46,8 +48,8 @@ export const getAddCategory = async (req, res) => {
       user: req.session.adminUser,
     });
   } catch (error) {
-    res.status(500).json({
-      error: "Internal server error",
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: MESSAGES.COMMON.INTERNAL_ERROR,
       message: error.message,
     });
   }
@@ -57,8 +59,8 @@ export const addCategory = async (req, res) => {
     const { name, description, parentCategory, subcategories } = req.body;
     if (!name?.trim()) {
       return res
-        .status(400)
-        .json({ success: false, message: "Category name is required" });
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({ success: false, message: MESSAGES.CUSTOM.CATEGORY_NAME_IS_REQUIRED });
     }
     let isSubcategory = false;
     let parentId = null;
@@ -66,13 +68,13 @@ export const addCategory = async (req, res) => {
       const parent = await categoryService.getCategoryById(parentCategory);
       if (!parent) {
         return res
-          .status(400)
-          .json({ success: false, message: "Invalid parent category" });
+          .status(HTTP_STATUS.BAD_REQUEST)
+          .json({ success: false, message: MESSAGES.CUSTOM.INVALID_PARENT_CATEGORY });
       }
       if (parent.isSubcategory) {
-        return res.status(400).json({
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
           success: false,
-          message: "Cannot create subcategory under another subcategory",
+          message: MESSAGES.CUSTOM.CANNOT_CREATE_SUBCATEGORY_UNDER_ANOTHER_SUBCATEGORY,
         });
       }
       isSubcategory = true;
@@ -104,21 +106,21 @@ export const addCategory = async (req, res) => {
         }
       }
     }
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
-      message: "Category added successfully",
+      message: MESSAGES.CUSTOM.CATEGORY_ADDED_SUCCESSFULLY,
       redirectUrl: "/admin/categories",
     });
   } catch (error) {
     if (error.message.includes("already exists")) {
-      return res.status(409).json({
+      return res.status(HTTP_STATUS.CONFLICT).json({
         success: false,
         message: error.message,
       });
     }
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to add category. Please try again.",
+      message: MESSAGES.CUSTOM.FAILED_TO_ADD_CATEGORY_PLEASE_TRY_AGAIN,
     });
   }
 };
@@ -127,8 +129,8 @@ export const getEditCategory = async (req, res) => {
     const { id } = req.params;
     const category = await categoryService.getCategoryById(id);
     if (!category) {
-      return res.status(404).render("error/404", {
-        message: "Category not found",
+      return res.status(HTTP_STATUS.NOT_FOUND).render("error/404", {
+        message: MESSAGES.CATEGORY.NOT_FOUND,
       });
     }
     const allCategories = await categoryService.getAllCategories({
@@ -147,8 +149,8 @@ export const getEditCategory = async (req, res) => {
       user: req.session.adminUser,
     });
   } catch (error) {
-    res.status(500).json({
-      error: "Internal server error",
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: MESSAGES.COMMON.INTERNAL_ERROR,
       message: error.message,
     });
   }
@@ -159,30 +161,30 @@ export const editCategory = async (req, res) => {
     const { name, description, isListed, parentCategory, subcategories } =
       req.body;
     if (!name?.trim()) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Category name is required",
+        message: MESSAGES.CUSTOM.CATEGORY_NAME_IS_REQUIRED,
       });
     }
     let parentId = null;
     if (parentCategory && parentCategory !== "") {
       const parent = await categoryService.getCategoryById(parentCategory);
       if (!parent) {
-        return res.status(400).json({
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
           success: false,
-          message: "Invalid parent category",
+          message: MESSAGES.CUSTOM.INVALID_PARENT_CATEGORY,
         });
       }
       if (parent.isSubcategory) {
-        return res.status(400).json({
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
           success: false,
-          message: "Cannot move category under a subcategory",
+          message: MESSAGES.CUSTOM.CANNOT_MOVE_CATEGORY_UNDER_A_SUBCATEGORY,
         });
       }
       if (parent._id.toString() === id) {
-        return res.status(400).json({
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
           success: false,
-          message: "Category cannot be its own parent",
+          message: MESSAGES.CUSTOM.CATEGORY_CANNOT_BE_ITS_OWN_PARENT,
         });
       }
       parentId = parentCategory;
@@ -214,21 +216,21 @@ export const editCategory = async (req, res) => {
         }
       }
     }
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
-      message: "Category updated successfully",
+      message: MESSAGES.CATEGORY.UPDATED,
       redirectUrl: "/admin/categories",
     });
   } catch (error) {
     if (error.message.includes("already exists")) {
-      return res.status(409).json({
+      return res.status(HTTP_STATUS.CONFLICT).json({
         success: false,
         message: error.message,
       });
     }
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to update category. Please try again.",
+      message: MESSAGES.CUSTOM.FAILED_TO_UPDATE_CATEGORY_PLEASE_TRY_AGAIN,
     });
   }
 };
@@ -237,25 +239,24 @@ export const deleteCategory = async (req, res) => {
     const { id } = req.params;
     const category = await categoryService.getCategoryById(id);
     if (!category) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Category not found",
+        message: MESSAGES.CATEGORY.NOT_FOUND,
       });
     }
     if (category.subcategories && category.subcategories.length > 0) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message:
-          "Cannot delete category with subcategories. Delete subcategories first.",
+        message: MESSAGES.CUSTOM.CANNOT_DELETE_CATEGORY_WITH_SUBCATEGORIES_DELETE_SUBCATEGORIES_FIRST,
       });
     }
     await categoryService.softDeleteCategory(id);
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
-      message: "Category deleted successfully",
+      message: MESSAGES.CATEGORY.DELETED,
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message,
     });
@@ -266,18 +267,18 @@ export const toggleCategory = async (req, res) => {
     const { id } = req.params;
     const category = await categoryService.toggleCategoryListed(id);
     if (!category) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Category not found",
+        message: MESSAGES.CATEGORY.NOT_FOUND,
       });
     }
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
       message: `Category ${category.isListed ? "listed" : "unlisted"} successfully`,
       isListed: category.isListed,
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message,
     });
@@ -292,7 +293,7 @@ export const getSubcategories = async (req, res) => {
       data: subcategories,
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message,
     });

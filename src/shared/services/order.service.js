@@ -1,3 +1,4 @@
+import MESSAGES from "../constants/messages.js";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 export const createOrder = async (data) => {
@@ -137,7 +138,7 @@ export const getUserOrders = async (
 export const updateOrderStatus = async (id, status) => {
   const order = await Order.findById(id);
   if (!order) {
-    throw new Error("Order not found");
+    throw new Error(MESSAGES.ORDER.NOT_FOUND);
   }
   const statusProgression = {
     "Pending": 1,
@@ -151,11 +152,11 @@ export const updateOrderStatus = async (id, status) => {
   const newStatusLevel = statusProgression[status];
   if (currentStatusLevel && newStatusLevel && newStatusLevel < currentStatusLevel) {
     if (order.orderStatus === "Delivered" && status !== "Returned") {
-      throw new Error("Cannot rollback order status from Delivered. Only returns are allowed.");
+      throw new Error(MESSAGES.CUSTOM.CANNOT_ROLLBACK_ORDER_STATUS_FROM_DELIVERED_ONLY_RETURNS_ARE_ALLOWED);
     } else if (order.orderStatus === "Shipped" && status === "Pending") {
-      throw new Error("Cannot rollback shipped order to pending status.");
+      throw new Error(MESSAGES.CUSTOM.CANNOT_ROLLBACK_SHIPPED_ORDER_TO_PENDING_STATUS);
     } else if (order.orderStatus === "Processing" && status === "Pending") {
-      throw new Error("Cannot rollback processing order to pending status.");
+      throw new Error(MESSAGES.CUSTOM.CANNOT_ROLLBACK_PROCESSING_ORDER_TO_PENDING_STATUS);
     }
   }
   order.orderStatus = status;
@@ -190,13 +191,13 @@ export const updatePaymentStatus = async (id, status) => {
 export const cancelOrder = async (id, reason) => {
   const order = await Order.findById(id);
   if (!order) {
-    throw new Error("Order not found");
+    throw new Error(MESSAGES.ORDER.NOT_FOUND);
   }
   if (order.orderStatus === "Delivered") {
-    throw new Error("Cannot cancel delivered order");
+    throw new Error(MESSAGES.CUSTOM.CANNOT_CANCEL_DELIVERED_ORDER);
   }
   if (order.orderStatus === "Cancelled") {
-    throw new Error("Order is already cancelled");
+    throw new Error(MESSAGES.ORDER.ALREADY_CANCELLED);
   }
   order.orderStatus = "Cancelled";
   order.cancelledAt = new Date();

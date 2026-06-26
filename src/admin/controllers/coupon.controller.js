@@ -1,3 +1,5 @@
+import HTTP_STATUS from "../../shared/constants/httpStatus.js";
+import MESSAGES from "../../shared/constants/messages.js";
 import * as couponService from "../../shared/services/coupon.service.js";
 import * as categoryService from "../services/category.service.js";
 import * as productService from "../../shared/services/product.service.js";
@@ -31,7 +33,7 @@ export const getCoupons = async (req, res) => {
 };
 export const getAddCoupon = async (req, res) => {
   try {
-    return res.status(501).send(`
+    return res.status(HTTP_STATUS.NOT_IMPLEMENTED).send(`
       <!DOCTYPE html>
       <html>
       <head>
@@ -54,8 +56,8 @@ export const getAddCoupon = async (req, res) => {
       </html>
     `);
   } catch (error) {
-    res.status(500).json({
-      error: "Internal server error",
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: MESSAGES.COMMON.INTERNAL_ERROR,
       message: error.message,
     });
   }
@@ -77,21 +79,21 @@ export const addCoupon = async (req, res) => {
       applicableProducts,
     } = req.body;
     if (!code?.trim()) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Coupon code is required",
+        message: MESSAGES.CUSTOM.COUPON_CODE_IS_REQUIRED,
       });
     }
     if (!discountType || !discountValue) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Discount type and value are required",
+        message: MESSAGES.CUSTOM.DISCOUNT_TYPE_AND_VALUE_ARE_REQUIRED,
       });
     }
     if (!validFrom || !validUntil) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Valid from and until dates are required",
+        message: MESSAGES.CUSTOM.VALID_FROM_AND_UNTIL_DATES_ARE_REQUIRED,
       });
     }
     await couponService.createCoupon({
@@ -110,13 +112,13 @@ export const addCoupon = async (req, res) => {
       applicableCategories: applicableCategories || [],
       applicableProducts: applicableProducts || [],
     });
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
-      message: "Coupon created successfully",
+      message: MESSAGES.CUSTOM.COUPON_CREATED_SUCCESSFULLY,
       redirectUrl: "/admin/coupons",
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message,
     });
@@ -127,9 +129,9 @@ export const getEditCoupon = async (req, res) => {
     const { id } = req.params;
     const coupon = await couponService.getCouponById(id);
     if (!coupon) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Coupon not found",
+        message: MESSAGES.CUSTOM.COUPON_NOT_FOUND,
       });
     }
     return res.json({
@@ -152,7 +154,7 @@ export const getEditCoupon = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message,
     });
@@ -177,9 +179,9 @@ export const editCoupon = async (req, res) => {
       isActive,
     } = req.body;
     if (!code?.trim()) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Coupon code is required",
+        message: MESSAGES.CUSTOM.COUPON_CODE_IS_REQUIRED,
       });
     }
     await couponService.updateCoupon(id, {
@@ -199,13 +201,13 @@ export const editCoupon = async (req, res) => {
       applicableProducts: applicableProducts || [],
       isActive: isActive === true || isActive === "true",
     });
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
-      message: "Coupon updated successfully",
+      message: MESSAGES.CUSTOM.COUPON_UPDATED_SUCCESSFULLY,
       redirectUrl: "/admin/coupons",
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message,
     });
@@ -215,12 +217,12 @@ export const deleteCoupon = async (req, res) => {
   try {
     const { id } = req.params;
     await couponService.deleteCoupon(id);
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
-      message: "Coupon deleted successfully",
+      message: MESSAGES.CUSTOM.COUPON_DELETED_SUCCESSFULLY,
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message,
     });
@@ -230,13 +232,13 @@ export const toggleCoupon = async (req, res) => {
   try {
     const { id } = req.params;
     const coupon = await couponService.toggleCouponActive(id);
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
       message: `Coupon ${coupon.isActive ? "activated" : "deactivated"} successfully`,
       isActive: coupon.isActive,
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message,
     });
@@ -246,9 +248,9 @@ export const validateCoupon = async (req, res) => {
   try {
     const { code, cartTotal, cartItems } = req.body;
     if (!code) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Coupon code is required",
+        message: MESSAGES.CUSTOM.COUPON_CODE_IS_REQUIRED,
       });
     }
     const coupon = await couponService.validateCoupon(
@@ -260,7 +262,7 @@ export const validateCoupon = async (req, res) => {
     const discount = couponService.calculateDiscount(coupon, cartTotal);
     return res.json({
       success: true,
-      message: "Coupon applied successfully",
+      message: MESSAGES.COUPON.APPLIED,
       coupon: {
         code: coupon.code,
         discountType: coupon.discountType,
@@ -270,7 +272,7 @@ export const validateCoupon = async (req, res) => {
       finalAmount: cartTotal - discount,
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: error.message,
     });

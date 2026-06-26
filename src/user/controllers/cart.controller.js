@@ -1,3 +1,5 @@
+import HTTP_STATUS from "../../shared/constants/httpStatus.js";
+import MESSAGES from "../../shared/constants/messages.js";
 import * as cartService from "../services/cart.service.js";
 import * as couponService from "../../shared/services/coupon.service.js";
 export const getCart = async (req, res) => {
@@ -36,42 +38,42 @@ export const addToCart = async (req, res) => {
   try {
     const { productId, quantity } = req.body;
     if (!productId) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Product selection is required. Please choose a product to add to cart.",
+        message: MESSAGES.CUSTOM.PRODUCT_SELECTION_IS_REQUIRED_PLEASE_CHOOSE_A_PRODUCT_TO_ADD_TO_CART,
         field: "productId",
         errorType: "MISSING_PRODUCT_ID"
       });
     }
     if (!quantity) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Quantity is required. Please specify how many items you want to add.",
+        message: MESSAGES.CUSTOM.QUANTITY_IS_REQUIRED_PLEASE_SPECIFY_HOW_MANY_ITEMS_YOU_WANT_TO_ADD,
         field: "quantity",
         errorType: "MISSING_QUANTITY"
       });
     }
     const qty = Number(quantity);
     if (isNaN(qty)) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Quantity must be a valid number. Please enter a numeric value.",
+        message: MESSAGES.CUSTOM.QUANTITY_MUST_BE_A_VALID_NUMBER_PLEASE_ENTER_A_NUMERIC_VALUE,
         field: "quantity",
         errorType: "INVALID_QUANTITY_FORMAT"
       });
     }
     if (qty < 1) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Quantity must be at least 1. Please enter a positive number.",
+        message: MESSAGES.CUSTOM.QUANTITY_MUST_BE_AT_LEAST_1_PLEASE_ENTER_A_POSITIVE_NUMBER,
         field: "quantity",
         errorType: "INVALID_QUANTITY_MINIMUM"
       });
     }
     if (!Number.isInteger(qty)) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Quantity must be a whole number. Decimal quantities are not allowed.",
+        message: MESSAGES.CUSTOM.QUANTITY_MUST_BE_A_WHOLE_NUMBER_DECIMAL_QUANTITIES_ARE_NOT_ALLOWED,
         field: "quantity",
         errorType: "INVALID_QUANTITY_DECIMAL"
       });
@@ -83,7 +85,7 @@ export const addToCart = async (req, res) => {
     );
     res.json({
       success: true,
-      message: "Item added to cart successfully",
+      message: MESSAGES.CUSTOM.ITEM_ADDED_TO_CART_SUCCESSFULLY,
       cart: {
         totalItems: cart.totalItems,
         totalAmount: cart.totalAmount,
@@ -121,7 +123,7 @@ export const addToCart = async (req, res) => {
       errorType = "CATEGORY_DISABLED";
       field = "productId";
     }
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: userMessage,
       field,
@@ -134,33 +136,33 @@ export const updateCartItem = async (req, res) => {
     const { productId } = req.params;
     const { quantity } = req.body;
     if (!productId) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Product ID is required to update cart item.",
+        message: MESSAGES.CUSTOM.PRODUCT_ID_IS_REQUIRED_TO_UPDATE_CART_ITEM,
         field: "productId",
         errorType: "MISSING_PRODUCT_ID"
       });
     }
     if (!quantity && quantity !== 0) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Quantity field is required. Please specify the quantity.",
+        message: MESSAGES.CUSTOM.QUANTITY_FIELD_IS_REQUIRED_PLEASE_SPECIFY_THE_QUANTITY,
         field: "quantity",
         errorType: "MISSING_QUANTITY"
       });
     }
     if (quantity < 0) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Quantity cannot be negative. Please enter a valid positive number.",
+        message: MESSAGES.CUSTOM.QUANTITY_CANNOT_BE_NEGATIVE_PLEASE_ENTER_A_VALID_POSITIVE_NUMBER,
         field: "quantity",
         errorType: "INVALID_QUANTITY_NEGATIVE"
       });
     }
     if (!Number.isInteger(Number(quantity))) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Quantity must be a whole number. Decimal quantities are not allowed.",
+        message: MESSAGES.CUSTOM.QUANTITY_MUST_BE_A_WHOLE_NUMBER_DECIMAL_QUANTITIES_ARE_NOT_ALLOWED,
         field: "quantity",
         errorType: "INVALID_QUANTITY_DECIMAL"
       });
@@ -176,7 +178,7 @@ export const updateCartItem = async (req, res) => {
     const total = subtotal + shippingCharge - discount;
     res.json({
       success: true,
-      message: "Cart updated successfully",
+      message: MESSAGES.CART.UPDATED,
       cart: {
         totalItems: cart.totalItems,
         totalAmount: cart.totalAmount,
@@ -213,7 +215,7 @@ export const updateCartItem = async (req, res) => {
       errorType = "MAXIMUM_QUANTITY_EXCEEDED";
       field = "quantity";
     }
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: userMessage,
       field,
@@ -230,14 +232,14 @@ export const removeFromCart = async (req, res) => {
     );
     res.json({
       success: true,
-      message: "Item removed from cart successfully",
+      message: MESSAGES.CUSTOM.ITEM_REMOVED_FROM_CART_SUCCESSFULLY,
       cart: {
         totalItems: cart.totalItems,
         totalAmount: cart.totalAmount,
       },
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: error.message.includes("not found")
         ? "Item not found in your cart."
@@ -250,10 +252,10 @@ export const clearCart = async (req, res) => {
     await cartService.clearCart(req.session.userId);
     res.json({
       success: true,
-      message: "Cart cleared successfully",
+      message: MESSAGES.CART.CLEARED,
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: error.message,
     });
@@ -273,9 +275,9 @@ export const getCartCount = async (req, res) => {
       count,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to get cart count",
+      message: MESSAGES.CUSTOM.FAILED_TO_GET_CART_COUNT,
     });
   }
 };
@@ -284,34 +286,34 @@ export const validateCoupon = async (req, res) => {
     const { code } = req.body;
     const userId = req.session.userId;
     if (!code) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Coupon code is required. Please enter a coupon code.",
+        message: MESSAGES.CUSTOM.COUPON_CODE_IS_REQUIRED_PLEASE_ENTER_A_COUPON_CODE,
         field: "code",
         errorType: "MISSING_COUPON_CODE"
       });
     }
     if (!code.trim()) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Coupon code cannot be empty. Please enter a valid coupon code.",
+        message: MESSAGES.CUSTOM.COUPON_CODE_CANNOT_BE_EMPTY_PLEASE_ENTER_A_VALID_COUPON_CODE,
         field: "code",
         errorType: "EMPTY_COUPON_CODE"
       });
     }
     if (code.trim().length < 3) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Coupon code must be at least 3 characters long.",
+        message: MESSAGES.CUSTOM.COUPON_CODE_MUST_BE_AT_LEAST_3_CHARACTERS_LONG,
         field: "code",
         errorType: "COUPON_CODE_TOO_SHORT"
       });
     }
     const cart = await cartService.getOrCreateCart(userId);
     if (!cart || cart.items.length === 0) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Your cart is empty. Add items before applying a coupon.",
+        message: MESSAGES.CUSTOM.YOUR_CART_IS_EMPTY_ADD_ITEMS_BEFORE_APPLYING_A_COUPON,
         field: "cart",
         errorType: "EMPTY_CART"
       });
@@ -362,7 +364,7 @@ export const validateCoupon = async (req, res) => {
       userMessage = "This coupon has reached its usage limit and is no longer available.";
       errorType = "USAGE_LIMIT_REACHED";
     }
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: userMessage,
       field,
@@ -379,11 +381,11 @@ export const removeCoupon = async (req, res) => {
       success: true,
       message: previousCoupon 
         ? `Coupon "${previousCoupon.code}" removed successfully`
-        : "Coupon removed successfully",
+        : MESSAGES.COUPON.REMOVED,
       removedCoupon: previousCoupon || null,
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: error.message,
     });
@@ -411,7 +413,7 @@ export const checkCouponStatus = async (req, res) => {
         success: true,
         hasCoupon: false,
         coupon: null,
-        message: "Coupon removed due to empty cart",
+        message: MESSAGES.CUSTOM.COUPON_REMOVED_DUE_TO_EMPTY_CART,
       });
     }
 
@@ -458,9 +460,9 @@ export const checkCouponStatus = async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).json({
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to check coupon status",
+      message: MESSAGES.CUSTOM.FAILED_TO_CHECK_COUPON_STATUS,
     });
   }
 };
@@ -504,9 +506,9 @@ export const getCartSummary = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to get cart summary",
+      message: MESSAGES.CUSTOM.FAILED_TO_GET_CART_SUMMARY,
     });
   }
 };
@@ -514,9 +516,9 @@ export const getAvailableCoupons = async (req, res) => {
   try {
     const userId = req.session.userId;
     if (!userId) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
-        message: "Please login to view available coupons",
+        message: MESSAGES.CUSTOM.PLEASE_LOGIN_TO_VIEW_AVAILABLE_COUPONS,
       });
     }
     const cart = await cartService.getOrCreateCart(userId);
@@ -524,7 +526,7 @@ export const getAvailableCoupons = async (req, res) => {
       return res.json({
         success: true,
         coupons: [],
-        message: "Add items to cart to see available coupons",
+        message: MESSAGES.CUSTOM.ADD_ITEMS_TO_CART_TO_SEE_AVAILABLE_COUPONS,
       });
     }
 
@@ -535,7 +537,7 @@ export const getAvailableCoupons = async (req, res) => {
       return res.json({
         success: true,
         coupons: [],
-        message: "No eligible items in cart for coupons",
+        message: MESSAGES.CUSTOM.NO_ELIGIBLE_ITEMS_IN_CART_FOR_COUPONS,
       });
     }
 
@@ -559,9 +561,9 @@ export const getAvailableCoupons = async (req, res) => {
       coupons: couponsWithDetails,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to fetch available coupons",
+      message: MESSAGES.CUSTOM.FAILED_TO_FETCH_AVAILABLE_COUPONS,
     });
   }
 };
@@ -569,9 +571,9 @@ export const checkStock = async (req, res) => {
   try {
     const { productIds } = req.body;
     if (!productIds || !Array.isArray(productIds)) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Invalid request",
+        message: MESSAGES.CUSTOM.INVALID_REQUEST,
       });
     }
     const cart = await cartService.getOrCreateCart(
@@ -594,118 +596,9 @@ export const checkStock = async (req, res) => {
       outOfStockItems: cart.outOfStockItems || [],
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to check stock",
-    });
-  }
-};
-export const checkCouponStatus = async (req, res) => {
-  try {
-    const appliedCoupon = req.session.appliedCoupon;
-    
-    if (!appliedCoupon) {
-      return res.json({
-        success: true,
-        hasCoupon: false,
-        coupon: null,
-      });
-    }
-
-    const userId = req.session.userId;
-    const cart = await cartService.getOrCreateCart(userId);
-    
-    if (!cart || cart.items.length === 0) {
-      delete req.session.appliedCoupon;
-      return res.json({
-        success: true,
-        hasCoupon: false,
-        coupon: null,
-        message: "Coupon removed due to empty cart",
-      });
-    }
-
-    try {
-      const activeItems = cart.items.filter(item => !item.isBlocked);
-      const activeSubtotal = activeItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-      
-      await couponService.validateCouponForActiveItems(
-        appliedCoupon.code,
-        userId,
-        activeSubtotal,
-        cart.items
-      );
-
-      const recalculatedDiscount = couponService.calculateDiscount(
-        { 
-          discountType: appliedCoupon.discountType,
-          discountValue: appliedCoupon.discountValue,
-          maxDiscountAmount: appliedCoupon.maxDiscountAmount 
-        }, 
-        activeSubtotal
-      );
-
-      if (recalculatedDiscount !== appliedCoupon.discount) {
-        req.session.appliedCoupon.discount = recalculatedDiscount;
-      }
-
-      res.json({
-        success: true,
-        hasCoupon: true,
-        coupon: {
-          ...appliedCoupon,
-          discount: recalculatedDiscount,
-        },
-      });
-    } catch (validationError) {
-      delete req.session.appliedCoupon;
-      res.json({
-        success: true,
-        hasCoupon: false,
-        coupon: null,
-        message: `Coupon removed: ${validationError.message}`,
-        invalidationReason: validationError.message,
-      });
-    }
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to check coupon status",
-    });
-  }
-};
-
-export const getAvailableCoupons = async (req, res) => {
-  try {
-    const userId = req.session.userId;
-    const cart = await cartService.getOrCreateCart(userId);
-    
-    if (!cart || cart.items.length === 0) {
-      return res.json({
-        success: true,
-        coupons: [],
-        message: "Cart is empty",
-      });
-    }
-
-    const activeItems = cart.items.filter(item => !item.isBlocked);
-    const activeSubtotal = activeItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-    
-    const availableCoupons = await couponService.getAvailableCoupons(
-      userId, 
-      activeSubtotal, 
-      activeItems
-    );
-
-    res.json({
-      success: true,
-      coupons: availableCoupons,
-      subtotal: activeSubtotal,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch available coupons",
+      message: MESSAGES.CUSTOM.FAILED_TO_CHECK_STOCK,
     });
   }
 };

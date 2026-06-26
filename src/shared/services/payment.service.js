@@ -1,6 +1,8 @@
-const crypto = require('crypto');
-const Razorpay = require('razorpay');
-const Order = require('../models/Order');
+import crypto from 'crypto';
+import Razorpay from 'razorpay';
+import Order from '../models/Order.js';
+import MESSAGES from '../constants/messages.js';
+
 
 class PaymentGatewayService {
     constructor() {
@@ -14,11 +16,11 @@ class PaymentGatewayService {
     async createPaymentOrder(orderData, gateway = 'razorpay') {
         try {
             if (gateway !== 'razorpay') {
-                throw new Error('Only Razorpay gateway is supported');
+                throw new Error(MESSAGES.PAYMENT.GATEWAY_NOT_SUPPORTED);
             }
 
             if (!orderData.amount || orderData.amount <= 0 || isNaN(orderData.amount)) {
-                throw new Error('Invalid order amount');
+                throw new Error(MESSAGES.PAYMENT.INVALID_AMOUNT);
             }
 
             const options = {
@@ -39,7 +41,7 @@ class PaymentGatewayService {
             };
         } catch (error) {
             console.error('Payment order creation failed:', error);
-            throw new Error(`Payment order creation failed: ${error.message}`);
+            throw new Error(`${MESSAGES.PAYMENT.ORDER_CREATION_FAILED}: ${error.message}`);
         }
     }
 
@@ -48,7 +50,7 @@ class PaymentGatewayService {
             const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = paymentData;
 
             if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-                throw new Error('Missing required payment verification data');
+                throw new Error(MESSAGES.PAYMENT.MISSING_VERIFICATION_DATA);
             }
 
             const body = razorpay_order_id + "|" + razorpay_payment_id;
@@ -60,7 +62,7 @@ class PaymentGatewayService {
             const isSignatureValid = expectedSignature === razorpay_signature;
 
             if (!isSignatureValid) {
-                throw new Error('Payment signature verification failed');
+                throw new Error(MESSAGES.PAYMENT.SIGNATURE_VERIFICATION_FAILED);
             }
 
             return {
@@ -78,7 +80,7 @@ class PaymentGatewayService {
         try {
             const order = await Order.findById(orderId);
             if (!order) {
-                throw new Error('Order not found');
+                throw new Error(MESSAGES.PAYMENT.ORDER_NOT_FOUND);
             }
 
             order.paymentStatus = 'Paid';
@@ -102,7 +104,7 @@ class PaymentGatewayService {
         try {
             const order = await Order.findById(orderId);
             if (!order) {
-                throw new Error('Order not found');
+                throw new Error(MESSAGES.PAYMENT.ORDER_NOT_FOUND);
             }
 
             order.paymentStatus = 'Failed';
@@ -112,7 +114,7 @@ class PaymentGatewayService {
             if (order.paymentAttempts >= 5) {
                 order.orderStatus = 'Cancelled';
                 order.cancelledAt = new Date();
-                order.cancellationReason = 'Maximum payment attempts exceeded';
+                order.cancellationReason = MESSAGES.PAYMENT.MAX_ATTEMPTS_EXCEEDED;
             }
 
             await order.save();
@@ -131,7 +133,7 @@ class PaymentGatewayService {
                 .digest('hex');
 
             if (expectedSignature !== signature) {
-                throw new Error('Webhook signature verification failed');
+                throw new Error(MESSAGES.PAYMENT.WEBHOOK_VERIFICATION_FAILED);
             }
 
             const event = JSON.parse(webhookBody);
@@ -179,7 +181,7 @@ class PaymentGatewayService {
             });
 
             if (order && order.paymentStatus !== 'Failed') {
-                await this.processPaymentFailure(order._id, paymentEntity.error_description || 'Payment failed');
+                await this.processPaymentFailure(order._id, paymentEntity.error_description || MESSAGES.PAYMENT.PAYMENT_FAILED);
             }
         } catch (error) {
             console.error('Payment failed webhook error:', error);
@@ -190,12 +192,10 @@ class PaymentGatewayService {
 
 const paymentGatewayService = new PaymentGatewayService();
 
-module.exports = {
-    PaymentGatewayService,
-    createPaymentOrder: (orderData, gateway) => paymentGatewayService.createPaymentOrder(orderData, gateway),
-    verifyPaymentSignature: (paymentData) => paymentGatewayService.verifyPaymentSignature(paymentData),
-    processPaymentSuccess: (orderId, paymentDetails) => paymentGatewayService.processPaymentSuccess(orderId, paymentDetails),
-    processPaymentFailure: (orderId, failureReason) => paymentGatewayService.processPaymentFailure(orderId, failureReason),
-    handleWebhook: (webhookBody, signature) => paymentGatewayService.handleWebhook(webhookBody, signature),
-    verifyRazorpayPayment: (paymentData) => paymentGatewayService.verifyPaymentSignature(paymentData)
-};
+export { PaymentGatewayService };
+export const createPaymentOrder = (orderData, gateway) => paymentGatewayService.createPaymentOrder(orderData, gateway);
+export const verifyPaymentSignature = (paymentData) => paymentGatewayService.verifyPaymentSignature(paymentData);
+export const processPaymentSuccess = (orderId, paymentDetails) => paymentGatewayService.processPaymentSuccess(orderId, paymentDetails);
+export const processPaymentFailure = (orderId, failureReason) => paymentGatewayService.processPaymentFailure(orderId, failureReason);
+export const handleWebhook = (webhookBody, signature) => paymentGatewayService.handleWebhook(webhookBody, signature);
+export const verifyRazorpayPayment = (paymentData) => paymentGatewayService.verifyPaymentSignature(paymentData);

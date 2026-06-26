@@ -1,3 +1,5 @@
+import HTTP_STATUS from "../../shared/constants/httpStatus.js";
+import MESSAGES from "../../shared/constants/messages.js";
 import * as userService from "../../shared/services/user.service.js";
 import * as otpService from "../../shared/services/otp.service.js";
 import * as emailService from "../../shared/services/email.service.js";
@@ -25,7 +27,7 @@ export const showProfile = async (req, res) => {
       avatarColor: getAvatarColor(user.firstName),
     });
   } catch (error) {
-    res.status(500).send("Server Error");
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send("Server Error");
   }
 };
 export const showEditProfile = async (req, res) => {
@@ -43,7 +45,7 @@ export const showEditProfile = async (req, res) => {
       avatarColor: getAvatarColor(user.firstName),
     });
   } catch (error) {
-    res.status(500).send("Server Error");
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send("Server Error");
   }
 };
 export const updateProfile = async (req, res) => {
@@ -51,8 +53,8 @@ export const updateProfile = async (req, res) => {
     const userId = req.session?.userId;
     if (!userId) {
       return res
-        .status(401)
-        .json({ success: false, message: "Authentication required" });
+        .status(HTTP_STATUS.UNAUTHORIZED)
+        .json({ success: false, message: MESSAGES.CUSTOM.AUTHENTICATION_REQUIRED });
     }
     const {
       firstName,
@@ -67,16 +69,16 @@ export const updateProfile = async (req, res) => {
       readingGoal,
     } = req.body;
     if (!firstName || !firstName.trim() || !lastName || !lastName.trim()) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "First name and last name are required",
+        message: MESSAGES.CUSTOM.FIRST_NAME_AND_LAST_NAME_ARE_REQUIRED,
       });
     }
     const user = await userService.findUserById(userId);
     if (!user) {
       return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+        .status(HTTP_STATUS.NOT_FOUND)
+        .json({ success: false, message: MESSAGES.USER.NOT_FOUND });
     }
     const updateData = {
       firstName: firstName.trim(),
@@ -104,8 +106,8 @@ export const updateProfile = async (req, res) => {
     const updatedUser = await userService.updateUser(userId, updateData);
     if (!updatedUser) {
       return res
-        .status(500)
-        .json({ success: false, message: "Failed to update profile" });
+        .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+        .json({ success: false, message: MESSAGES.CUSTOM.FAILED_TO_UPDATE_PROFILE });
     }
     if (req.session.user) {
       req.session.user.firstName = updatedUser.firstName;
@@ -113,7 +115,7 @@ export const updateProfile = async (req, res) => {
     }
     return res.json({
       success: true,
-      message: "Profile updated successfully",
+      message: MESSAGES.USER.PROFILE_UPDATED,
       data: {
         user: {
           firstName: updatedUser.firstName,
@@ -131,25 +133,25 @@ export const updateProfile = async (req, res) => {
     });
   } catch (error) {
     return res
-      .status(500)
-      .json({ success: false, message: "Server error: " + error.message });
+      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+      .json({ success: false, message: MESSAGES.CUSTOM.SERVER_ERROR_1 + error.message });
   }
 };
 export const requestEmailChange = async (req, res) => {
   try {
     const { newEmail } = req.body;
     const userId = req.session.userId;
-    if (!userId) return errorResponse(res, "Authentication required", 401);
-    if (!newEmail) return errorResponse(res, "New email is required");
+    if (!userId) return errorResponse(res, "Authentication required", HTTP_STATUS.UNAUTHORIZED);
+    if (!newEmail) return errorResponse(res, MESSAGES.CUSTOM.NEW_EMAIL_IS_REQUIRED);
     const user = await userService.findUserById(userId);
-    if (!user) return errorResponse(res, "User not found", 404);
+    if (!user) return errorResponse(res, MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
     if (newEmail === user.email)
       return errorResponse(
         res,
         "New email must be different from current email",
       );
     const existingUser = await userService.findUserByEmail(newEmail);
-    if (existingUser) return errorResponse(res, "Email already exists");
+    if (existingUser) return errorResponse(res, MESSAGES.AUTH.EMAIL_ALREADY_EXISTS);
     const otp = otpService.generateOTP();
     user.emailChangeRequest = {
       newEmail: newEmail,
@@ -165,22 +167,22 @@ export const requestEmailChange = async (req, res) => {
       "OTP sent to new email address. Please verify to complete email change.",
     );
   } catch (error) {
-    return errorResponse(res, "Server error", 500);
+    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 };
 export const verifyEmailChange = async (req, res) => {
   try {
     const { otp } = req.body;
     const userId = req.session.userId;
-    if (!otp) return errorResponse(res, "OTP is required");
+    if (!otp) return errorResponse(res, MESSAGES.CUSTOM.OTP_IS_REQUIRED);
     const user = await userService.findUserById(userId);
     if (!user || !user.emailChangeRequest)
-      return errorResponse(res, "No email change request found");
+      return errorResponse(res, MESSAGES.CUSTOM.NO_EMAIL_CHANGE_REQUEST_FOUND);
     const now = new Date();
     const isValidOTP =
       user.emailChangeRequest.otp.code === otp &&
       now <= new Date(user.emailChangeRequest.otp.expiresAt);
-    if (!isValidOTP) return errorResponse(res, "Invalid or expired OTP");
+    if (!isValidOTP) return errorResponse(res, MESSAGES.CUSTOM.INVALID_OR_EXPIRED_OTP);
     const newEmail = user.emailChangeRequest.newEmail;
     user.email = newEmail;
     user.emailChangeRequest = undefined;
@@ -190,7 +192,7 @@ export const verifyEmailChange = async (req, res) => {
     }
     return successResponse(res, "Email changed successfully", { newEmail });
   } catch (error) {
-    return errorResponse(res, "Server error", 500);
+    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 };
 export const cancelEmailChange = async (req, res) => {
@@ -203,7 +205,7 @@ export const cancelEmailChange = async (req, res) => {
     }
     return successResponse(res, "Email change request cancelled");
   } catch (error) {
-    return errorResponse(res, "Server error", 500);
+    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 };
 export const showChangePassword = (req, res) => {
@@ -213,9 +215,9 @@ export const removeProfilePicture = async (req, res) => {
   try {
     const userId = req.session.userId;
     const user = await userService.findUserById(userId);
-    if (!user) return errorResponse(res, "User not found", 404);
+    if (!user) return errorResponse(res, MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
     if (!user.profilePicture)
-      return errorResponse(res, "No profile picture to remove");
+      return errorResponse(res, MESSAGES.CUSTOM.NO_PROFILE_PICTURE_TO_REMOVE);
     try {
       const urlParts = user.profilePicture.split("/");
       const publicIdWithExtension = urlParts[urlParts.length - 1];
@@ -228,7 +230,7 @@ export const removeProfilePicture = async (req, res) => {
       user: { profilePicture: null },
     });
   } catch (error) {
-    return errorResponse(res, "Server error", 500);
+    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 };
 export const changePassword = async (req, res) => {
@@ -236,26 +238,26 @@ export const changePassword = async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     const userId = req.session.userId;
     const user = await userService.findUserById(userId);
-    if (!user) return errorResponse(res, "User not found", 404);
+    if (!user) return errorResponse(res, MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
     const isMatch = await userService.comparePassword(
       currentPassword,
       user.password,
     );
-    if (!isMatch) return errorResponse(res, "Current password is incorrect");
+    if (!isMatch) return errorResponse(res, MESSAGES.CUSTOM.CURRENT_PASSWORD_IS_INCORRECT);
     user.password = newPassword;
     await user.save();
-    return successResponse(res, "Password changed successfully");
+    return successResponse(res, MESSAGES.AUTH.PASSWORD_CHANGED);
   } catch (error) {
-    return errorResponse(res, "Server error", 500);
+    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 };
 export const resendEmailOTP = async (req, res) => {
   try {
     const userId = req.session.userId;
-    if (!userId) return errorResponse(res, "Authentication required", 401);
+    if (!userId) return errorResponse(res, "Authentication required", HTTP_STATUS.UNAUTHORIZED);
     const user = await userService.findUserById(userId);
     if (!user || !user.emailChangeRequest) {
-      return errorResponse(res, "No email change request found");
+      return errorResponse(res, MESSAGES.CUSTOM.NO_EMAIL_CHANGE_REQUEST_FOUND);
     }
     const otp = otpService.generateOTP();
     user.emailChangeRequest.otp = {
@@ -270,15 +272,15 @@ export const resendEmailOTP = async (req, res) => {
     );
     return successResponse(res, "OTP resent successfully");
   } catch (error) {
-    return errorResponse(res, "Server error", 500);
+    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 };
 export const uploadAvatar = async (req, res) => {
   try {
     const userId = req.session.userId;
-    if (!req.file) return errorResponse(res, "No image file provided");
+    if (!req.file) return errorResponse(res, MESSAGES.CUSTOM.NO_IMAGE_FILE_PROVIDED);
     const user = await userService.findUserById(userId);
-    if (!user) return errorResponse(res, "User not found", 404);
+    if (!user) return errorResponse(res, MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
     if (
       user.profilePicture &&
       !user.profilePicture.includes("default-avatar")
@@ -294,6 +296,6 @@ export const uploadAvatar = async (req, res) => {
       user: { profilePicture: req.file.path },
     });
   } catch (error) {
-    return errorResponse(res, "Server error", 500);
+    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 };

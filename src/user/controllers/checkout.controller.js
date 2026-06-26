@@ -126,6 +126,7 @@ export const getCheckout = async (req, res) => {
         razorpay: !!process.env.RAZORPAY_KEY_ID,
         cod: true,
       },
+      paymentConfig
     });
   } catch (error) {
     res.redirect("/cart?error=An error occurred while loading checkout");
@@ -234,7 +235,7 @@ export const placeOrder = async (req, res) => {
         country: address.country,
       },
       paymentMethod,
-      paymentStatus: paymentMethod === "COD" ? "Pending" : "Paid",
+      paymentStatus: "Pending",
       orderStatus: "Pending",
       subtotal: parseFloat(availableSubtotal.toFixed(2)),
       shippingCharge: parseFloat(shippingCharge.toFixed(2)),
@@ -276,20 +277,54 @@ export const placeOrder = async (req, res) => {
         }
       }
     }
+    
+    let razorpayOrderData = null;
+    if (paymentMethod === 'Razorpay') {
+      try {
+        const paymentOrder = await paymentService.createPaymentOrder({
+          amount: totalAmount,
+          orderId: order._id.toString()
+        }, 'razorpay');
+        
+        order.paymentDetails = {
+          paymentOrderId: paymentOrder.id,
+          gateway: 'razorpay'
+        };
+        await order.save();
+
+        razorpayOrderData = paymentOrder;
+      } catch (err) {
+        await orderService.cancelOrder(order._id, "Failed to initiate payment gateway");
+        return res.status(500).json({ success: false, message: "Failed to initiate payment gateway" });
+      }
+    }
+
     await cartService.clearCart(userId);
     req.session.appliedCoupon = null;
-    res.json({
-      success: true,
-      message: "Order placed successfully!",
-      orderId: order._id,
-      orderNumber: order.orderId,
-    });
+
+    if (paymentMethod === 'Razorpay' && razorpayOrderData) {
+      res.json({
+        success: true,
+        paymentRequired: true,
+        razorpayOrderId: razorpayOrderData.id,
+        amount: razorpayOrderData.amount,
+        currency: razorpayOrderData.currency,
+        orderId: order._id,
+        orderNumber: order.orderId,
+      });
+    } else {
+      res.json({
+        success: true,
+        message: MESSAGES.CUSTOM ? MESSAGES.CUSTOM.ORDER_PLACED_SUCCESSFULLY : "Order placed successfully!",
+        orderId: order._id,
+        orderNumber: order.orderId,
+      });
+    }
   } catch (error) {
     console.error("Place order error:", error);
     res.status(500).json({
       success: false,
-      message:
-        error.message || "Failed to place order. Please try again later.",
+      message: error.message || "Failed to place order. Please try again later.",
     });
   }
 };

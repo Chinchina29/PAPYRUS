@@ -1,10 +1,11 @@
+import MESSAGES from "../constants/messages.js";
 import Coupon from "../models/Coupon.js";
 export const createCoupon = async (data) => {
   const existingCoupon = await Coupon.findOne({
     code: data.code.toUpperCase(),
   });
   if (existingCoupon) {
-    throw new Error("Coupon code already exists");
+    throw new Error(MESSAGES.CUSTOM.COUPON_CODE_ALREADY_EXISTS);
   }
   const coupon = new Coupon({
     ...data,
@@ -64,7 +65,7 @@ export const deleteCoupon = async (id) => {
 export const toggleCouponActive = async (id) => {
   const coupon = await Coupon.findById(id);
   if (!coupon) {
-    throw new Error("Coupon not found");
+    throw new Error(MESSAGES.CUSTOM.COUPON_NOT_FOUND);
   }
   coupon.isActive = !coupon.isActive;
   return await coupon.save();
@@ -72,17 +73,17 @@ export const toggleCouponActive = async (id) => {
 export const validateCoupon = async (code, userId, cartTotal, cartItems) => {
   const coupon = await getCouponByCode(code);
   if (!coupon) {
-    throw new Error("Invalid coupon code");
+    throw new Error(MESSAGES.COUPON.INVALID);
   }
   const now = new Date();
   if (now < coupon.validFrom) {
-    throw new Error("Coupon is not yet valid");
+    throw new Error(MESSAGES.CUSTOM.COUPON_IS_NOT_YET_VALID);
   }
   if (now > coupon.validUntil) {
-    throw new Error("Coupon has expired");
+    throw new Error(MESSAGES.COUPON.EXPIRED);
   }
   if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit) {
-    throw new Error("Coupon usage limit reached");
+    throw new Error(MESSAGES.COUPON.USAGE_LIMIT_REACHED);
   }
   if (cartTotal < coupon.minPurchaseAmount) {
     throw new Error(
@@ -96,7 +97,7 @@ export const validateCoupon = async (code, userId, cartTotal, cartItems) => {
       ),
     );
     if (!hasApplicableProduct) {
-      throw new Error("Coupon not applicable to items in cart");
+      throw new Error(MESSAGES.CUSTOM.COUPON_NOT_APPLICABLE_TO_ITEMS_IN_CART);
     }
   }
   if (coupon.applicableProducts.length > 0) {
@@ -106,7 +107,7 @@ export const validateCoupon = async (code, userId, cartTotal, cartItems) => {
       ),
     );
     if (!hasApplicableProduct) {
-      throw new Error("Coupon not applicable to items in cart");
+      throw new Error(MESSAGES.CUSTOM.COUPON_NOT_APPLICABLE_TO_ITEMS_IN_CART);
     }
   }
   return coupon;
@@ -224,17 +225,17 @@ export const validateCouponForActiveItems = async (
 ) => {
   const coupon = await getCouponByCode(code);
   if (!coupon) {
-    throw new Error("Invalid coupon code");
+    throw new Error(MESSAGES.COUPON.INVALID);
   }
   const now = new Date();
   if (now < coupon.validFrom) {
-    throw new Error("Coupon is not yet valid");
+    throw new Error(MESSAGES.CUSTOM.COUPON_IS_NOT_YET_VALID);
   }
   if (now > coupon.validUntil) {
-    throw new Error("Coupon has expired");
+    throw new Error(MESSAGES.COUPON.EXPIRED);
   }
   if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit) {
-    throw new Error("Coupon usage limit reached");
+    throw new Error(MESSAGES.COUPON.USAGE_LIMIT_REACHED);
   }
   if (activeSubtotal < coupon.minPurchaseAmount) {
     throw new Error(
@@ -251,7 +252,7 @@ export const validateCouponForActiveItems = async (
       ),
     );
     if (!hasApplicableProduct) {
-      throw new Error("Coupon not applicable to active items in cart");
+      throw new Error(MESSAGES.CUSTOM.COUPON_NOT_APPLICABLE_TO_ACTIVE_ITEMS_IN_CART);
     }
   }
   if (coupon.applicableProducts.length > 0) {
@@ -261,7 +262,7 @@ export const validateCouponForActiveItems = async (
       ),
     );
     if (!hasApplicableProduct) {
-      throw new Error("Coupon not applicable to active items in cart");
+      throw new Error(MESSAGES.CUSTOM.COUPON_NOT_APPLICABLE_TO_ACTIVE_ITEMS_IN_CART);
     }
   }
   return coupon;
@@ -269,7 +270,7 @@ export const validateCouponForActiveItems = async (
 export const applyCoupon = async (couponId) => {
   const coupon = await Coupon.findById(couponId);
   if (!coupon) {
-    throw new Error("Coupon not found");
+    throw new Error(MESSAGES.CUSTOM.COUPON_NOT_FOUND);
   }
   coupon.usageCount += 1;
   await coupon.save();
@@ -279,49 +280,7 @@ export const applyCoupon = async (couponId) => {
 export const markCouponAsUsed = async (couponCode, userId) => {
   const coupon = await getCouponByCode(couponCode);
   if (!coupon) {
-    throw new Error("Coupon not found");
-  }
-
-  coupon.usageCount = (coupon.usageCount || 0) + 1;
-  
-  if (!coupon.usedBy) {
-    coupon.usedBy = [];
-  }
-  
-  if (!coupon.usedBy.includes(userId)) {
-    coupon.usedBy.push(userId);
-  }
-
-  await coupon.save();
-  return coupon;
-};
-
-export const checkCouponUsage = async (couponCode, userId) => {
-  const coupon = await getCouponByCode(couponCode);
-  if (!coupon) {
-    return { used: false, reason: "Coupon not found" };
-  }
-
-  if (coupon.usedBy && coupon.usedBy.includes(userId)) {
-    return { used: true, reason: "Coupon already used by this user" };
-  }
-
-  if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit) {
-    return { used: true, reason: "Coupon usage limit exceeded" };
-  }
-
-  return { used: false };
-};
-
-export const removeCouponFromSession = (req) => {
-  if (req.session.appliedCoupon) {
-    delete req.session.appliedCoupon;
-  }
-};
-export const markCouponAsUsed = async (couponCode, userId) => {
-  const coupon = await getCouponByCode(couponCode);
-  if (!coupon) {
-    throw new Error("Coupon not found");
+    throw new Error(MESSAGES.CUSTOM.COUPON_NOT_FOUND);
   }
 
   coupon.usageCount = (coupon.usageCount || 0) + 1;

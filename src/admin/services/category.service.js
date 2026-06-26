@@ -1,3 +1,4 @@
+import MESSAGES from "../../shared/constants/messages.js";
 import Category from "../../shared/models/Category.js";
 export const getAllCategories = async ({
   search = "",
@@ -137,9 +138,7 @@ export const toggleCategoryListed = async (id) => {
   if (newListedStatus && category.isSubcategory && category.parentCategory) {
     const parent = await Category.findById(category.parentCategory);
     if (parent && !parent.isListed) {
-      throw new Error(
-        "Cannot unblock subcategory when parent category is blocked. Please unblock the parent category first."
-      );
+      throw new Error(MESSAGES.CUSTOM.CANNOT_UNBLOCK_SUBCATEGORY_WHEN_PARENT_CATEGORY_IS_BLOCKED_PLEASE_UNBLOCK_THE_PARENT_CATEGORY_FIRST);
     }
   }
   return await category.save();

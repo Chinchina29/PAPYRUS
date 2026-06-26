@@ -1,3 +1,5 @@
+import HTTP_STATUS from "../../shared/constants/httpStatus.js";
+import MESSAGES from "../../shared/constants/messages.js";
 import * as authService from "../services/auth.service.js";
 import {
   successResponse,
@@ -16,7 +18,7 @@ export const signup = async (req, res) => {
     };
     const result = await authService.signupUser(signupData);
     if (!result.success) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         message: result.message,
         errorType: result.errorType || "SIGNUP_FAILED",
@@ -30,9 +32,9 @@ export const signup = async (req, res) => {
       redirectUrl: "/signup/verify-otp",
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Server error occurred. Please try again later.",
+      message: MESSAGES.CUSTOM.SERVER_ERROR_OCCURRED_PLEASE_TRY_AGAIN_LATER,
       errorType: "SERVER_ERROR",
     });
   }
@@ -59,7 +61,7 @@ export const verifyOTP = async (req, res) => {
     delete req.session.tempUserEmail;
     return redirectResponse(res, result.message, "/home");
   } catch (error) {
-    return errorResponse(res, "Server error", 500);
+    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 };
 export const resendOTP = async (req, res) => {
@@ -68,7 +70,7 @@ export const resendOTP = async (req, res) => {
     if (!result.success) return errorResponse(res, result.message);
     return successResponse(res, result.message, { expiresIn: 600 });
   } catch (error) {
-    return errorResponse(res, "Server error", 500);
+    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 };
 export const login = async (req, res) => {
@@ -85,23 +87,23 @@ export const login = async (req, res) => {
           redirectUrl: "/signup/verify-otp",
         });
       }
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         message: result.message,
         errorType: result.errorType || "LOGIN_FAILED",
       });
     }
     if (result.user.role === "admin") {
-      return res.status(403).json({
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,
-        message: "Please use the admin login page.",
+        message: MESSAGES.CUSTOM.PLEASE_USE_THE_ADMIN_LOGIN_PAGE,
         errorType: "ADMIN_LOGIN_REQUIRED",
       });
     }
     if (result.user.isBlocked) {
-      return res.status(403).json({
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,
-        message: "Your account has been blocked. Please contact support.",
+        message: MESSAGES.CUSTOM.YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT,
         errorType: "ACCOUNT_BLOCKED",
       });
     }
@@ -120,9 +122,9 @@ export const login = async (req, res) => {
       redirectUrl: "/home",
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Server error occurred. Please try again later.",
+      message: MESSAGES.CUSTOM.SERVER_ERROR_OCCURRED_PLEASE_TRY_AGAIN_LATER,
       errorType: "SERVER_ERROR",
     });
   }
@@ -137,7 +139,7 @@ export const logout = (req, res) => {
     if (isAjax) {
       return res.json({
         success: true,
-        message: "Logged out successfully",
+        message: MESSAGES.CUSTOM.LOGGED_OUT_SUCCESSFULLY,
         redirectUrl: "/",
       });
     }
@@ -149,15 +151,15 @@ export const saveGenrePreferences = async (req, res) => {
     const userId = req.session.userId;
     const { genres } = req.body;
     if (!userId) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
-        message: "Please log in to continue",
+        message: MESSAGES.CUSTOM.PLEASE_LOG_IN_TO_CONTINUE,
       });
     }
     if (!genres || !Array.isArray(genres) || genres.length === 0) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Please select at least one genre",
+        message: MESSAGES.CUSTOM.PLEASE_SELECT_AT_LEAST_ONE_GENRE,
       });
     }
     const User = (await import("../../shared/models/User.js")).default;
@@ -173,12 +175,12 @@ export const saveGenrePreferences = async (req, res) => {
     req.session.isNewUser = false;
     return res.json({
       success: true,
-      message: "Preferences saved successfully",
+      message: MESSAGES.CUSTOM.PREFERENCES_SAVED_SUCCESSFULLY,
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to save preferences",
+      message: MESSAGES.CUSTOM.FAILED_TO_SAVE_PREFERENCES,
     });
   }
 };
@@ -186,9 +188,9 @@ export const skipGenreSelection = async (req, res) => {
   try {
     const userId = req.session.userId;
     if (!userId) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
-        message: "Please log in to continue",
+        message: MESSAGES.CUSTOM.PLEASE_LOG_IN_TO_CONTINUE,
       });
     }
     const User = (await import("../../shared/models/User.js")).default;
@@ -198,12 +200,12 @@ export const skipGenreSelection = async (req, res) => {
     req.session.isNewUser = false;
     return res.json({
       success: true,
-      message: "Skipped genre selection",
+      message: MESSAGES.CUSTOM.SKIPPED_GENRE_SELECTION,
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to skip",
+      message: MESSAGES.CUSTOM.FAILED_TO_SKIP,
     });
   }
 };

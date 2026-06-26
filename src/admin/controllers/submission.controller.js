@@ -1,3 +1,5 @@
+import HTTP_STATUS from "../../shared/constants/httpStatus.js";
+import MESSAGES from "../../shared/constants/messages.js";
 import SellerSubmission from "../../shared/models/SellerSubmission.js";
 import * as productService from "../../shared/services/product.service.js";
 import * as categoryService from "../services/category.service.js";
@@ -40,8 +42,8 @@ export const getSubmissions = async (req, res) => {
     });
   } catch (error) {
     res
-      .status(500)
-      .json({ error: "Internal server error", message: error.message });
+      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+      .json({ error: MESSAGES.COMMON.INTERNAL_ERROR, message: error.message });
   }
 };
 export const getSubmissionDetail = async (req, res) => {
@@ -65,16 +67,16 @@ export const reviewSubmission = async (req, res) => {
     const { action, adminNote } = req.body;
     if (!["approved", "rejected"].includes(action)) {
       return res
-        .status(400)
-        .json({ success: false, message: "Invalid action" });
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({ success: false, message: MESSAGES.CUSTOM.INVALID_ACTION });
     }
     const submission = await SellerSubmission.findById(id)
       .populate("category", "name")
       .populate("submittedBy", "firstName lastName email");
     if (!submission) {
       return res
-        .status(404)
-        .json({ success: false, message: "Submission not found" });
+        .status(HTTP_STATUS.NOT_FOUND)
+        .json({ success: false, message: MESSAGES.CUSTOM.SUBMISSION_NOT_FOUND });
     }
     submission.status = action;
     submission.reviewedBy = req.session.adminUser.id;
@@ -105,7 +107,7 @@ export const reviewSubmission = async (req, res) => {
       submission.approvedProductId = product._id;
     }
     await submission.save();
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
       message:
         action === "approved"
@@ -113,10 +115,9 @@ export const reviewSubmission = async (req, res) => {
           : "Submission rejected.",
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message:
-        "An error occurred while processing the submission: " + error.message,
+      message: MESSAGES.CUSTOM.AN_ERROR_OCCURRED_WHILE_PROCESSING_THE_SUBMISSION + error.message,
     });
   }
 };

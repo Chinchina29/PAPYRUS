@@ -1,3 +1,5 @@
+import HTTP_STATUS from "../../shared/constants/httpStatus.js";
+import MESSAGES from "../../shared/constants/messages.js";
 import * as productService from "../../shared/services/product.service.js";
 import * as categoryService from "../services/category.service.js";
 import { v2 as cloudinary } from "cloudinary";
@@ -51,8 +53,8 @@ export const getProducts = async (req, res) => {
       user: req.session.adminUser,
     });
   } catch (error) {
-    res.status(500).json({
-      error: "Internal server error",
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: MESSAGES.COMMON.INTERNAL_ERROR,
       message: error.message,
     });
   }
@@ -69,8 +71,8 @@ export const getAddProduct = async (req, res) => {
       user: req.session.adminUser,
     });
   } catch (error) {
-    res.status(500).json({
-      error: "Internal server error",
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: MESSAGES.COMMON.INTERNAL_ERROR,
       message: error.message,
     });
   }
@@ -99,35 +101,35 @@ export const addProduct = async (req, res) => {
     } = req.body;
     const productTitle = name || title;
     if (!productTitle?.trim()) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Product title is required",
+        message: MESSAGES.CUSTOM.PRODUCT_TITLE_IS_REQUIRED,
       });
     }
     if (!price || isNaN(price) || price < 0) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Valid price is required",
+        message: MESSAGES.CUSTOM.VALID_PRICE_IS_REQUIRED,
       });
     }
     if (!category) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Category is required",
+        message: MESSAGES.CUSTOM.CATEGORY_IS_REQUIRED,
       });
     }
     const productCondition = condition || "good";
     if (!images || images.length < 3) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "At least 3 images are required",
+        message: MESSAGES.CUSTOM.AT_LEAST_3_IMAGES_ARE_REQUIRED,
       });
     }
     const adminUser = req.session.adminUser;
     if (!adminUser) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
-        message: "Admin authentication required",
+        message: MESSAGES.CUSTOM.ADMIN_AUTHENTICATION_REQUIRED,
       });
     }
     const uploadedImages = [];
@@ -169,13 +171,13 @@ export const addProduct = async (req, res) => {
       images: uploadedImages,
       seller: adminUser.id,
     });
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
-      message: "Product added successfully",
+      message: MESSAGES.CUSTOM.PRODUCT_ADDED_SUCCESSFULLY,
       redirectUrl: "/admin/products",
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message,
     });
@@ -226,22 +228,22 @@ export const editProduct = async (req, res) => {
     } = req.body;
     const productTitle = name || title;
     if (!productTitle?.trim()) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Product title is required",
+        message: MESSAGES.CUSTOM.PRODUCT_TITLE_IS_REQUIRED,
       });
     }
     if (!price || isNaN(price)) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Valid price is required",
+        message: MESSAGES.CUSTOM.VALID_PRICE_IS_REQUIRED,
       });
     }
     const product = await productService.getProductById(id);
     if (!product) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Product not found",
+        message: MESSAGES.PRODUCT.NOT_FOUND,
       });
     }
     if (removedImages && removedImages.length > 0) {
@@ -270,9 +272,9 @@ export const editProduct = async (req, res) => {
       }
     }
     if (product.images.length < 3) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "At least 3 images are required",
+        message: MESSAGES.CUSTOM.AT_LEAST_3_IMAGES_ARE_REQUIRED,
       });
     }
     await productService.updateProduct(id, {
@@ -300,13 +302,13 @@ export const editProduct = async (req, res) => {
       images: product.images,
       isListed: isListed === true || isListed === "true",
     });
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
-      message: "Product updated successfully",
+      message: MESSAGES.PRODUCT.UPDATED,
       redirectUrl: "/admin/products",
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message,
     });
@@ -317,9 +319,9 @@ export const deleteProduct = async (req, res) => {
     const { id } = req.params;
     const product = await productService.getProductById(id);
     if (!product) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Product not found",
+        message: MESSAGES.PRODUCT.NOT_FOUND,
       });
     }
     await productService.softDeleteProduct(id);
@@ -334,12 +336,12 @@ export const deleteProduct = async (req, res) => {
       submission.adminNote = "Product was deleted by admin";
       await submission.save();
     }
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
-      message: "Product deleted successfully",
+      message: MESSAGES.PRODUCT.DELETED,
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message,
     });
@@ -350,18 +352,18 @@ export const toggleProduct = async (req, res) => {
     const { id } = req.params;
     const product = await productService.toggleProductListed(id);
     if (!product) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Product not found",
+        message: MESSAGES.PRODUCT.NOT_FOUND,
       });
     }
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
       message: `Product ${product.isListed ? "listed" : "unlisted"} successfully`,
       isListed: product.isListed,
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message,
     });

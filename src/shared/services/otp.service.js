@@ -1,3 +1,4 @@
+import MESSAGES from "../constants/messages.js";
 import crypto from "crypto";
 const OTP_EXPIRY_MS = 10 * 60 * 1000;
 const MAX_OTP_REQUESTS = 5;
@@ -100,7 +101,7 @@ export function verifyUserOTP(user, otpCode) {
   if (!user.otp || !user.otp.code || !user.otp.expiresAt) {
     return {
       success: false,
-      message: "No OTP found. Please request a new one.",
+      message: MESSAGES.CUSTOM.NO_OTP_FOUND_PLEASE_REQUEST_A_NEW_ONE,
       type: "no_otp",
     };
   }
@@ -108,7 +109,7 @@ export function verifyUserOTP(user, otpCode) {
     clearOTP(user);
     return {
       success: false,
-      message: "OTP has expired. Please request a new one.",
+      message: MESSAGES.CUSTOM.OTP_HAS_EXPIRED_PLEASE_REQUEST_A_NEW_ONE,
       type: "expired",
     };
   }
@@ -136,7 +137,7 @@ export function verifyUserOTP(user, otpCode) {
   clearOTP(user);
   return {
     success: true,
-    message: "OTP verified successfully.",
+    message: MESSAGES.CUSTOM.OTP_VERIFIED_SUCCESSFULLY,
     type: "success",
   };
 }

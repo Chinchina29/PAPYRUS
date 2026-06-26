@@ -1,3 +1,4 @@
+import MESSAGES from "../constants/messages.js";
 import Review from "../models/Review.js";
 import Product from "../models/Product.js";
 export const createReview = async (data) => {
@@ -7,7 +8,7 @@ export const createReview = async (data) => {
     isDeleted: false,
   });
   if (existingReview) {
-    throw new Error("You have already reviewed this product");
+    throw new Error(MESSAGES.REVIEW.ALREADY_REVIEWED);
   }
   const review = new Review(data);
   await review.save();
@@ -58,7 +59,7 @@ export const getUserReviews = async (userId, { page = 1, limit = 10 }) => {
 export const updateReview = async (reviewId, userId, data) => {
   const review = await Review.findOne({ _id: reviewId, user: userId, isDeleted: false });
   if (!review) {
-    throw new Error("Review not found");
+    throw new Error(MESSAGES.REVIEW.NOT_FOUND);
   }
   if (data.rating !== undefined) review.rating = data.rating;
   if (data.title !== undefined) review.title = data.title;
@@ -71,7 +72,7 @@ export const updateReview = async (reviewId, userId, data) => {
 export const deleteReview = async (reviewId, userId) => {
   const review = await Review.findOne({ _id: reviewId, user: userId });
   if (!review) {
-    throw new Error("Review not found");
+    throw new Error(MESSAGES.REVIEW.NOT_FOUND);
   }
   review.isDeleted = true;
   await review.save();
@@ -81,7 +82,7 @@ export const deleteReview = async (reviewId, userId) => {
 export const markReviewHelpful = async (reviewId) => {
   const review = await Review.findById(reviewId);
   if (!review) {
-    throw new Error("Review not found");
+    throw new Error(MESSAGES.REVIEW.NOT_FOUND);
   }
   review.helpfulCount += 1;
   await review.save();
