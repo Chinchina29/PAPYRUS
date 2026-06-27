@@ -77,7 +77,7 @@ const cartSchema = new mongoose.Schema({
   timestamps: true,
 });
 cartSchema.pre('save', async function() {
-  const productIds = this.items.map(item => item.product);
+  const productIds = this.items.map(item => item.product._id ? item.product._id : item.product);
   const products = await Product.find({ _id: { $in: productIds } })
     .populate('category');
   const productMap = new Map(products.map(p => [p._id.toString(), p]));
@@ -87,7 +87,8 @@ cartSchema.pre('save', async function() {
   let blockedItemsCount = 0;
   let calculatedSubtotal = 0;
   this.items.forEach(item => {
-    const product = productMap.get(item.product.toString());
+    const productId = item.product._id ? item.product._id.toString() : item.product.toString();
+    const product = productMap.get(productId);
     const isBlocked = !product || 
                       product.isDeleted || 
                       !product.isListed || 

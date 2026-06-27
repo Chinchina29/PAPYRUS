@@ -3,6 +3,8 @@ import MESSAGES from "../../shared/constants/messages.js";
 import * as userService from "../../shared/services/user.service.js";
 import * as otpService from "../../shared/services/otp.service.js";
 import * as emailService from "../../shared/services/email.service.js";
+import * as orderService from "../../shared/services/order.service.js";
+import Order from "../../shared/models/Order.js";
 export const signin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -65,10 +67,45 @@ export const dashboard = async (req, res) => {
   try {
     let stats = {};
     let recentUsers = [];
+    let revenue = 0;
+    let totalOrders = 0;
+    let recentOrders = [];
+    
     try {
       stats = await userService.getDashboardStats();
       recentUsers = await userService.getRecentUsers(5);
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const lastMonth = new Date();
+      lastMonth.setDate(lastMonth.getDate() - 30);
+      
+      const deliveredOrders = await Order.find({
+        orderStatus: "Delivered",
+        createdAt: { $gte: lastMonth }
+      });
+      
+      revenue = deliveredOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+      totalOrders = await Order.countDocuments();
+      
+      recentOrders = await Order.find()
+        .populate("user", "firstName lastName")
+        .populate("items.product", "title")
+        .sort({ createdAt: -1 })
+        .limit(5);
+      
+      recentOrders = recentOrders.map(order => {
+        const firstItem = order.items[0];
+        return {
+          title: firstItem?.title || "N/A",
+          customer: order.user ? `${order.user.firstName} ${order.user.lastName}` : "Guest",
+          price: order.totalAmount || 0,
+          time: getTimeAgo(order.createdAt),
+        };
+      });
+      
     } catch (serviceError) {
+      console.error("Dashboard stats error:", serviceError);
       stats = {
         totalUsers: 0,
         activeUsers: 0,
@@ -76,6 +113,7 @@ export const dashboard = async (req, res) => {
         newUsersToday: 0,
       };
     }
+    
     res.render("admin/dashboard", {
       user: req.session.adminUser || req.adminUser,
       currentPage_name: "dashboard",
@@ -84,37 +122,28 @@ export const dashboard = async (req, res) => {
         activeUsers: stats.activeUsers || 0,
         blockedUsers: stats.blockedUsers || 0,
         newUsersToday: stats.newUsersToday || 0,
-        revenue: 42850,
-        orders: 1234,
-        revenueGrowth: 12.5,
-        ordersGrowth: 8.2,
+        revenue: revenue,
+        orders: totalOrders,
+        revenueGrowth: 0,
+        ordersGrowth: 0,
       },
       recentUsers: recentUsers || [],
-      recentOrders: [
-        {
-          title: "The Great Gatsby",
-          customer: "John Doe",
-          price: 299,
-          time: "2 min ago",
-        },
-        {
-          title: "To Kill a Mockingbird",
-          customer: "Jane Smith",
-          price: 399,
-          time: "5 min ago",
-        },
-        {
-          title: "1984",
-          customer: "Mike Johnson",
-          price: 349,
-          time: "10 min ago",
-        },
-      ],
+      recentOrders: recentOrders,
     });
   } catch (error) {
+    console.error("Dashboard error:", error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).render("error/500", { error: "Dashboard loading failed" });
   }
 };
+
+function getTimeAgo(date) {
+  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+  
+  if (seconds < 60) return `${seconds} sec ago`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+  return `${Math.floor(seconds / 86400)} days ago`;
+}
 export const getUserManagement = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;

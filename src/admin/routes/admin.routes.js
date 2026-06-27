@@ -8,6 +8,7 @@ import * as orderController from "../controllers/order.controller.js";
 import * as couponController from "../controllers/coupon.controller.js";
 import * as walletController from "../controllers/wallet.controller.js";
 import * as reportController from "../controllers/report.controller.js";
+import * as settingsController from "../controllers/settings.controller.js";
 import { migrateUserGenres } from "../../shared/utils/migrateGenres.js";
 import {
   isAdmin,
@@ -79,8 +80,21 @@ router.get("/wallet", blockUserFromAdmin, isAdmin, walletController.getWalletLed
 router.get("/wallet/export-csv", blockUserFromAdmin, isAdmin, walletController.exportWalletCSV);
 router.get("/wallet/transaction/:id", blockUserFromAdmin, isAdmin, walletController.getTransactionDetails);
 router.get("/reports", blockUserFromAdmin, isAdmin, reportController.getSalesReport);
+router.get("/report", blockUserFromAdmin, isAdmin, (req, res) => res.redirect("/admin/reports"));
+router.get("/sales-report", blockUserFromAdmin, isAdmin, (req, res) => res.redirect("/admin/reports"));
 router.get("/reports/download/pdf", blockUserFromAdmin, isAdmin, reportController.downloadPdfReport);
 router.get("/reports/download/excel", blockUserFromAdmin, isAdmin, reportController.downloadExcelReport);
+router.get("/settings", blockUserFromAdmin, isAdmin, settingsController.getSettings);
+router.post("/settings/profile", blockUserFromAdmin, isAdmin, generalApiLimiter, settingsController.updateProfile);
+router.post("/settings/password", blockUserFromAdmin, isAdmin, generalApiLimiter, settingsController.updatePassword);
+router.get("/support", blockUserFromAdmin, isAdmin, (req, res) => {
+  res.render("admin/support", { 
+    title: "Help & Support",
+    currentPage_name: "support", 
+    user: req.session.adminUser,
+    error: null
+  });
+});
 router.get("/coupons", blockUserFromAdmin, isAdmin, couponController.getCoupons);
 router.get("/coupons/add", blockUserFromAdmin, isAdmin, couponController.getAddCoupon);
 router.post("/coupons/add", blockUserFromAdmin, isAdmin, generalApiLimiter, couponController.addCoupon);
@@ -89,18 +103,7 @@ router.post("/coupons/edit/:id", blockUserFromAdmin, isAdmin, generalApiLimiter,
 router.delete("/coupons/delete/:id", blockUserFromAdmin, isAdmin, generalApiLimiter, couponController.deleteCoupon);
 router.patch("/coupons/toggle/:id", blockUserFromAdmin, isAdmin, generalApiLimiter, couponController.toggleCoupon);
 router.post("/coupons/validate", generalApiLimiter, couponController.validateCoupon);
-router.get("/settings", blockUserFromAdmin, isAdmin, (req, res) => {
-  res.render("admin/settings", { 
-    currentPage_name: "settings", 
-    user: req.session.adminUser 
-  });
-});
-router.get("/support", blockUserFromAdmin, isAdmin, (req, res) => {
-  res.render("admin/support", { 
-    currentPage_name: "support", 
-    user: req.session.adminUser 
-  });
-});
+
 router.get(
   "/users",
   blockUserFromAdmin,

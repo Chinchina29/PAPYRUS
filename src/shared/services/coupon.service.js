@@ -92,9 +92,10 @@ export const validateCoupon = async (code, userId, cartTotal, cartItems) => {
   }
   if (coupon.applicableCategories.length > 0) {
     const hasApplicableProduct = cartItems.some((item) =>
-      coupon.applicableCategories.some(
-        (cat) => cat._id.toString() === item.product.category.toString(),
-      ),
+      coupon.applicableCategories.some((cat) => {
+        const itemCategoryId = item.product.category._id ? item.product.category._id.toString() : item.product.category.toString();
+        return cat._id.toString() === itemCategoryId;
+      }),
     );
     if (!hasApplicableProduct) {
       throw new Error(MESSAGES.CUSTOM.COUPON_NOT_APPLICABLE_TO_ITEMS_IN_CART);
@@ -102,9 +103,10 @@ export const validateCoupon = async (code, userId, cartTotal, cartItems) => {
   }
   if (coupon.applicableProducts.length > 0) {
     const hasApplicableProduct = cartItems.some((item) =>
-      coupon.applicableProducts.some(
-        (prod) => prod._id.toString() === item.product._id.toString(),
-      ),
+      coupon.applicableProducts.some((prod) => {
+        const itemProductId = item.product._id ? item.product._id.toString() : item.product.toString();
+        return prod._id.toString() === itemProductId;
+      }),
     );
     if (!hasApplicableProduct) {
       throw new Error(MESSAGES.CUSTOM.COUPON_NOT_APPLICABLE_TO_ITEMS_IN_CART);
@@ -161,7 +163,8 @@ export const getAvailableCoupons = async (userId, cartTotal, cartItems) => {
           const hasApplicableProduct = cartItems.some((item) => {
             if (!item.product.category) return false;
             return coupon.applicableCategories.some((cat) => {
-              return cat._id.toString() === item.product.category.toString();
+              const itemCategoryId = item.product.category._id ? item.product.category._id.toString() : item.product.category.toString();
+              return cat._id.toString() === itemCategoryId;
             });
           });
           if (!hasApplicableProduct) {
@@ -175,7 +178,8 @@ export const getAvailableCoupons = async (userId, cartTotal, cartItems) => {
         ) {
           const hasApplicableProduct = cartItems.some((item) =>
             coupon.applicableProducts.some((prod) => {
-              return prod._id.toString() === item.product._id.toString();
+              const itemProductId = item.product._id ? item.product._id.toString() : item.product.toString();
+              return prod._id.toString() === itemProductId;
             }),
           );
           if (!hasApplicableProduct) {
@@ -247,9 +251,10 @@ export const validateCouponForActiveItems = async (
   );
   if (coupon.applicableCategories.length > 0) {
     const hasApplicableProduct = activeItems.some((item) =>
-      coupon.applicableCategories.some(
-        (cat) => cat._id.toString() === item.product.category.toString(),
-      ),
+      coupon.applicableCategories.some((cat) => {
+        const itemCategoryId = item.product.category._id ? item.product.category._id.toString() : item.product.category.toString();
+        return cat._id.toString() === itemCategoryId;
+      }),
     );
     if (!hasApplicableProduct) {
       throw new Error(MESSAGES.CUSTOM.COUPON_NOT_APPLICABLE_TO_ACTIVE_ITEMS_IN_CART);
@@ -257,9 +262,10 @@ export const validateCouponForActiveItems = async (
   }
   if (coupon.applicableProducts.length > 0) {
     const hasApplicableProduct = activeItems.some((item) =>
-      coupon.applicableProducts.some(
-        (prod) => prod._id.toString() === item.product._id.toString(),
-      ),
+      coupon.applicableProducts.some((prod) => {
+        const itemProductId = item.product._id ? item.product._id.toString() : item.product.toString();
+        return prod._id.toString() === itemProductId;
+      }),
     );
     if (!hasApplicableProduct) {
       throw new Error(MESSAGES.CUSTOM.COUPON_NOT_APPLICABLE_TO_ACTIVE_ITEMS_IN_CART);

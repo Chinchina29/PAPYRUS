@@ -6,14 +6,32 @@
   <title>Sales Reports - Papyrus Admin</title>
   <link rel="stylesheet" href="/css/admin-common.css">
   <style>
-    .report-container {
-      padding: 20px 0;
+    .admin-layout {
+      display: flex;
+      min-height: 100vh;
+      background: #f8f6f3;
     }
+    
+    .admin-main {
+      margin-left: 240px;
+      flex: 1;
+      padding: 32px;
+      min-height: 100vh;
+      box-sizing: border-box;
+      max-width: calc(100% - 240px);
+    }
+    
+    .admin-content {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .report-container {
     
     .report-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
       margin-bottom: 24px;
       flex-wrap: wrap;
       gap: 16px;
@@ -171,6 +189,10 @@
       background-color: #f8f9fa;
     }
 
+    .data-table th.text-right, .data-table td.text-right {
+      text-align: right;
+    }
+
     .amount {
       font-family: monospace;
       font-weight: 600;
@@ -196,6 +218,8 @@
       display: flex;
       list-style: none;
       gap: 5px;
+      padding: 0;
+      margin: 0;
     }
     
     .page-link {
@@ -236,10 +260,10 @@
             
             <div class="download-actions">
               <a href="/admin/reports/download/pdf?filter=<%= filter %>&startDate=<%= startDate %>&endDate=<%= endDate %>" class="btn btn-pdf">
-                📄 Download PDF
+                 Download PDF
               </a>
               <a href="/admin/reports/download/excel?filter=<%= filter %>&startDate=<%= startDate %>&endDate=<%= endDate %>" class="btn btn-excel">
-                📊 Download Excel
+                 Download Excel
               </a>
             </div>
           </div>
@@ -299,8 +323,8 @@
                   <th>Order ID</th>
                   <th>Date</th>
                   <th>Customer</th>
-                  <th>Discount</th>
-                  <th>Total Amount</th>
+                  <th class="text-right">Discount</th>
+                  <th class="text-right">Total Amount</th>
                 </tr>
               </thead>
               <tbody>
@@ -313,8 +337,8 @@
                         <%= order.user ? order.user.firstName + ' ' + order.user.lastName : 'Guest' %><br>
                         <small style="color: #888;"><%= order.user ? order.user.email : '' %></small>
                       </td>
-                      <td class="amount" style="color: #28a745;">₹<%= (order.discount || 0).toFixed(2) %></td>
-                      <td class="amount">₹<%= (order.totalAmount || 0).toFixed(2) %></td>
+                      <td class="amount text-right" style="color: #28a745;">₹<%= (order.discount || 0).toFixed(2) %></td>
+                      <td class="amount text-right">₹<%= (order.totalAmount || 0).toFixed(2) %></td>
                     </tr>
                   <% }) %>
                 <% } else { %>
@@ -328,11 +352,23 @@
             <% if (totalPages > 1) { %>
               <div class="pagination-container">
                 <ul class="pagination">
+                  <% if (currentPage > 1) { %>
+                    <li>
+                      <a href="?page=<%= currentPage - 1 %>&filter=<%= filter %>&startDate=<%= startDate %>&endDate=<%= endDate %>" class="page-link">Previous</a>
+                    </li>
+                  <% } %>
+
                   <% for (let i = 1; i <= totalPages; i++) { %>
                     <li>
                       <a href="?page=<%= i %>&filter=<%= filter %>&startDate=<%= startDate %>&endDate=<%= endDate %>" class="page-link <%= currentPage === i ? 'active' : '' %>">
                         <%= i %>
                       </a>
+                    </li>
+                  <% } %>
+
+                  <% if (currentPage < totalPages) { %>
+                    <li>
+                      <a href="?page=<%= currentPage + 1 %>&filter=<%= filter %>&startDate=<%= startDate %>&endDate=<%= endDate %>" class="page-link">Next</a>
                     </li>
                   <% } %>
                 </ul>

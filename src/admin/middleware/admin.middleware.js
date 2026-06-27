@@ -112,15 +112,30 @@ export const preventUserFromAdminRoutes = (req, res, next) => {
     "/admin/forgot-password/resend",
     "/admin/forgot-password/reset",
   ];
+  
   const isPublicRoute = publicAdminRoutes.some(
     (route) => req.path === route.replace("/admin", ""),
   );
+  
   if (isPublicRoute) {
     return next();
   }
+  
+  if (req.session && req.session.userId && !req.session.adminId) {
+    const isAjax = req.xhr || req.headers.accept?.includes("application/json");
+    if (isAjax) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
+        success: false,
+        message: MESSAGES.CUSTOM.PLEASE_USE_THE_ADMIN_LOGIN_PAGE,
+      });
+    }
+    return res.redirect("/?error=" + encodeURIComponent(MESSAGES.CUSTOM.PLEASE_USE_THE_ADMIN_LOGIN_PAGE));
+  }
+  
   if (!req.session.adminId) {
     return res.redirect("/admin/signin");
   }
+  
   next();
 };
 export const noCache = (req, res, next) => {

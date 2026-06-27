@@ -3,113 +3,296 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Support Center - Papyrus Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #f8f6f3;
-            color: #2d2d2d;
-            line-height: 1.5;
-        }
-
-        .admin-layout {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .main-content {
-            margin-left: 240px;
-            flex: 1;
-            padding: 32px;
-            min-height: 100vh;
-        }
-
-        .content-wrapper {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-        }
-
-        .header-left h1 {
-            font-size: 28px;
-            font-weight: 600;
-            color: #2d2d2d;
-            margin-bottom: 4px;
-        }
-
-        .header-subtitle {
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 60px 24px;
-            border: 1px solid #e5e7eb;
-            text-align: center;
-        }
-
-        .coming-soon-icon {
-            font-size: 64px;
-            margin-bottom: 24px;
-            opacity: 0.6;
-        }
-
-        .coming-soon-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 12px;
-        }
-
-        .coming-soon-description {
-            font-size: 14px;
-            color: #9ca3af;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                margin-left: 0;
-                padding: 16px;
-            }
-        }
-    </style>
+    <title><%= title || 'Help & Support' %> | Papyrus Admin</title>
+    <link rel="stylesheet" href="/css/admin-wallet.css">
+    <link rel="stylesheet" href="/css/admin-support.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="admin-layout">
-        <%- include('../partials/admin-sidebar', { currentPage_name: 'support' }) %>
+        <%- include('../partials/admin-sidebar') %>
         
-        <div class="main-content">
-            <div class="content-wrapper">
-                <div class="admin-header">
-                    <div class="header-left">
-                        <h1>Support Center</h1>
-                        <p class="header-subtitle">Help and support resources</p>
-                    </div>
-                </div>
+        <div class="admin-main">
+            <%- include('../partials/admin-header') %>
+            
+            <div class="admin-content">
+                <div class="support-container">
+                    <% if (error) { %>
+                        <div class="error-message">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <%= error %>
+                        </div>
+                    <% } %>
 
-                <div class="card">
-                    <div class="coming-soon-icon">🚧</div>
-                    <h2 class="coming-soon-title">Support Center Coming Soon</h2>
-                    <p class="coming-soon-description">
-                        This feature is currently under development. We're working on help documentation, 
-                        support tickets, and customer service tools.
-                    </p>
+                    <div class="support-header">
+                        <div class="header-content">
+                            <div class="header-icon">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <div>
+                                <h1>Help & Support Center</h1>
+                                <p>Find answers to your questions and get help with the admin panel</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quick-links">
+                        <div class="quick-link-card">
+                            <div class="quick-link-icon">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <h3>Documentation</h3>
+                            <p>Browse comprehensive guides</p>
+                        </div>
+                        <div class="quick-link-card">
+                            <div class="quick-link-icon">
+                                <i class="fas fa-video"></i>
+                            </div>
+                            <h3>Video Tutorials</h3>
+                            <p>Watch step-by-step tutorials</p>
+                        </div>
+                        <div class="quick-link-card">
+                            <div class="quick-link-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <h3>Contact Support</h3>
+                            <p>Get help from our team</p>
+                        </div>
+                        <div class="quick-link-card">
+                            <div class="quick-link-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <h3>Community</h3>
+                            <p>Join discussions and forums</p>
+                        </div>
+                    </div>
+
+                    <div class="support-grid">
+                        <div class="faq-section">
+                            <div class="section-header">
+                                <h2>
+                                    <i class="fas fa-question-circle"></i>
+                                    Frequently Asked Questions
+                                </h2>
+                            </div>
+
+                            <div class="faq-list">
+                                <div class="faq-item">
+                                    <button class="faq-question">
+                                        <span>How do I add a new product to the inventory?</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="faq-answer">
+                                        <p>To add a new product:</p>
+                                        <ol>
+                                            <li>Navigate to <strong>Inventory Management</strong> from the sidebar</li>
+                                            <li>Click the <strong>"Add New Product"</strong> button</li>
+                                            <li>Fill in all required fields (title, author, price, category, etc.)</li>
+                                            <li>Upload at least 3 product images</li>
+                                            <li>Set the stock quantity and maximum order limit</li>
+                                            <li>Click <strong>"Save Product"</strong> to publish</li>
+                                        </ol>
+                                    </div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <button class="faq-question">
+                                        <span>How do I process order returns?</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="faq-answer">
+                                        <p>To handle return requests:</p>
+                                        <ol>
+                                            <li>Go to <strong>Return Requests</strong> in the sidebar</li>
+                                            <li>Review the customer's return reason and images</li>
+                                            <li>Click on the order to view full details</li>
+                                            <li>Choose to <strong>Approve</strong> or <strong>Reject</strong> the return</li>
+                                            <li>If approved, the refund will be processed to the customer's wallet</li>
+                                            <li>Inventory will be automatically restored upon approval</li>
+                                        </ol>
+                                    </div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <button class="faq-question">
+                                        <span>How do I create and manage coupons?</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="faq-answer">
+                                        <p>To create a coupon:</p>
+                                        <ol>
+                                            <li>Navigate to <strong>Coupons</strong> section</li>
+                                            <li>Click <strong>"Add New Coupon"</strong></li>
+                                            <li>Enter coupon code and description</li>
+                                            <li>Select discount type (percentage or fixed amount)</li>
+                                            <li>Set minimum purchase requirement (optional)</li>
+                                            <li>Choose valid date range and usage limits</li>
+                                            <li>Apply to specific categories if needed</li>
+                                        </ol>
+                                    </div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <button class="faq-question">
+                                        <span>How do I block or unblock a user?</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="faq-answer">
+                                        <p>To manage user access:</p>
+                                        <ol>
+                                            <li>Go to <strong>User Management</strong></li>
+                                            <li>Find the user in the list or use search</li>
+                                            <li>Click on the user to view their profile</li>
+                                            <li>Click the <strong>"Block User"</strong> or <strong>"Unblock User"</strong> button</li>
+                                            <li>Confirm the action in the popup</li>
+                                            <li>Blocked users cannot login or place orders</li>
+                                        </ol>
+                                    </div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <button class="faq-question">
+                                        <span>How do I generate sales reports?</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="faq-answer">
+                                        <p>To generate reports:</p>
+                                        <ol>
+                                            <li>Navigate to <strong>Sales Reports</strong></li>
+                                            <li>Select the date range for the report</li>
+                                            <li>Choose filters (categories, payment methods, etc.)</li>
+                                            <li>View the report summary with charts</li>
+                                            <li>Download as PDF or Excel using the export buttons</li>
+                                            <li>Reports include revenue, orders, and top products</li>
+                                        </ol>
+                                    </div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <button class="faq-question">
+                                        <span>How do I review seller book submissions?</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="faq-answer">
+                                        <p>To review submissions:</p>
+                                        <ol>
+                                            <li>Go to <strong>Book Listings</strong></li>
+                                            <li>View pending submissions from sellers</li>
+                                            <li>Click on a submission to see full details</li>
+                                            <li>Review images, description, pricing, and category</li>
+                                            <li>Choose to <strong>Approve</strong> or <strong>Reject</strong></li>
+                                            <li>If rejecting, provide a reason for the seller</li>
+                                            <li>Approved books will appear in the marketplace</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="contact-section">
+                            <div class="section-header">
+                                <h2>
+                                    <i class="fas fa-envelope"></i>
+                                    Need More Help?
+                                </h2>
+                            </div>
+
+                            <div class="contact-info">
+                                <div class="contact-card">
+                                    <div class="contact-icon">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                    <h3>Email Support</h3>
+                                    <p>admin@papyrus.com</p>
+                                    <small>Response within 24 hours</small>
+                                </div>
+
+                                <div class="contact-card">
+                                    <div class="contact-icon">
+                                        <i class="fas fa-phone"></i>
+                                    </div>
+                                    <h3>Phone Support</h3>
+                                    <p>+91 1800-XXX-XXXX</p>
+                                    <small>Mon-Fri, 9:00 AM - 6:00 PM IST</small>
+                                </div>
+
+                                <div class="contact-card">
+                                    <div class="contact-icon">
+                                        <i class="fas fa-comments"></i>
+                                    </div>
+                                    <h3>Live Chat</h3>
+                                    <p>Available during business hours</p>
+                                    <small>Get instant help from our team</small>
+                                </div>
+                            </div>
+
+                            <div class="resources-section">
+                                <h3>
+                                    <i class="fas fa-book-open"></i>
+                                    Additional Resources
+                                </h3>
+                                <div class="resource-list">
+                                    <a href="#" class="resource-item">
+                                        <i class="fas fa-file-pdf"></i>
+                                        <span>Admin Guide (PDF)</span>
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <a href="#" class="resource-item">
+                                        <i class="fas fa-book"></i>
+                                        <span>API Documentation</span>
+                                        <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                    <a href="#" class="resource-item">
+                                        <i class="fas fa-code"></i>
+                                        <span>Developer Resources</span>
+                                        <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                    <a href="#" class="resource-item">
+                                        <i class="fas fa-clipboard-list"></i>
+                                        <span>Best Practices Guide</span>
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="system-status">
+                                <h3>
+                                    <i class="fas fa-server"></i>
+                                    System Status
+                                </h3>
+                                <div class="status-item">
+                                    <div class="status-indicator online"></div>
+                                    <div>
+                                        <strong>All Systems Operational</strong>
+                                        <p>Last updated: <%= new Date().toLocaleString('en-IN') %></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        document.querySelectorAll('.faq-question').forEach(button => {
+            button.addEventListener('click', () => {
+                const faqItem = button.parentElement;
+                const isActive = faqItem.classList.contains('active');
+                
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                if (!isActive) {
+                    faqItem.classList.add('active');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

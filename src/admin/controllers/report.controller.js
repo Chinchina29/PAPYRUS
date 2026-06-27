@@ -72,6 +72,7 @@ export const getSalesReport = async (req, res) => {
       totalPages,
       total,
       currentPage_name: "reports",
+      title: "Sales Reports",
       user: req.session.adminUser,
     });
   } catch (error) {
@@ -86,6 +87,7 @@ export const getSalesReport = async (req, res) => {
       totalPages: 1,
       total: 0,
       currentPage_name: "reports",
+      title: "Sales Reports",
       user: req.session.adminUser,
       error: "Failed to load sales report.",
     });
