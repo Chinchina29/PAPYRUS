@@ -77,19 +77,18 @@ const cartSchema = new mongoose.Schema({
   timestamps: true,
 });
 cartSchema.pre('save', async function() {
-  const productIds = this.items.map(item => item.product);
+  const productIds = this.items.map(item => item.product._id ? item.product._id : item.product);
   const products = await Product.find({ _id: { $in: productIds } })
     .populate('category');
   const productMap = new Map(products.map(p => [p._id.toString(), p]));
-  
   let totalItems = 0;
   let totalAmount = 0;
   let activeItemsCount = 0;
   let blockedItemsCount = 0;
   let calculatedSubtotal = 0;
-
   this.items.forEach(item => {
-    const product = productMap.get(item.product.toString());
+    const productId = item.product._id ? item.product._id.toString() : item.product.toString();
+    const product = productMap.get(productId);
     const isBlocked = !product || 
                       product.isDeleted || 
                       !product.isListed || 
@@ -97,7 +96,6 @@ cartSchema.pre('save', async function() {
                       !product.category.isListed || 
                       product.category.isDeleted ||
                       (product.hideFromSeller && product.seller && product.seller.toString() === this.user.toString());
-    
     if (!isBlocked) {
       totalItems += item.quantity;
       totalAmount += item.price * item.quantity;
@@ -107,7 +105,6 @@ cartSchema.pre('save', async function() {
       blockedItemsCount += 1;
     }
   });
-
   this.totalItems = totalItems;
   this.totalAmount = totalAmount;
   this.activeItemsCount = activeItemsCount;

@@ -1,10 +1,14 @@
 import express from "express";
+import HTTP_STATUS from "../../shared/constants/httpStatus.js";
 import * as adminController from "../controllers/admin.controller.js";
 import * as categoryController from "../controllers/category.controller.js";
 import * as productController from "../controllers/product.controller.js";
 import * as submissionController from "../controllers/submission.controller.js";
 import * as orderController from "../controllers/order.controller.js";
 import * as couponController from "../controllers/coupon.controller.js";
+import * as walletController from "../controllers/wallet.controller.js";
+import * as reportController from "../controllers/report.controller.js";
+import * as settingsController from "../controllers/settings.controller.js";
 import { migrateUserGenres } from "../../shared/utils/migrateGenres.js";
 import {
   isAdmin,
@@ -29,7 +33,7 @@ router.get("/migrate-genres", blockUserFromAdmin, isAdmin, async (req, res) => {
     const result = await migrateUserGenres();
     res.json(result);
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, error: error.message });
   }
 });
 router.get("/signin", isAdminNotAuthenticated, (req, res) => {
@@ -61,27 +65,41 @@ router.get(
   isAdmin,
   adminController.dashboard,
 );
+router.get(
+  "/dashboard/chart-data",
+  blockUserFromAdmin,
+  isAdmin,
+  adminController.getChartData,
+);
 router.get("/orders", blockUserFromAdmin, isAdmin, orderController.getOrders);
 router.get("/return-requests", blockUserFromAdmin, isAdmin, orderController.getReturnRequests);
 router.get("/orders/:id", blockUserFromAdmin, isAdmin, orderController.getOrderDetail);
 router.get("/orders/:id/invoice", blockUserFromAdmin, isAdmin, orderController.downloadInvoice);
 router.patch("/orders/:id/status", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.updateOrderStatus);
+router.patch("/orders/:orderId/items/:itemId/status", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.updateItemStatus);
 router.patch("/orders/:id/payment", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.updatePaymentStatus);
 router.post("/orders/:id/cancel", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.cancelOrder);
 router.post("/orders/:id/return/approve", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.approveReturnRequest);
 router.post("/orders/:id/return/reject", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.rejectReturnRequest);
 router.post("/orders/:orderId/items/:itemId/return/approve", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.approveItemReturn);
 router.post("/orders/:orderId/items/:itemId/return/reject", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.rejectItemReturn);
-router.get("/wallet", blockUserFromAdmin, isAdmin, (req, res) => {
-  res.render("admin/wallet", { 
-    currentPage_name: "wallet", 
-    user: req.session.adminUser 
-  });
-});
-router.get("/reports", blockUserFromAdmin, isAdmin, (req, res) => {
-  res.render("admin/reports", { 
-    currentPage_name: "reports", 
-    user: req.session.adminUser 
+router.get("/wallet", blockUserFromAdmin, isAdmin, walletController.getWalletLedger);
+router.get("/wallet/export-csv", blockUserFromAdmin, isAdmin, walletController.exportWalletCSV);
+router.get("/wallet/transaction/:id", blockUserFromAdmin, isAdmin, walletController.getTransactionDetails);
+router.get("/reports", blockUserFromAdmin, isAdmin, reportController.getSalesReport);
+router.get("/report", blockUserFromAdmin, isAdmin, (req, res) => res.redirect("/admin/reports"));
+router.get("/sales-report", blockUserFromAdmin, isAdmin, (req, res) => res.redirect("/admin/reports"));
+router.get("/reports/download/pdf", blockUserFromAdmin, isAdmin, reportController.downloadPdfReport);
+router.get("/reports/download/excel", blockUserFromAdmin, isAdmin, reportController.downloadExcelReport);
+router.get("/settings", blockUserFromAdmin, isAdmin, settingsController.getSettings);
+router.post("/settings/profile", blockUserFromAdmin, isAdmin, generalApiLimiter, settingsController.updateProfile);
+router.post("/settings/password", blockUserFromAdmin, isAdmin, generalApiLimiter, settingsController.updatePassword);
+router.get("/support", blockUserFromAdmin, isAdmin, (req, res) => {
+  res.render("admin/support", { 
+    title: "Help & Support",
+    currentPage_name: "support", 
+    user: req.session.adminUser,
+    error: null
   });
 });
 router.get("/coupons", blockUserFromAdmin, isAdmin, couponController.getCoupons);
@@ -92,18 +110,7 @@ router.post("/coupons/edit/:id", blockUserFromAdmin, isAdmin, generalApiLimiter,
 router.delete("/coupons/delete/:id", blockUserFromAdmin, isAdmin, generalApiLimiter, couponController.deleteCoupon);
 router.patch("/coupons/toggle/:id", blockUserFromAdmin, isAdmin, generalApiLimiter, couponController.toggleCoupon);
 router.post("/coupons/validate", generalApiLimiter, couponController.validateCoupon);
-router.get("/settings", blockUserFromAdmin, isAdmin, (req, res) => {
-  res.render("admin/settings", { 
-    currentPage_name: "settings", 
-    user: req.session.adminUser 
-  });
-});
-router.get("/support", blockUserFromAdmin, isAdmin, (req, res) => {
-  res.render("admin/support", { 
-    currentPage_name: "support", 
-    user: req.session.adminUser 
-  });
-});
+
 router.get(
   "/users",
   blockUserFromAdmin,

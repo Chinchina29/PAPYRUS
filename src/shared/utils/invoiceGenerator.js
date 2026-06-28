@@ -198,7 +198,6 @@ export const generateInvoicePDF = (order, res) => {
   });
   const adjustedShipping =
     activeSubtotal >= 500 ? 0 : activeSubtotal > 0 ? order.shippingCharge : 0;
-
   let adjustedDiscount = 0;
   let couponInvalidReason = null;
   if (order.discount > 0 && order.couponCode) {

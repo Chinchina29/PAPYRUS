@@ -1,3 +1,5 @@
+import HTTP_STATUS from "../../shared/constants/httpStatus.js";
+import MESSAGES from "../../shared/constants/messages.js";
 import * as sellerService from "../../admin/services/sellarSubmission.services.js";
 import * as categoryService from "../../admin/services/category.service.js";
 import { v2 as cloudinary } from "cloudinary";
@@ -70,43 +72,43 @@ export const submitBook = async (req, res) => {
     } = req.body;
     if (!title?.trim())
       return res
-        .status(400)
-        .json({ success: false, message: "Book title is required" });
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({ success: false, message: MESSAGES.CUSTOM.BOOK_TITLE_IS_REQUIRED });
     if (!price || isNaN(price) || price < 0)
       return res
-        .status(400)
-        .json({ success: false, message: "Valid price is required" });
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({ success: false, message: MESSAGES.CUSTOM.VALID_PRICE_IS_REQUIRED });
     if (!category)
       return res
-        .status(400)
-        .json({ success: false, message: "Category is required" });
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({ success: false, message: MESSAGES.CUSTOM.CATEGORY_IS_REQUIRED });
     const categoryExists = await categoryService.getCategoryById(category);
     if (!categoryExists || !categoryExists.isListed) {
       return res
-        .status(400)
-        .json({ success: false, message: "Selected category is not available" });
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({ success: false, message: MESSAGES.CUSTOM.SELECTED_CATEGORY_IS_NOT_AVAILABLE });
     }
     if (!images || !Array.isArray(images) || images.length < 3)
       return res
-        .status(400)
-        .json({ success: false, message: "Minimum 3 images are required" });
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({ success: false, message: MESSAGES.CUSTOM.MINIMUM_3_IMAGES_ARE_REQUIRED });
     const uploadedImages = [];
     if (!Array.isArray(images)) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Images must be an array",
+        message: MESSAGES.CUSTOM.IMAGES_MUST_BE_AN_ARRAY,
       });
     }
     for (let i = 0; i < images.length; i++) {
       const base64Image = images[i];
       if (typeof base64Image !== "string") {
-        return res.status(400).json({
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
           success: false,
           message: `Invalid image data format at index ${i}. Expected string, got ${typeof base64Image}`,
         });
       }
       if (!base64Image.startsWith("data:image/")) {
-        return res.status(400).json({
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
           success: false,
           message: `Invalid image format at index ${i}. Must be a valid base64 data URL`,
         });
@@ -124,7 +126,7 @@ export const submitBook = async (req, res) => {
           publicId: result.public_id,
         });
       } catch (uploadError) {
-        return res.status(400).json({
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
           success: false,
           message: `Failed to upload image ${i}: ${uploadError.message}`,
         });
@@ -160,13 +162,13 @@ export const submitBook = async (req, res) => {
               size: result.bytes,
             });
           } catch (uploadError) {
-            return res.status(400).json({
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({
               success: false,
               message: `Failed to upload video ${i}: ${uploadError.message}`,
             });
           }
         } else {
-          return res.status(400).json({
+          return res.status(HTTP_STATUS.BAD_REQUEST).json({
             success: false,
             message: `Invalid video data format at index ${i}`,
           });
@@ -187,27 +189,27 @@ export const submitBook = async (req, res) => {
       submittedBy: req.session.userId,
     };
     if (!submissionData.submittedBy) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
-        message: "User session expired. Please log in again.",
+        message: MESSAGES.CUSTOM.USER_SESSION_EXPIRED_PLEASE_LOG_IN_AGAIN,
       });
     }
     await sellerService.createSubmission(submissionData);
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
-      message: "Book submitted successfully! We will review it shortly.",
+      message: MESSAGES.CUSTOM.BOOK_SUBMITTED_SUCCESSFULLY_WE_WILL_REVIEW_IT_SHORTLY,
       redirectUrl: "/sell/my-listings",
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message });
   }
 };
 export const uploadVideo = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "No video file provided",
+        message: MESSAGES.CUSTOM.NO_VIDEO_FILE_PROVIDED,
       });
     }
     const videoData = {
@@ -218,13 +220,13 @@ export const uploadVideo = async (req, res) => {
     };
     return res.json({
       success: true,
-      message: "Video uploaded successfully",
+      message: MESSAGES.CUSTOM.VIDEO_UPLOADED_SUCCESSFULLY,
       video: videoData,
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to upload video: " + error.message,
+      message: MESSAGES.CUSTOM.FAILED_TO_UPLOAD_VIDEO + error.message,
     });
   }
 };
@@ -279,18 +281,18 @@ export const deleteSubmission = async (req, res) => {
     const userId = req.session.userId;
     const submission = await sellerService.getSubmissionById(id);
     if (!submission) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Submission not found",
+        message: MESSAGES.CUSTOM.SUBMISSION_NOT_FOUND,
       });
     }
     const submittedById = submission.submittedBy._id 
       ? submission.submittedBy._id.toString() 
       : submission.submittedBy.toString();
     if (submittedById !== userId.toString()) {
-      return res.status(403).json({
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,
-        message: "You are not authorized to delete this submission",
+        message: MESSAGES.CUSTOM.YOU_ARE_NOT_AUTHORIZED_TO_DELETE_THIS_SUBMISSION,
       });
     }
     if (submission.images && submission.images.length > 0) {
@@ -320,12 +322,12 @@ export const deleteSubmission = async (req, res) => {
     await sellerService.deleteSubmission(id);
     return res.json({
       success: true,
-      message: "Submission deleted successfully",
+      message: MESSAGES.CUSTOM.SUBMISSION_DELETED_SUCCESSFULLY,
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to delete submission: " + error.message,
+      message: MESSAGES.CUSTOM.FAILED_TO_DELETE_SUBMISSION + error.message,
     });
   }
 };
@@ -335,36 +337,36 @@ export const updateProductStock = async (req, res) => {
     const { stock } = req.body;
     const userId = req.session.userId;
     if (stock === undefined || stock === null || stock < 0) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Valid stock value is required (must be 0 or greater)",
+        message: MESSAGES.CUSTOM.VALID_STOCK_VALUE_IS_REQUIRED_MUST_BE_0_OR_GREATER,
       });
     }
     const Product = (await import("../../shared/models/Product.js")).default;
     const product = await Product.findById(productId).select("seller stock");
     if (!product) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Product not found",
+        message: MESSAGES.PRODUCT.NOT_FOUND,
       });
     }
     if (product.seller.toString() !== userId.toString()) {
-      return res.status(403).json({
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,
-        message: "You are not authorized to update this product",
+        message: MESSAGES.CUSTOM.YOU_ARE_NOT_AUTHORIZED_TO_UPDATE_THIS_PRODUCT,
       });
     }
     product.stock = parseInt(stock);
     await product.save();
     return res.json({
       success: true,
-      message: "Stock updated successfully",
+      message: MESSAGES.CUSTOM.STOCK_UPDATED_SUCCESSFULLY,
       stock: product.stock,
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to update stock: " + error.message,
+      message: MESSAGES.CUSTOM.FAILED_TO_UPDATE_STOCK + error.message,
     });
   }
 };

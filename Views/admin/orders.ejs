@@ -160,6 +160,16 @@
       color: #374151;
     }
 
+    .status-returned {
+      background: #f3e5f5;
+      color: #7b1fa2;
+    }
+
+    .status-partially-completed {
+      background: #e0f2f1;
+      color: #00796b;
+    }
+
     .action-btn {
       width: 32px;
       height: 32px;
@@ -341,8 +351,8 @@
                     <td><strong>₹<%= order.totalAmount.toFixed(2) %></strong></td>
                     <td><%= order.paymentMethod %></td>
                     <td>
-                      <span class="status-badge status-<%= order.orderStatus.toLowerCase() %>">
-                        <%= order.orderStatus %>
+                      <span class="status-badge status-<%= order.displayStatus.toLowerCase().replace(' ', '-') %>">
+                        <%= order.displayStatus %>
                       </span>
                     </td>
                     <td>

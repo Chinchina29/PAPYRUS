@@ -19,7 +19,7 @@ export const comparePassword = async (plainPassword, hashedPassword) => {
 };
 export const updateUser = async (userId, updateData) => {
   try {
-    const result = await User.findByIdAndUpdate(userId, updateData, { new: true });
+    const result = await User.findByIdAndUpdate(userId, updateData, { returnDocument: 'after' });
     return result;
   } catch (error) {
     throw error;

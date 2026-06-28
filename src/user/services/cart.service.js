@@ -1,10 +1,11 @@
+import MESSAGES from "../../shared/constants/messages.js";
 import Cart from "../../shared/models/Cart.js";
 import Product from "../../shared/models/Product.js";
 import * as wishlistService from "../../shared/services/wishlist.service.js";
 export const getOrCreateCart = async (userId, session = null) => {
   try {
     if (!userId) {
-      throw new Error("User ID is required");
+      throw new Error(MESSAGES.CUSTOM.USER_ID_IS_REQUIRED);
     }
     let cart = await Cart.findOne({ user: userId, isActive: true }).populate({
       path: "items.product",
@@ -108,7 +109,7 @@ export const addToCart = async (userId, productId, quantity = 1) => {
     })
     .lean();
   if (!product) {
-    throw new Error("Product not found or not available");
+    throw new Error(MESSAGES.CUSTOM.PRODUCT_NOT_FOUND_OR_NOT_AVAILABLE);
   }
   if (!product.category) {
     throw new Error(
@@ -120,10 +121,10 @@ export const addToCart = async (userId, productId, quantity = 1) => {
     product.seller &&
     product.seller.toString() === userId.toString()
   ) {
-    throw new Error("You cannot add your own submitted product to cart");
+    throw new Error(MESSAGES.CUSTOM.YOU_CANNOT_ADD_YOUR_OWN_SUBMITTED_PRODUCT_TO_CART);
   }
   if (product.stock === 0) {
-    throw new Error("Product is out of stock");
+    throw new Error(MESSAGES.PRODUCT.OUT_OF_STOCK);
   }
   if (product.stock < quantity) {
     throw new Error(`Only ${product.stock} item(s) available in stock`);
@@ -178,7 +179,7 @@ export const updateCartItem = async (userId, productId, quantity) => {
       match: { isListed: true, isDeleted: false },
     });
   if (!product || product.isDeleted || !product.isListed) {
-    throw new Error("Product not found or no longer available");
+    throw new Error(MESSAGES.CUSTOM.PRODUCT_NOT_FOUND_OR_NO_LONGER_AVAILABLE);
   }
   if (!product.category) {
     throw new Error(
@@ -195,13 +196,13 @@ export const updateCartItem = async (userId, productId, quantity) => {
   }
   const cart = await Cart.findOne({ user: userId, isActive: true });
   if (!cart) {
-    throw new Error("Cart not found");
+    throw new Error(MESSAGES.CUSTOM.CART_NOT_FOUND);
   }
   const itemIndex = cart.items.findIndex(
     (item) => item.product.toString() === productId,
   );
   if (itemIndex === -1) {
-    throw new Error("Item not found in cart");
+    throw new Error(MESSAGES.CART.ITEM_NOT_FOUND);
   }
   cart.items[itemIndex].quantity = quantity;
   await cart.save();
@@ -219,7 +220,7 @@ export const updateCartItem = async (userId, productId, quantity) => {
 export const removeFromCart = async (userId, productId) => {
   const cart = await Cart.findOne({ user: userId, isActive: true });
   if (!cart) {
-    throw new Error("Cart not found");
+    throw new Error(MESSAGES.CUSTOM.CART_NOT_FOUND);
   }
   cart.items = cart.items.filter(
     (item) => item.product.toString() !== productId,
@@ -239,7 +240,7 @@ export const removeFromCart = async (userId, productId) => {
 export const clearCart = async (userId) => {
   const cart = await Cart.findOne({ user: userId, isActive: true });
   if (!cart) {
-    throw new Error("Cart not found");
+    throw new Error(MESSAGES.CUSTOM.CART_NOT_FOUND);
   }
   cart.items = [];
   await cart.save();

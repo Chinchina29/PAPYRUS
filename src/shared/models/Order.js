@@ -21,7 +21,9 @@ const orderItemSchema = new mongoose.Schema({
   },
   actualQuantity: {
     type: Number,
-    default: function() { return this.quantity; },
+    default: function () {
+      return this.quantity;
+    },
     min: 0,
   },
   subtotal: {
@@ -147,18 +149,20 @@ const orderSchema = new mongoose.Schema(
     },
     lastModifiedBy: {
       type: String,
-      enum: ['user', 'admin', 'system'],
-      default: 'user',
+      enum: ["user", "admin", "system"],
+      default: "user",
     },
-    modificationHistory: [{
-      action: String,
-      timestamp: {
-        type: Date,
-        default: Date.now,
+    modificationHistory: [
+      {
+        action: String,
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+        actor: String,
+        metadata: mongoose.Schema.Types.Mixed,
       },
-      actor: String,
-      metadata: mongoose.Schema.Types.Mixed,
-    }],
+    ],
     appliedCoupon: {
       code: String,
       discountType: String,
@@ -261,6 +265,8 @@ const orderSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   },
 );
 orderSchema.index({ orderId: 1 });
@@ -271,10 +277,25 @@ orderSchema.index({ createdAt: -1 });
 orderSchema.index({ paymentStatus: 1, paymentAttempts: 1 });
 orderSchema.index({ orderStatus: 1, returnRequestStatus: 1 });
 orderSchema.index({ webhookProcessed: 1 });
-orderSchema.index({ 'paymentDetails.transactionId': 1 });
+orderSchema.index({ "paymentDetails.transactionId": 1 });
 orderSchema.pre("validate", function () {
   if (!this.orderId) {
     this.orderId = `PY-${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 1000)}`;
   }
+});
+orderSchema.virtual("displayStatus").get(function () {
+  if (this.orderStatus === "Delivered") {
+    const hasCancelledOrReturned = this.items.some(
+      (item) =>
+        item.itemStatus === "Cancelled" ||
+        item.itemStatus === "Returned" ||
+        item.cancelledAt ||
+        item.returnRequestStatus === "Approved",
+    );
+    if (hasCancelledOrReturned) {
+      return "Partially Completed";
+    }
+  }
+  return this.orderStatus;
 });
 export default mongoose.model("Order", orderSchema);

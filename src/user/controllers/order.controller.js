@@ -1,7 +1,11 @@
+import HTTP_STATUS from "../../shared/constants/httpStatus.js";
+import MESSAGES from "../../shared/constants/messages.js";
 import * as orderService from "../../shared/services/order.service.js";
 import Product from "../../shared/models/Product.js";
 import { generateInvoicePDF } from "../../shared/utils/invoiceGenerator.js";
 import * as notificationService from "../../shared/services/notification.service.js";
+import User from "../../shared/models/User.js";
+import WalletTransaction from "../../shared/models/WalletTransaction.js";
 export const getUserOrders = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -67,19 +71,19 @@ export const cancelOrder = async (req, res) => {
     const { reason, comments, productIds } = req.body;
     const order = await orderService.getOrderById(orderId);
     if (!order) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Order not found",
+        message: MESSAGES.ORDER.NOT_FOUND,
       });
     }
     if (order.user._id.toString() !== userId.toString()) {
-      return res.status(403).json({
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,
-        message: "Unauthorized access",
+        message: MESSAGES.COMMON.UNAUTHORIZED,
       });
     }
     if (["Delivered", "Cancelled", "Returned"].includes(order.orderStatus)) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         message: `Cannot cancel order with status: ${order.orderStatus}`,
       });
@@ -98,7 +102,7 @@ export const cancelOrder = async (req, res) => {
               item.itemStatus || order.orderStatus,
             )
           ) {
-            return res.status(400).json({
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({
               success: false,
               message: `Cannot cancel item "${item.title}" with status: ${item.itemStatus || order.orderStatus}`,
             });
@@ -120,10 +124,9 @@ export const cancelOrder = async (req, res) => {
         }
       }
       if (cancelledCount === 0) {
-        return res.status(400).json({
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
           success: false,
-          message:
-            "No items were cancelled. They may already be cancelled or in a non-cancellable state.",
+          message: MESSAGES.CUSTOM.NO_ITEMS_WERE_CANCELLED_THEY_MAY_ALREADY_BE_CANCELLED_OR_IN_A_NON_CANCELLABLE_STATE,
         });
       }
       if (allItemsCancelled) {
@@ -131,13 +134,35 @@ export const cancelOrder = async (req, res) => {
         order.cancelledAt = new Date();
         order.cancellationReason = "All items cancelled";
       }
+      let refundAmount = 0;
+      if (order.paymentStatus === "Paid") {
+        for (const item of order.items) {
+          if (productIds.includes(item._id.toString()) && item.itemStatus === "Cancelled") {
+            refundAmount += (item.subtotal || item.price * item.quantity);
+          }
+        }
+        if (allItemsCancelled) {
+          refundAmount = order.totalAmount;
+          order.paymentStatus = 'Refunded';
+        }
+      }
+      if (refundAmount > 0) {
+        await User.findByIdAndUpdate(userId, { $inc: { walletBalance: refundAmount } });
+        await WalletTransaction.create({
+          user: userId,
+          type: 'credit',
+          amount: refundAmount,
+          description: `Refund for cancelled items (Order: ${order.orderId})`,
+          orderId: order._id
+        });
+      }
       await order.save();
       return res.json({
         success: true,
         message:
           cancelledCount === 1
-            ? "Item cancelled successfully"
-            : `${cancelledCount} items cancelled successfully`,
+            ? "Item cancelled successfully" + (refundAmount > 0 ? " and amount refunded to wallet." : "")
+            : `${cancelledCount} items cancelled successfully` + (refundAmount > 0 ? " and amount refunded to wallet." : ""),
       });
     }
     for (const item of order.items) {
@@ -157,16 +182,29 @@ export const cancelOrder = async (req, res) => {
     if (comments) {
       order.cancellationReason += ` - ${comments}`;
     }
+    let refundAmount = 0;
+    if (order.paymentStatus === "Paid") {
+      refundAmount = order.totalAmount;
+      await User.findByIdAndUpdate(userId, { $inc: { walletBalance: refundAmount } });
+      await WalletTransaction.create({
+        user: userId,
+        type: 'credit',
+        amount: refundAmount,
+        description: `Refund for cancelled order (${order.orderId})`,
+        orderId: order._id
+      });
+      order.paymentStatus = 'Refunded';
+    }
     await order.save();
     res.json({
       success: true,
-      message: "Order cancelled successfully",
+      message: MESSAGES.ORDER.CANCELLED + (refundAmount > 0 ? " Amount refunded to wallet." : ""),
     });
   } catch (error) {
     console.error("Cancel order error:", error);
-    res.status(500).json({
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to cancel order",
+      message: MESSAGES.CUSTOM.FAILED_TO_CANCEL_ORDER,
     });
   }
 };
@@ -182,17 +220,17 @@ export const returnOrder = async (req, res) => {
       productIds,
     });
     if (!reason || !reason.trim()) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Return reason is required",
+        message: MESSAGES.CUSTOM.RETURN_REASON_IS_REQUIRED,
       });
     }
     const order = await orderService.getOrderById(orderId);
     if (!order) {
       console.log("Order not found:", orderId);
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Order not found",
+        message: MESSAGES.ORDER.NOT_FOUND,
       });
     }
     if (order.user._id.toString() !== userId.toString()) {
@@ -200,23 +238,23 @@ export const returnOrder = async (req, res) => {
         orderUser: order.user._id,
         requestUser: userId,
       });
-      return res.status(403).json({
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,
-        message: "Unauthorized access",
+        message: MESSAGES.COMMON.UNAUTHORIZED,
       });
     }
     console.log("Order status:", order.orderStatus);
     if (order.orderStatus !== "Delivered") {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         message: `Only delivered orders can be returned. Current status: ${order.orderStatus}`,
       });
     }
     if (!order.deliveredAt) {
       console.log("Order has no deliveredAt date");
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Order delivery date not found",
+        message: MESSAGES.CUSTOM.ORDER_DELIVERY_DATE_NOT_FOUND,
       });
     }
     const daysSinceDelivery = Math.floor(
@@ -224,9 +262,9 @@ export const returnOrder = async (req, res) => {
     );
     console.log("Days since delivery:", daysSinceDelivery);
     if (daysSinceDelivery > 7) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Return period has expired (7 days from delivery)",
+        message: MESSAGES.CUSTOM.RETURN_PERIOD_HAS_EXPIRED_7_DAYS_FROM_DELIVERY,
       });
     }
     if (productIds && Array.isArray(productIds) && productIds.length > 0) {
@@ -254,7 +292,7 @@ export const returnOrder = async (req, res) => {
           const effectiveStatus = item.itemStatus || order.orderStatus;
           console.log("Effective item status:", effectiveStatus);
           if (effectiveStatus !== "Delivered") {
-            return res.status(400).json({
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({
               success: false,
               message: `Cannot return item "${item.title}" with status: ${effectiveStatus}`,
             });
@@ -269,10 +307,9 @@ export const returnOrder = async (req, res) => {
       }
       if (returnedCount === 0) {
         console.log("No items were marked for return");
-        return res.status(400).json({
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
           success: false,
-          message:
-            "No items were marked for return. They may already have pending return requests.",
+          message: MESSAGES.CUSTOM.NO_ITEMS_WERE_MARKED_FOR_RETURN_THEY_MAY_ALREADY_HAVE_PENDING_RETURN_REQUESTS,
         });
       }
       await order.save();
@@ -296,15 +333,15 @@ export const returnOrder = async (req, res) => {
     }
     console.log("Processing full order return");
     if (order.returnRequestStatus === "Requested") {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Return request already submitted and pending approval",
+        message: MESSAGES.CUSTOM.RETURN_REQUEST_ALREADY_SUBMITTED_AND_PENDING_APPROVAL,
       });
     }
     if (order.returnRequestStatus === "Approved") {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Return request already approved",
+        message: MESSAGES.CUSTOM.RETURN_REQUEST_ALREADY_APPROVED,
       });
     }
     order.returnRequestStatus = "Requested";
@@ -328,12 +365,11 @@ export const returnOrder = async (req, res) => {
     });
     res.json({
       success: true,
-      message:
-        "Return request submitted successfully. Awaiting admin approval.",
+      message: MESSAGES.CUSTOM.RETURN_REQUEST_SUBMITTED_SUCCESSFULLY_AWAITING_ADMIN_APPROVAL,
     });
   } catch (error) {
     console.error("Return order error:", error);
-    res.status(500).json({
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message || "Failed to process return request",
     });
@@ -345,22 +381,22 @@ export const downloadInvoice = async (req, res) => {
     const userId = req.session.userId;
     const order = await orderService.getOrderById(id);
     if (!order) {
-      return res.status(404).json({
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
-        message: "Order not found",
+        message: MESSAGES.ORDER.NOT_FOUND,
       });
     }
     if (order.user._id.toString() !== userId.toString()) {
-      return res.status(403).json({
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,
-        message: "Unauthorized access",
+        message: MESSAGES.COMMON.UNAUTHORIZED,
       });
     }
     generateInvoicePDF(order, res);
   } catch (error) {
-    res.status(500).json({
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to generate invoice",
+      message: MESSAGES.CUSTOM.FAILED_TO_GENERATE_INVOICE,
     });
   }
 };

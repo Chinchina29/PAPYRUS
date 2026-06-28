@@ -166,6 +166,51 @@
       text-align: right;
     }
 
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-shipped {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .status-processing {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-delivered {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-cancelled {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .status-pending {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .status-returned {
+      background: #f3e5f5;
+      color: #7b1fa2;
+    }
+
+    .status-partially-completed {
+      background: #e0f2f1;
+      color: #00796b;
+    }
+
     .status-select {
       width: 100%;
       padding: 12px;
@@ -289,10 +334,22 @@
             </svg>
           </a>
           <h1>Order Details: <span class="order-id"><%= order.orderId %></span></h1>
+          <span class="status-badge status-<%= order.displayStatus.toLowerCase().replace(' ', '-') %>" style="margin-left: 12px; vertical-align: middle; padding: 6px 12px; font-size: 13px;">
+            <%= order.displayStatus.toUpperCase() %>
+          </span>
         </div>
 
         <div class="content-grid">
           <div>
+            <% if (order.orderNotes) { %>
+            <div class="card" style="margin-bottom: 24px; border-left: 4px solid #8b6f47;">
+              <div class="card-title" style="color: #8b6f47;">Order Notes</div>
+              <p style="font-size: 14px; font-style: italic; color: #4b5563; margin-top: 4px;">
+                "<%= order.orderNotes %>"
+              </p>
+            </div>
+            <% } %>
+
             <div class="card" style="margin-bottom: 24px;">
               <div class="card-title">Shipping Information</div>
               
@@ -336,6 +393,20 @@
                     <div class="item-title"><%= item.title %></div>
                     <div class="item-meta">Hardcover</div>
                     <div class="item-qty">Qty: <%= item.quantity %></div>
+                    
+                    <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
+                      <span class="status-badge status-<%= item.itemStatus.toLowerCase() %>">
+                        <%= item.itemStatus %>
+                      </span>
+                      <select class="status-select" style="width: auto; padding: 4px 8px; font-size: 12px; height: auto; <%= (item.itemStatus === 'Cancelled' || item.itemStatus === 'Returned') ? 'background: #f3f4f6; cursor: not-allowed; opacity: 0.6;' : '' %>" onchange="updateItemStatus('<%= order._id %>', '<%= item._id %>', this.value)" <%= (item.itemStatus === 'Cancelled' || item.itemStatus === 'Returned') ? 'disabled' : '' %>>
+                        <option value="Pending" <%= item.itemStatus === 'Pending' ? 'selected' : '' %>>Pending</option>
+                        <option value="Processing" <%= item.itemStatus === 'Processing' ? 'selected' : '' %>>Processing</option>
+                        <option value="Shipped" <%= item.itemStatus === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                        <option value="Delivered" <%= item.itemStatus === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                        <option value="Cancelled" <%= item.itemStatus === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                        <option value="Returned" <%= item.itemStatus === 'Returned' ? 'selected' : '' %>>Returned</option>
+                      </select>
+                    </div>
                   </div>
                   <div class="item-price">₹<%= item.subtotal.toFixed(2) %></div>
                 </div>
@@ -639,6 +710,56 @@
 
     function printInvoice() {
       window.location.href = '/admin/orders/<%= order._id %>/invoice';
+    }
+
+    async function updateItemStatus(orderId, itemId, newStatus) {
+      const result = await Swal.fire({
+        title: 'Update Item Status?',
+        text: `Change this item's status to ${newStatus}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#2d5016',
+        cancelButtonColor: '#999',
+        confirmButtonText: 'Yes, Update',
+        cancelButtonText: 'Cancel'
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(`/admin/orders/${orderId}/items/${itemId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Status Updated!',
+              text: data.message,
+              confirmButtonColor: '#2d5016'
+            }).then(() => location.reload());
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: data.message,
+              confirmButtonColor: '#2d5016'
+            }).then(() => location.reload());
+          }
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to update item status',
+            confirmButtonColor: '#2d5016'
+          }).then(() => location.reload());
+        }
+      } else {
+        location.reload();
+      }
     }
   </script>
 </body>

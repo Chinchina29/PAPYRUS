@@ -1,10 +1,12 @@
+import HTTP_STATUS from "../../shared/constants/httpStatus.js";
+import MESSAGES from "../../shared/constants/messages.js";
 import * as userService from "../../shared/services/user.service.js";
 export const isAuthenticated = async (req, res, next) => {
   if (!req.session || !req.session.userId) {
     if (req.xhr || req.headers.accept?.includes('application/json')) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
-        message: "Please login",
+        message: MESSAGES.CUSTOM.PLEASE_LOG_IN_TO_CONTINUE,
         redirectUrl: "/login",
       });
     }
@@ -17,9 +19,9 @@ export const isAuthenticated = async (req, res, next) => {
         if (err) console.error('Session destruction error:', err);
       });
       if (req.xhr || req.headers.accept?.includes('application/json')) {
-        return res.status(401).json({
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
           success: false,
-          message: "Session invalid",
+          message: MESSAGES.AUTH.SESSION_EXPIRED,
           redirectUrl: "/login",
         });
       }
@@ -36,9 +38,9 @@ export const isAuthenticated = async (req, res, next) => {
   } catch (error) {
     console.error('User authentication error:', error);
     if (req.xhr || req.headers.accept?.includes('application/json')) {
-      return res.status(500).json({
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         success: false,
-        message: "Authentication error",
+        message: MESSAGES.CUSTOM.AUTHENTICATION_REQUIRED,
         redirectUrl: "/login",
       });
     }
@@ -59,18 +61,18 @@ export const setUserLocals = (req, res, next) => {
 export const requireUserRole = (req, res, next) => {
   if (!req.session || !req.session.userId) {
     if (req.xhr || req.headers.accept?.includes('application/json')) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
-        message: "Please login to continue",
+        message: MESSAGES.CUSTOM.PLEASE_LOG_IN_TO_CONTINUE,
         redirectUrl: "/login",
       });
     }
     return res.redirect("/login");
   }
   if (req.session.user && req.session.user.role !== "user") {
-    return res.status(403).json({
+    return res.status(HTTP_STATUS.FORBIDDEN).json({
       success: false,
-      message: "Access denied",
+      message: MESSAGES.ADMIN.ACCESS_DENIED,
     });
   }
   next();
@@ -82,7 +84,7 @@ export const requireRole = (...allowedRoles) => {
     }
     const userRole = req.session.user.role;
     if (!allowedRoles.includes(userRole)) {
-      return res.status(403).redirect("/unauthorized");
+      return res.status(HTTP_STATUS.FORBIDDEN).redirect("/unauthorized");
     }
     next();
   };

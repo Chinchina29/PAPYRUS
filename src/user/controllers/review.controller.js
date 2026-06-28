@@ -1,3 +1,5 @@
+import HTTP_STATUS from "../../shared/constants/httpStatus.js";
+import MESSAGES from "../../shared/constants/messages.js";
 import * as reviewService from "../../shared/services/review.service.js";
 import Order from "../../shared/models/Order.js";
 export const addReview = async (req, res) => {
@@ -5,21 +7,21 @@ export const addReview = async (req, res) => {
     const { productId, rating, title, comment } = req.body;
     const userId = req.session.userId;
     if (!userId) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
-        message: "Please login to add a review",
+        message: MESSAGES.CUSTOM.PLEASE_LOGIN_TO_ADD_A_REVIEW,
       });
     }
     if (!productId || !rating || !comment) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Product, rating, and comment are required",
+        message: MESSAGES.CUSTOM.PRODUCT_RATING_AND_COMMENT_ARE_REQUIRED,
       });
     }
     if (rating < 1 || rating > 5) {
-      return res.status(400).json({
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: "Rating must be between 1 and 5",
+        message: MESSAGES.CUSTOM.RATING_MUST_BE_BETWEEN_1_AND_5,
       });
     }
     const hasPurchased = await Order.findOne({
@@ -36,13 +38,13 @@ export const addReview = async (req, res) => {
       isVerifiedPurchase: !!hasPurchased,
     };
     const review = await reviewService.createReview(reviewData);
-    return res.status(201).json({
+    return res.status(HTTP_STATUS.CREATED).json({
       success: true,
-      message: "Review added successfully",
+      message: MESSAGES.CUSTOM.REVIEW_ADDED_SUCCESSFULLY,
       review,
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: error.message,
     });
@@ -66,7 +68,7 @@ export const getProductReviews = async (req, res) => {
       stats,
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message,
     });
@@ -78,9 +80,9 @@ export const updateReview = async (req, res) => {
     const { rating, title, comment } = req.body;
     const userId = req.session.userId;
     if (!userId) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
-        message: "Please login to update review",
+        message: MESSAGES.CUSTOM.PLEASE_LOGIN_TO_UPDATE_REVIEW,
       });
     }
     const review = await reviewService.updateReview(reviewId, userId, {
@@ -90,11 +92,11 @@ export const updateReview = async (req, res) => {
     });
     return res.json({
       success: true,
-      message: "Review updated successfully",
+      message: MESSAGES.REVIEW.UPDATED,
       review,
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: error.message,
     });
@@ -105,18 +107,18 @@ export const deleteReview = async (req, res) => {
     const { reviewId } = req.params;
     const userId = req.session.userId;
     if (!userId) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
-        message: "Please login to delete review",
+        message: MESSAGES.CUSTOM.PLEASE_LOGIN_TO_DELETE_REVIEW,
       });
     }
     await reviewService.deleteReview(reviewId, userId);
     return res.json({
       success: true,
-      message: "Review deleted successfully",
+      message: MESSAGES.REVIEW.DELETED,
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: error.message,
     });
@@ -128,10 +130,10 @@ export const markHelpful = async (req, res) => {
     await reviewService.markReviewHelpful(reviewId);
     return res.json({
       success: true,
-      message: "Marked as helpful",
+      message: MESSAGES.CUSTOM.MARKED_AS_HELPFUL,
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: error.message,
     });

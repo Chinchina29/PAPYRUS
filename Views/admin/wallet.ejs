@@ -3,113 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wallet Management - Papyrus Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #f8f6f3;
-            color: #2d2d2d;
-            line-height: 1.5;
-        }
-
-        .admin-layout {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .main-content {
-            margin-left: 240px;
-            flex: 1;
-            padding: 32px;
-            min-height: 100vh;
-        }
-
-        .content-wrapper {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-        }
-
-        .header-left h1 {
-            font-size: 28px;
-            font-weight: 600;
-            color: #2d2d2d;
-            margin-bottom: 4px;
-        }
-
-        .header-subtitle {
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 60px 24px;
-            border: 1px solid #e5e7eb;
-            text-align: center;
-        }
-
-        .coming-soon-icon {
-            font-size: 64px;
-            margin-bottom: 24px;
-            opacity: 0.6;
-        }
-
-        .coming-soon-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 12px;
-        }
-
-        .coming-soon-description {
-            font-size: 14px;
-            color: #9ca3af;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                margin-left: 0;
-                padding: 16px;
-            }
-        }
-    </style>
+    <title><%= title %> - Papyrus Admin</title>
+    <link rel="stylesheet" href="/css/admin-wallet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="admin-layout">
-        <%- include('../partials/admin-sidebar', { currentPage_name: 'wallet' }) %>
+    <div class="admin-container">
+        <%- include('../partials/admin-sidebar') %>
         
-        <div class="main-content">
-            <div class="content-wrapper">
-                <div class="admin-header">
-                    <div class="header-left">
-                        <h1>Wallet Management</h1>
-                        <p class="header-subtitle">Manage user wallets and transactions</p>
+        <div class="admin-main">
+            <%- include('../partials/admin-header') %>
+            
+            <div class="admin-content">
+                <div class="financial-overview">
+                    <div class="overview-header">
+                        <div>
+                            <h1>Financial Overview</h1>
+                            <p class="subtitle">Managing the marketplace treasury and disbursements</p>
+                        </div>
                     </div>
-                </div>
 
-                <div class="card">
-                    <div class="coming-soon-icon">🚧</div>
-                    <h2 class="coming-soon-title">Wallet Management Coming Soon</h2>
-                    <p class="coming-soon-description">
-                        This feature is currently under development. We're working on wallet management, 
-                        transaction tracking, and payment processing functionality.
-                    </p>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div class="stat-content">
+                                <p class="stat-label">TOTAL REVENUE</p>
+                                <h2 class="stat-value">₹<span id="totalRevenue">0.00</span></h2>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="stat-content">
+                                <p class="stat-label">PENDING PAYOUTS</p>
+                                <h2 class="stat-value">₹<span id="pendingPayouts">0.00</span></h2>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <p class="stat-label">ACTIVE TRANSACTIONS</p>
+                                <h2 class="stat-value"><span id="activeTransactions"><%= total %></span></h2>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ledger-container">
+                        <div class="ledger-header">
+                            <h2>Transaction History</h2>
+                            <div class="ledger-actions">
+                                <button class="btn-secondary" onclick="exportCSV()">
+                                    <i class="fas fa-download"></i> Export CSV
+                                </button>
+                                <button class="btn-secondary" onclick="showFilters()">
+                                    <i class="fas fa-filter"></i> Filters
+                                </button>
+                            </div>
+                        </div>
+
+                        <% if (typeof error !== 'undefined' && error) { %>
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <%= error %>
+                            </div>
+                        <% } %>
+
+                        <div class="table-responsive">
+                            <table class="ledger-table">
+                                <thead>
+                                    <tr>
+                                        <th>TRANSACTION ID</th>
+                                        <th>TYPE</th>
+                                        <th>AMOUNT</th>
+                                        <th>USER</th>
+                                        <th>DATE</th>
+                                        <th>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (transactions && transactions.length > 0) { %>
+                                        <% transactions.forEach(transaction => { %>
+                                            <tr>
+                                                <td class="transaction-id">#TXN-<%= transaction._id.toString().substring(0, 6).toUpperCase() %></td>
+                                                <td>
+                                                    <span class="badge badge-<%= transaction.type %>">
+                                                        <%= transaction.type.toUpperCase() %>
+                                                    </span>
+                                                </td>
+                                                <td class="amount <%= transaction.type === 'credit' ? 'credit' : 'debit' %>">
+                                                    <%= transaction.type === 'credit' ? '+' : '-' %>₹<%= transaction.amount.toFixed(2) %>
+                                                </td>
+                                                <td class="user-info">
+                                                    <% if (transaction.user) { %>
+                                                        <i class="fas fa-user-circle"></i>
+                                                        <%= transaction.user.firstName %> <%= transaction.user.lastName %>
+                                                    <% } else { %>
+                                                        <span class="text-muted">N/A</span>
+                                                    <% } %>
+                                                </td>
+                                                <td><%= new Date(transaction.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+                                                <td>
+                                                    <button class="btn-icon" onclick="viewTransaction('<%= transaction._id %>')" title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="6" class="no-data">
+                                                <i class="fas fa-inbox"></i>
+                                                <p>No transactions found</p>
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <% if (totalPages > 1) { %>
+                            <div class="pagination">
+                                <div class="pagination-info">
+                                    Showing <%= (currentPage - 1) * 10 + 1 %> to <%= Math.min(currentPage * 10, total) %> of <%= total %> transactions
+                                </div>
+                                <div class="pagination-controls">
+                                    <% if (currentPage > 1) { %>
+                                        <a href="?page=<%= currentPage - 1 %><%= search ? '&search=' + search : '' %>" class="page-link">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                    <% } %>
+                                    
+                                    <% for (let i = 1; i <= totalPages; i++) { %>
+                                        <% if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) { %>
+                                            <a href="?page=<%= i %><%= search ? '&search=' + search : '' %>" 
+                                               class="page-link <%= i === currentPage ? 'active' : '' %>">
+                                                <%= i %>
+                                            </a>
+                                        <% } else if (i === currentPage - 2 || i === currentPage + 2) { %>
+                                            <span class="page-ellipsis">...</span>
+                                        <% } %>
+                                    <% } %>
+                                    
+                                    <% if (currentPage < totalPages) { %>
+                                        <a href="?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %>" class="page-link">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    <% } %>
+                                </div>
+                            </div>
+                        <% } %>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div id="transactionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Transaction Details</h3>
+                <button class="close-modal" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="transactionDetails">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateStats() {
+            const transactions = <%- JSON.stringify(transactions) %>;
+            let totalRevenue = 0;
+            let pendingPayouts = 0;
+
+            transactions.forEach(tx => {
+                if (tx.type === 'credit') {
+                    totalRevenue += tx.amount;
+                } else if (tx.type === 'debit') {
+                    pendingPayouts += tx.amount;
+                }
+            });
+
+            document.getElementById('totalRevenue').textContent = totalRevenue.toFixed(2);
+            document.getElementById('pendingPayouts').textContent = pendingPayouts.toFixed(2);
+        }
+
+        function exportCSV() {
+            window.location.href = '/admin/wallet/export-csv';
+        }
+
+        function showFilters() {
+            alert('Filter functionality coming soon!');
+        }
+
+        function viewTransaction(id) {
+            const modal = document.getElementById('transactionModal');
+            const detailsDiv = document.getElementById('transactionDetails');
+            modal.style.display = 'block';
+            
+            fetch(`/admin/wallet/transaction/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const tx = data.transaction;
+                        detailsDiv.innerHTML = `
+                            <div class="detail-row">
+                                <span class="detail-label">Transaction ID:</span>
+                                <span class="detail-value">#TXN-${tx._id.substring(0, 6).toUpperCase()}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Type:</span>
+                                <span class="badge badge-${tx.type}">${tx.type.toUpperCase()}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Amount:</span>
+                                <span class="detail-value amount ${tx.type === 'credit' ? 'credit' : 'debit'}">
+                                    ${tx.type === 'credit' ? '+' : '-'}₹${tx.amount.toFixed(2)}
+                                </span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">User:</span>
+                                <span class="detail-value">${tx.user ? tx.user.firstName + ' ' + tx.user.lastName : 'N/A'}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Description:</span>
+                                <span class="detail-value">${tx.description || 'No description'}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Date:</span>
+                                <span class="detail-value">${new Date(tx.createdAt).toLocaleString()}</span>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(err => {
+                    detailsDiv.innerHTML = '<div class="error-message">Failed to load transaction details</div>';
+                });
+        }
+
+        function closeModal() {
+            document.getElementById('transactionModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('transactionModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', calculateStats);
+    </script>
 </body>
 </html>

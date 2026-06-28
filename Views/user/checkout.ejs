@@ -514,7 +514,7 @@
               </div>
             </label>
 
-            <% if (paymentConfig && paymentConfig.availableGateways.includes('razorpay')) { %>
+            <% if (paymentGateways && paymentGateways.razorpay) { %>
             <label class="payment-option">
               <input type="radio" name="paymentMethod" value="Razorpay" onchange="selectPayment(this)"/>
               <div class="payment-icon">💳</div>
@@ -525,7 +525,20 @@
             </label>
             <% } %>
 
-            <% if (paymentConfig && paymentConfig.availableGateways.includes('paypal')) { %>
+            <label class="payment-option <%= (user && user.walletBalance >= totalAmount) ? '' : 'disabled' %>" <%= (user && user.walletBalance < totalAmount) ? 'style="opacity: 0.5; cursor: not-allowed;"' : '' %>>
+              <input type="radio" name="paymentMethod" value="Wallet" <%= (user && user.walletBalance < totalAmount) ? 'disabled' : '' %> onchange="selectPayment(this)"/>
+              <div class="payment-icon">👛</div>
+              <div class="payment-info">
+                <div class="payment-name">My Wallet</div>
+                <div class="payment-desc">Balance: ₹<%= (user && user.walletBalance) ? user.walletBalance.toFixed(2) : '0.00' %>
+                  <% if (user && user.walletBalance < totalAmount) { %>
+                    <span style="color: #dc3545; font-size: 12px; display: block;">Insufficient balance</span>
+                  <% } %>
+                </div>
+              </div>
+            </label>
+
+            <% if (paymentGateways && paymentGateways.paypal) { %>
             <label class="payment-option" style="opacity: 0.5; cursor: not-allowed;">
               <input type="radio" name="paymentMethod" value="PayPal" disabled/>
               <div class="payment-icon">🅿️</div>
@@ -750,6 +763,7 @@
 
   </div>
 
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
     function selectAddress(radio) {
       document.querySelectorAll('.address-card').forEach(card => {
@@ -857,7 +871,65 @@
         const data = await response.json();
 
         if (data.success) {
-          window.location.href = `/order-success/${data.orderId}`;
+          if (data.paymentRequired && data.razorpayOrderId) {
+            const options = {
+              "key": "<%= razorpayKeyId %>",
+              "amount": data.amount,
+              "currency": data.currency,
+              "name": "Papyrus",
+              "description": "Book Purchase",
+              "order_id": data.razorpayOrderId,
+              "handler": async function (response) {
+                try {
+                  const verifyRes = await fetch('/payment/verify', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      razorpay_payment_id: response.razorpay_payment_id,
+                      razorpay_order_id: response.razorpay_order_id,
+                      razorpay_signature: response.razorpay_signature,
+                      orderId: data.orderId
+                    })
+                  });
+                  const verifyData = await verifyRes.json();
+                  if (verifyData.success) {
+                    window.location.href = `/order-success/` + data.orderId;
+                  } else {
+                    Swal.fire('Payment Failed', verifyData.message || 'Payment verification failed', 'error');
+                    window.location.href = `/payment/failure?orderId=` + data.orderId;
+                  }
+                } catch (err) {
+                  Swal.fire('Error', 'Payment verification failed', 'error');
+                }
+              },
+              "prefill": {
+                "name": "<%= user ? user.firstName + ' ' + user.lastName : '' %>",
+                "email": "<%= user ? user.email : '' %>"
+              },
+              "theme": {
+                "color": "#2d1f14"
+              }
+            };
+            const rzp1 = new Razorpay(options);
+            rzp1.on('payment.failed', async function (response) {
+              await fetch('/payment/failure', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  orderId: data.orderId,
+                  reason: response.error.description
+                })
+              });
+              Swal.fire('Payment Failed', response.error.description, 'error').then(() => {
+                window.location.href = `/payment/failure?orderId=` + data.orderId;
+              });
+            });
+            rzp1.open();
+          } else {
+            window.location.href = `/order-success/` + data.orderId;
+          }
         } else {
           Swal.fire({
             icon: 'error',
@@ -1162,3 +1234,5 @@
   </script>
 </body>
 </html>
+
+

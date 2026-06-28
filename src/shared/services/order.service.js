@@ -1,3 +1,4 @@
+import MESSAGES from "../constants/messages.js";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 export const createOrder = async (data) => {
@@ -134,10 +135,92 @@ export const getUserOrders = async (
     currentPage: page,
   };
 };
+export const recalculateOrderStatus = (order) => {
+  const statusProgression = {
+    "Pending": 1,
+    "Processing": 2,
+    "Shipped": 3,
+    "Delivered": 4,
+  };
+
+  // Filter out items that are cancelled or returned
+  const activeItems = order.items.filter(item => 
+    item.itemStatus !== "Cancelled" && 
+    item.itemStatus !== "Returned" && 
+    !item.cancelledAt && 
+    item.returnRequestStatus !== "Approved"
+  );
+
+  if (activeItems.length === 0) {
+    const hasReturned = order.items.some(item => 
+      item.itemStatus === "Returned" || 
+      item.returnRequestStatus === "Approved"
+    );
+    return hasReturned ? "Returned" : "Cancelled";
+  }
+
+  let minLevel = Infinity;
+  let computedStatus = "Pending";
+
+  activeItems.forEach(item => {
+    const status = item.itemStatus || "Pending";
+    const level = statusProgression[status] || 1;
+    if (level < minLevel) {
+      minLevel = level;
+      computedStatus = status;
+    }
+  });
+
+  return computedStatus;
+};
+
+export const updateOrderItemStatus = async (orderId, itemId, status) => {
+  const order = await Order.findById(orderId);
+  if (!order) {
+    throw new Error(MESSAGES.ORDER.NOT_FOUND);
+  }
+
+  const item = order.items.id(itemId);
+  if (!item) {
+    throw new Error("Item not found in order");
+  }
+
+  item.itemStatus = status;
+
+  if (status === "Cancelled" && !item.cancelledAt) {
+    item.cancelledAt = new Date();
+    item.cancellationReason = "Cancelled by admin";
+  }
+  if (status === "Returned" && !item.returnedAt) {
+    item.returnedAt = new Date();
+    item.returnRequestStatus = "Approved";
+    item.returnApprovedAt = new Date();
+  }
+
+  order.orderStatus = recalculateOrderStatus(order);
+
+  if (order.orderStatus === "Shipped" && !order.shippedAt) {
+    order.shippedAt = new Date();
+  }
+  if (order.orderStatus === "Delivered" && !order.deliveredAt) {
+    order.deliveredAt = new Date();
+    order.paymentStatus = "Paid";
+  }
+  if (order.orderStatus === "Cancelled" && !order.cancelledAt) {
+    order.cancelledAt = new Date();
+  }
+  if (order.orderStatus === "Returned" && !order.returnedAt) {
+    order.returnedAt = new Date();
+  }
+
+  await order.save();
+  return order;
+};
+
 export const updateOrderStatus = async (id, status) => {
   const order = await Order.findById(id);
   if (!order) {
-    throw new Error("Order not found");
+    throw new Error(MESSAGES.ORDER.NOT_FOUND);
   }
   const statusProgression = {
     "Pending": 1,
@@ -151,11 +234,11 @@ export const updateOrderStatus = async (id, status) => {
   const newStatusLevel = statusProgression[status];
   if (currentStatusLevel && newStatusLevel && newStatusLevel < currentStatusLevel) {
     if (order.orderStatus === "Delivered" && status !== "Returned") {
-      throw new Error("Cannot rollback order status from Delivered. Only returns are allowed.");
+      throw new Error(MESSAGES.CUSTOM.CANNOT_ROLLBACK_ORDER_STATUS_FROM_DELIVERED_ONLY_RETURNS_ARE_ALLOWED);
     } else if (order.orderStatus === "Shipped" && status === "Pending") {
-      throw new Error("Cannot rollback shipped order to pending status.");
+      throw new Error(MESSAGES.CUSTOM.CANNOT_ROLLBACK_SHIPPED_ORDER_TO_PENDING_STATUS);
     } else if (order.orderStatus === "Processing" && status === "Pending") {
-      throw new Error("Cannot rollback processing order to pending status.");
+      throw new Error(MESSAGES.CUSTOM.CANNOT_ROLLBACK_PROCESSING_ORDER_TO_PENDING_STATUS);
     }
   }
   order.orderStatus = status;
@@ -166,6 +249,15 @@ export const updateOrderStatus = async (id, status) => {
       item.itemStatus !== "Returned"
     ) {
       item.itemStatus = status;
+      if (status === "Cancelled") {
+        item.cancelledAt = new Date();
+        item.cancellationReason = "Order cancelled";
+      }
+      if (status === "Returned") {
+        item.returnedAt = new Date();
+        item.returnRequestStatus = "Approved";
+        item.returnApprovedAt = new Date();
+      }
     }
   });
   if (status === "Shipped" && !order.shippedAt) {
@@ -177,6 +269,9 @@ export const updateOrderStatus = async (id, status) => {
   }
   if (status === "Cancelled" && !order.cancelledAt) {
     order.cancelledAt = new Date();
+  }
+  if (status === "Returned" && !order.returnedAt) {
+    order.returnedAt = new Date();
   }
   return await order.save();
 };
@@ -190,13 +285,13 @@ export const updatePaymentStatus = async (id, status) => {
 export const cancelOrder = async (id, reason) => {
   const order = await Order.findById(id);
   if (!order) {
-    throw new Error("Order not found");
+    throw new Error(MESSAGES.ORDER.NOT_FOUND);
   }
   if (order.orderStatus === "Delivered") {
-    throw new Error("Cannot cancel delivered order");
+    throw new Error(MESSAGES.CUSTOM.CANNOT_CANCEL_DELIVERED_ORDER);
   }
   if (order.orderStatus === "Cancelled") {
-    throw new Error("Order is already cancelled");
+    throw new Error(MESSAGES.ORDER.ALREADY_CANCELLED);
   }
   order.orderStatus = "Cancelled";
   order.cancelledAt = new Date();

@@ -1,3 +1,4 @@
+import MESSAGES from "../../shared/constants/messages.js";
 import * as userService from "../../shared/services/user.service.js";
 import * as otpService from "../../shared/services/otp.service.js";
 import * as emailService from "../../shared/services/email.service.js";
@@ -5,7 +6,7 @@ export const signupUser = async (userData) => {
   try {
     const existingUser = await userService.findUserByEmail(userData.email);
     if (existingUser) {
-      return { success: false, message: "Email already registered" };
+      return { success: false, message: MESSAGES.AUTH.EMAIL_ALREADY_EXISTS };
     }
     const user = await userService.createUser({
       firstName: userData.firstName,
@@ -25,35 +26,34 @@ export const signupUser = async (userData) => {
       await userService.deleteUser(user._id);
       return {
         success: false,
-        message: "Failed to send verification email. Please try again.",
+        message: MESSAGES.AUTH.OTP_SENT,
       };
     }
     return {
       success: true,
       user,
-      message:
-        "Account created! Please check your email for verification code.",
+      message: MESSAGES.AUTH.SIGNUP_SUCCESS,
     };
   } catch (error) {
-    return { success: false, message: "Server error during signup" };
+    return { success: false, message: MESSAGES.COMMON.INTERNAL_ERROR };
   }
 };
 export const loginUser = async (email, password) => {
   try {
     const user = await userService.findUserByEmail(email);
     if (!user) {
-      return { success: false, message: "Invalid email or password" };
+      return { success: false, message: MESSAGES.AUTH.INVALID_CREDENTIALS };
     }
     if (!user.password) {
       return {
         success: false,
-        message: "This account uses Google Sign-In. Please login with Google.",
+        message: MESSAGES.CUSTOM.THIS_ACCOUNT_USES_GOOGLE_SIGN_IN_PLEASE_LOGIN_WITH_GOOGLE,
       };
     }
     if (user.isBlocked) {
       return {
         success: false,
-        message: "Your account has been blocked. Please contact support.",
+        message: MESSAGES.CUSTOM.YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT,
       };
     }
     if (!user.isVerified) {
@@ -71,8 +71,7 @@ export const loginUser = async (email, password) => {
       await emailService.sendOTPEmail(user.email, user.firstName, otp);
       return {
         success: false,
-        message:
-          "Please verify your email first. A new OTP has been sent to your email.",
+        message: MESSAGES.CUSTOM.PLEASE_VERIFY_YOUR_EMAIL_FIRST_A_NEW_OTP_HAS_BEEN_SENT_TO_YOUR_EMAIL,
         needsVerification: true,
         email: user.email,
         userId: user._id,
@@ -80,22 +79,22 @@ export const loginUser = async (email, password) => {
     }
     const isMatch = await userService.comparePassword(password, user.password);
     if (!isMatch) {
-      return { success: false, message: "Invalid email or password" };
+      return { success: false, message: MESSAGES.AUTH.INVALID_CREDENTIALS };
     }
     if (user.gender === "") user.gender = null;
     if (user.favoriteGenre === "") user.favoriteGenre = null;
     if (user.primaryInterest === "") user.primaryInterest = null;
     await user.save();
-    return { success: true, user, message: "Login successful" };
+    return { success: true, user, message: MESSAGES.AUTH.LOGIN_SUCCESS };
   } catch (error) {
-    return { success: false, message: "Server error during login" };
+    return { success: false, message: MESSAGES.CUSTOM.SERVER_ERROR_DURING_LOGIN };
   }
 };
 export const verifyUserOTP = async (userId, otp) => {
   try {
     const user = await userService.findUserById(userId);
     if (!user) {
-      return { success: false, message: "User not found" };
+      return { success: false, message: MESSAGES.USER.NOT_FOUND };
     }
     const otpResult = otpService.verifyUserOTP(user, otp);
     if (!otpResult.success) {
@@ -104,23 +103,21 @@ export const verifyUserOTP = async (userId, otp) => {
     user.isVerified = true;
     otpService.clearOTP(user);
     await user.save();
-    return { success: true, user, message: "Email verified successfully" };
+    return { success: true, user, message: MESSAGES.CUSTOM.EMAIL_VERIFIED_SUCCESSFULLY };
   } catch (error) {
-    return { success: false, message: "Server error during verification" };
+    return { success: false, message: MESSAGES.CUSTOM.SERVER_ERROR_DURING_VERIFICATION };
   }
 };
-
-//testing
 export const resendUserOTP = async (userId) => {
   try {
     const user = await userService.findUserById(userId);
     if (!user) {
-      return { success: false, message: "User not found" };
+      return { success: false, message: MESSAGES.USER.NOT_FOUND };
     }
     if (user.isBlocked) {
       return {
         success: false,
-        message: "Your account has been blocked. Please contact support.",
+        message: MESSAGES.CUSTOM.YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT,
       };
     }
     const throttle = otpService.checkThrottle(user);
@@ -139,11 +136,11 @@ export const resendUserOTP = async (userId) => {
       otp,
     );
     if (!emailResult.success) {
-      return { success: false, message: "Failed to send OTP email" };
+      return { success: false, message: MESSAGES.CUSTOM.FAILED_TO_SEND_OTP_EMAIL };
     }
-    return { success: true, message: "OTP sent successfully" };
+    return { success: true, message: MESSAGES.AUTH.OTP_SENT };
   } catch (error) {
-    return { success: false, message: "Server error" };
+    return { success: false, message: MESSAGES.CUSTOM.SERVER_ERROR };
   }
 };
 export const forgotPassword = async (email) => {
@@ -152,13 +149,13 @@ export const forgotPassword = async (email) => {
     if (!user) {
       return {
         success: false,
-        message: "No account found with this email address",
+        message: MESSAGES.CUSTOM.NO_ACCOUNT_FOUND_WITH_THIS_EMAIL_ADDRESS,
       };
     }
     if (user.isBlocked) {
       return {
         success: false,
-        message: "Your account has been blocked. Please contact support.",
+        message: MESSAGES.CUSTOM.YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT,
       };
     }
     const throttle = otpService.checkThrottle(user);
@@ -177,18 +174,18 @@ export const forgotPassword = async (email) => {
       otp,
     );
     if (!emailResult.success) {
-      return { success: false, message: "Failed to send reset email" };
+      return { success: false, message: MESSAGES.CUSTOM.FAILED_TO_SEND_RESET_EMAIL };
     }
-    return { success: true, message: "Password reset OTP sent to your email" };
+    return { success: true, message: MESSAGES.CUSTOM.PASSWORD_RESET_OTP_SENT_TO_YOUR_EMAIL };
   } catch (error) {
-    return { success: false, message: "Server error" };
+    return { success: false, message: MESSAGES.CUSTOM.SERVER_ERROR };
   }
 };
 export const resetPassword = async (email, otp, newPassword) => {
   try {
     const user = await userService.findUserByEmail(email);
     if (!user) {
-      return { success: false, message: "User not found" };
+      return { success: false, message: MESSAGES.USER.NOT_FOUND };
     }
     const otpResult = otpService.verifyUserOTP(user, otp);
     if (!otpResult.success) {
@@ -197,8 +194,8 @@ export const resetPassword = async (email, otp, newPassword) => {
     user.password = newPassword;
     otpService.clearOTP(user);
     await user.save();
-    return { success: true, message: "Password reset successfully" };
+    return { success: true, message: MESSAGES.CUSTOM.PASSWORD_RESET_SUCCESSFULLY };
   } catch (error) {
-    return { success: false, message: "Server error" };
+    return { success: false, message: MESSAGES.CUSTOM.SERVER_ERROR };
   }
 };

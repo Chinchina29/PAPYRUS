@@ -1,3 +1,5 @@
+import HTTP_STATUS from "../../shared/constants/httpStatus.js";
+import MESSAGES from "../../shared/constants/messages.js";
 import * as userService from "../../shared/services/user.service.js";
 export const isAdmin = async (req, res, next) => {
   try {
@@ -7,9 +9,9 @@ export const isAdmin = async (req, res, next) => {
       req.get("X-Requested-With") === "XMLHttpRequest";
     if (!req.session || !req.session.adminId) {
       if (isAjax) {
-        return res.status(401).json({
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
           success: false,
-          message: "Admin authentication required.",
+          message: MESSAGES.CUSTOM.ADMIN_AUTHENTICATION_REQUIRED,
           redirectUrl: "/admin/signin",
         });
       }
@@ -25,8 +27,8 @@ export const isAdmin = async (req, res, next) => {
     if (user.role !== "admin") {
       return req.session.destroy(() => {
         res.clearCookie("papyrus.admin.sid");
-        return res.status(403).render("error/403", {
-          message: "Access denied. Admin privileges required.",
+        return res.status(HTTP_STATUS.FORBIDDEN).render("error/403", {
+          message: MESSAGES.ADMIN.ACCESS_DENIED,
         });
       });
     }
@@ -57,8 +59,8 @@ export const isAdmin = async (req, res, next) => {
     req.adminUser = user;
     next();
   } catch (error) {
-    return res.status(500).render("error/500", {
-      message: "Authentication error. Please try again.",
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).render("error/500", {
+      message: MESSAGES.CUSTOM.AUTHENTICATION_REQUIRED,
     });
   }
 };
@@ -90,13 +92,13 @@ export const blockUserFromAdmin = (req, res, next) => {
     req.session.adminUser.role === "user"
   ) {
     if (isAjax) {
-      return res.status(403).json({
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,
-        message: "Access denied. Administrators only.",
+        message: MESSAGES.ADMIN.ACCESS_DENIED,
       });
     }
-    return res.status(403).render("error/403", {
-      message: "Access denied. This area is restricted to administrators only.",
+    return res.status(HTTP_STATUS.FORBIDDEN).render("error/403", {
+      message: MESSAGES.ADMIN.ACCESS_DENIED,
     });
   }
   next();
@@ -110,15 +112,30 @@ export const preventUserFromAdminRoutes = (req, res, next) => {
     "/admin/forgot-password/resend",
     "/admin/forgot-password/reset",
   ];
+  
   const isPublicRoute = publicAdminRoutes.some(
     (route) => req.path === route.replace("/admin", ""),
   );
+  
   if (isPublicRoute) {
     return next();
   }
+  
+  if (req.session && req.session.userId && !req.session.adminId) {
+    const isAjax = req.xhr || req.headers.accept?.includes("application/json");
+    if (isAjax) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
+        success: false,
+        message: MESSAGES.CUSTOM.PLEASE_USE_THE_ADMIN_LOGIN_PAGE,
+      });
+    }
+    return res.redirect("/?error=" + encodeURIComponent(MESSAGES.CUSTOM.PLEASE_USE_THE_ADMIN_LOGIN_PAGE));
+  }
+  
   if (!req.session.adminId) {
     return res.redirect("/admin/signin");
   }
+  
   next();
 };
 export const noCache = (req, res, next) => {
