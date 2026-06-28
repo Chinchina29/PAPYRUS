@@ -334,14 +334,11 @@
                 </div>
 
                 <div class="page-actions">
-                    <button class="btn btn-secondary">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
-                            <path d="M8 6h13"/>
-                            <path d="M6 12h9"/>
-                            <path d="M4 18h7"/>
-                        </svg>
-                        Last 30 Days
-                    </button>
+                    <select id="chartFilter" class="btn btn-secondary" style="font-family: inherit; font-size: 14px; outline: none; cursor: pointer; padding: 10px 16px;">
+                        <option value="weekly">Weekly (Last 7 Days)</option>
+                        <option value="monthly" selected>Monthly (Current Year)</option>
+                        <option value="yearly">Yearly (Last 5 Years)</option>
+                    </select>
                     <a href="/admin/reports" class="btn btn-primary" style="text-decoration: none;">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -455,6 +452,119 @@
                     </div>
                 </div>
 
+                <!-- Top 10 Best Sellers Grid -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px;">
+                    <!-- Top Products Card -->
+                    <div class="card" style="padding: 20px;">
+                        <div class="card-header" style="margin-bottom: 12px; padding-bottom: 8px;">
+                            <h3 class="card-title" style="font-size: 16px;">Top Products (Top 10)</h3>
+                        </div>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid #eee; text-align: left;">
+                                        <th style="padding: 8px 4px; color: #6b7280; font-weight: 600;">Rank</th>
+                                        <th style="padding: 8px 4px; color: #6b7280; font-weight: 600;">Product</th>
+                                        <th style="padding: 8px 4px; color: #6b7280; font-weight: 600; text-align: right;">Qty</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (bestSellingProducts && bestSellingProducts.length > 0) { %>
+                                        <% bestSellingProducts.forEach((prod, idx) => { %>
+                                            <tr style="border-bottom: 1px solid #f9f9f9;">
+                                                <td style="padding: 8px 4px; font-weight: 600; color: #8b6f47;">#<%= idx + 1 %></td>
+                                                <td style="padding: 8px 4px;">
+                                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                                        <div style="width: 30px; height: 40px; border-radius: 4px; overflow: hidden; background: #eee; flex-shrink: 0;">
+                                                            <% if (prod.productInfo && prod.productInfo.images && prod.productInfo.images.length > 0) { %>
+                                                                <img src="<%= prod.productInfo.images[0].url %>" style="width: 100%; height: 100%; object-fit: cover;">
+                                                            <% } else { %>
+                                                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 14px; color: #bbb;">📚</div>
+                                                            <% } %>
+                                                        </div>
+                                                        <div style="font-weight: 500; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 140px;" title="<%= prod.title %>"><%= prod.title %></div>
+                                                    </div>
+                                                </td>
+                                                <td style="padding: 8px 4px; text-align: right; font-weight: 600;"><%= prod.totalQty %></td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="3" style="padding: 16px 0; text-align: center; color: #9ca3af;">No sales data available</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Top Categories Card -->
+                    <div class="card" style="padding: 20px;">
+                        <div class="card-header" style="margin-bottom: 12px; padding-bottom: 8px;">
+                            <h3 class="card-title" style="font-size: 16px;">Top Categories (Top 10)</h3>
+                        </div>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid #eee; text-align: left;">
+                                        <th style="padding: 8px 4px; color: #6b7280; font-weight: 600;">Rank</th>
+                                        <th style="padding: 8px 4px; color: #6b7280; font-weight: 600;">Category</th>
+                                        <th style="padding: 8px 4px; color: #6b7280; font-weight: 600; text-align: right;">Qty</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (bestSellingCategories && bestSellingCategories.length > 0) { %>
+                                        <% bestSellingCategories.forEach((cat, idx) => { %>
+                                            <tr style="border-bottom: 1px solid #f9f9f9;">
+                                                <td style="padding: 8px 4px; font-weight: 600; color: #8b6f47;">#<%= idx + 1 %></td>
+                                                <td style="padding: 8px 4px; font-weight: 500;"><%= cat.categoryName || 'Unknown' %></td>
+                                                <td style="padding: 8px 4px; text-align: right; font-weight: 600;"><%= cat.totalQty %></td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="3" style="padding: 16px 0; text-align: center; color: #9ca3af;">No sales data available</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Top Brands Card -->
+                    <div class="card" style="padding: 20px;">
+                        <div class="card-header" style="margin-bottom: 12px; padding-bottom: 8px;">
+                            <h3 class="card-title" style="font-size: 16px;">Top Brands (Top 10)</h3>
+                        </div>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid #eee; text-align: left;">
+                                        <th style="padding: 8px 4px; color: #6b7280; font-weight: 600;">Rank</th>
+                                        <th style="padding: 8px 4px; color: #6b7280; font-weight: 600;">Brand</th>
+                                        <th style="padding: 8px 4px; color: #6b7280; font-weight: 600; text-align: right;">Qty</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (bestSellingBrands && bestSellingBrands.length > 0) { %>
+                                        <% bestSellingBrands.forEach((br, idx) => { %>
+                                            <tr style="border-bottom: 1px solid #f9f9f9;">
+                                                <td style="padding: 8px 4px; font-weight: 600; color: #8b6f47;">#<%= idx + 1 %></td>
+                                                <td style="padding: 8px 4px; font-weight: 500;"><%= br._id || 'Generic' %></td>
+                                                <td style="padding: 8px 4px; text-align: right; font-weight: 600;"><%= br.totalQty %></td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="3" style="padding: 16px 0; text-align: center; color: #9ca3af;">No sales data available</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="card">
                     <div class="card-header">
                         <div>
@@ -509,45 +619,74 @@
 
     <script>
         const ctx = document.getElementById('revenueChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    data: [3200, 4100, 3800, 5200, 6100, 5800],
-                    backgroundColor: '#8b6f47',
-                    borderRadius: 4,
-                    borderSkipped: false,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
+        let salesChart;
+
+        function initChart(labels, data) {
+            salesChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: '#8b6f47',
+                        borderRadius: 4,
+                        borderSkipped: false,
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: '#e5e7eb'
-                        },
-                        ticks: {
-                            color: '#6b7280'
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
                         }
                     },
-                    x: {
-                        grid: {
-                            display: false
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#e5e7eb'
+                            },
+                            ticks: {
+                                color: '#6b7280'
+                            }
                         },
-                        ticks: {
-                            color: '#6b7280'
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#6b7280'
+                            }
                         }
                     }
                 }
+            });
+        }
+
+        async function updateChart(filter) {
+            try {
+                const response = await fetch(`/admin/dashboard/chart-data?filter=${filter}`);
+                const resData = await response.json();
+                if (resData.success) {
+                    if (salesChart) {
+                        salesChart.data.labels = resData.labels;
+                        salesChart.data.datasets[0].data = resData.data;
+                        salesChart.update();
+                    } else {
+                        initChart(resData.labels, resData.data);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to load chart data", err);
             }
+        }
+
+        const filterSelect = document.getElementById('chartFilter');
+        updateChart(filterSelect.value);
+
+        filterSelect.addEventListener('change', (e) => {
+            updateChart(e.target.value);
         });
     </script>
 </body>

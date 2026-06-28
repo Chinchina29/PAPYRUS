@@ -4,10 +4,13 @@ import * as orderService from "../../shared/services/order.service.js";
 import { generateInvoicePDF } from "../../shared/utils/invoiceGenerator.js";
 import * as notificationService from "../../shared/services/notification.service.js";
 import Product from "../../shared/models/Product.js";
+import User from "../../shared/models/User.js";
+import WalletTransaction from "../../shared/models/WalletTransaction.js";
 export const getReturnRequests = async (req, res) => {
   try {
     const search = req.query.search?.trim() || "";
-    const status = req.query.status !== undefined ? req.query.status : "Requested";
+    const status =
+      req.query.status !== undefined ? req.query.status : "Requested";
     const page = parseInt(req.query.page) || 1;
     const limit = 5;
     const { orders, total, totalPages, currentPage } =
@@ -183,13 +186,34 @@ export const approveReturnRequest = async (req, res) => {
       await Product.findByIdAndUpdate(
         item.product,
         { $inc: { stock: item.quantity } },
-        { returnDocument: 'after' }
+        { returnDocument: "after" },
       );
     }
+
+    const refundAmount = order.totalAmount - (order.returnProcessedAmount || 0);
+    if (refundAmount > 0 && order.paymentStatus === "Paid") {
+      const user = await User.findById(order.user._id || order.user);
+      if (user) {
+        user.walletBalance = (user.walletBalance || 0) + refundAmount;
+        await user.save();
+        await WalletTransaction.create({
+          user: user._id,
+          type: "credit",
+          amount: refundAmount,
+          description: `Refund for returned order ${order.orderId}`,
+          orderId: order._id,
+        });
+      }
+      order.paymentStatus = "Refunded";
+      order.returnProcessedAmount = order.totalAmount;
+    }
+
     await order.save();
     return res.json({
       success: true,
-      message: MESSAGES.CUSTOM.RETURN_REQUEST_APPROVED_SUCCESSFULLY_AND_INVENTORY_RESTORED,
+      message:
+        MESSAGES.CUSTOM
+          .RETURN_REQUEST_APPROVED_SUCCESSFULLY_AND_INVENTORY_RESTORED,
     });
   } catch (error) {
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
@@ -225,7 +249,10 @@ export const rejectReturnRequest = async (req, res) => {
     order.returnRejectedAt = new Date();
     order.returnRejectionReason = reason.trim();
     for (const item of order.items) {
-      if (item.returnRequestStatus === "None" || item.returnRequestStatus === "Requested") {
+      if (
+        item.returnRequestStatus === "None" ||
+        item.returnRequestStatus === "Requested"
+      ) {
         item.returnRequestStatus = "Rejected";
         item.returnRejectedAt = new Date();
         item.returnRejectionReason = reason.trim();
@@ -273,13 +300,35 @@ export const approveItemReturn = async (req, res) => {
     await Product.findByIdAndUpdate(
       item.product,
       { $inc: { stock: item.quantity } },
-      { returnDocument: 'after' }
+      { returnDocument: "after" },
     );
+
+    const refundAmount = item.subtotal || item.price * item.quantity;
+    if (refundAmount > 0 && order.paymentStatus === "Paid") {
+      const user = await User.findById(order.user._id || order.user);
+      if (user) {
+        user.walletBalance = (user.walletBalance || 0) + refundAmount;
+        await user.save();
+        await WalletTransaction.create({
+          user: user._id,
+          type: "credit",
+          amount: refundAmount,
+          description: `Refund for returned item "${item.title}" (Order: ${order.orderId})`,
+          orderId: order._id,
+        });
+      }
+      order.returnProcessedAmount =
+        (order.returnProcessedAmount || 0) + refundAmount;
+    }
+
     let allReturnedOrCancelled = true;
     let hasReturned = false;
     for (const orderItem of order.items) {
-      const isCancelled = orderItem.itemStatus === "Cancelled" || orderItem.cancelledAt;
-      const isReturned = orderItem.itemStatus === "Returned" || orderItem.returnRequestStatus === "Approved";
+      const isCancelled =
+        orderItem.itemStatus === "Cancelled" || orderItem.cancelledAt;
+      const isReturned =
+        orderItem.itemStatus === "Returned" ||
+        orderItem.returnRequestStatus === "Approved";
       if (!isCancelled && !isReturned) {
         allReturnedOrCancelled = false;
       }
@@ -287,11 +336,16 @@ export const approveItemReturn = async (req, res) => {
         hasReturned = true;
       }
     }
-    if (allReturnedOrCancelled && hasReturned) {
-      order.orderStatus = "Returned";
-      order.returnRequestStatus = "Approved";
-      order.returnedAt = new Date();
-      order.returnApprovedAt = new Date();
+    if (allReturnedOrCancelled) {
+      if (order.paymentStatus === "Paid") {
+        order.paymentStatus = "Refunded";
+      }
+      if (hasReturned) {
+        order.orderStatus = "Returned";
+        order.returnRequestStatus = "Approved";
+        order.returnedAt = new Date();
+        order.returnApprovedAt = new Date();
+      }
     }
     await order.save();
     await notificationService.notifyReturnApproved({
@@ -301,7 +355,9 @@ export const approveItemReturn = async (req, res) => {
     });
     return res.json({
       success: true,
-      message: MESSAGES.CUSTOM.ITEM_RETURN_REQUEST_APPROVED_SUCCESSFULLY_AND_INVENTORY_RESTORED,
+      message:
+        MESSAGES.CUSTOM
+          .ITEM_RETURN_REQUEST_APPROVED_SUCCESSFULLY_AND_INVENTORY_RESTORED,
     });
   } catch (error) {
     console.error("Approve item return error:", error);
@@ -363,6 +419,103 @@ export const rejectItemReturn = async (req, res) => {
     });
   }
 };
+export const updateItemStatus = async (req, res) => {
+  try {
+    const { orderId, itemId } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        message: MESSAGES.CUSTOM.STATUS_IS_REQUIRED,
+      });
+    }
+
+    const order = await orderService.getOrderById(orderId);
+    if (!order) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        success: false,
+        message: MESSAGES.ORDER.NOT_FOUND,
+      });
+    }
+
+    const item = order.items.id(itemId);
+    if (!item) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        success: false,
+        message: MESSAGES.CUSTOM.ITEM_NOT_FOUND_IN_ORDER,
+      });
+    }
+
+    const oldStatus = item.itemStatus;
+    if (oldStatus === status) {
+      return res.json({
+        success: true,
+        message: "Status is already up to date.",
+        order,
+      });
+    }
+
+    const updatedOrder = await orderService.updateOrderItemStatus(
+      orderId,
+      itemId,
+      status,
+    );
+
+    if (
+      (status === "Cancelled" || status === "Returned") &&
+      oldStatus !== "Cancelled" &&
+      oldStatus !== "Returned"
+    ) {
+      await Product.findByIdAndUpdate(item.product._id || item.product, {
+        $inc: { stock: item.quantity },
+      });
+      if (order.paymentStatus === "Paid") {
+        const refundAmount = item.subtotal || item.price * item.quantity;
+        if (refundAmount > 0) {
+          const user = await User.findById(order.user._id || order.user);
+          if (user) {
+            user.walletBalance = (user.walletBalance || 0) + refundAmount;
+            await user.save();
+            await WalletTransaction.create({
+              user: user._id,
+              type: "credit",
+              amount: refundAmount,
+              description: `Refund for item "${item.title}" marked as ${status} (Order: ${order.orderId})`,
+              orderId: order._id,
+            });
+          }
+          updatedOrder.returnProcessedAmount =
+            (updatedOrder.returnProcessedAmount || 0) + refundAmount;
+
+          const allInactive = updatedOrder.items.every(
+            (orderItem) =>
+              orderItem.itemStatus === "Cancelled" ||
+              orderItem.itemStatus === "Returned" ||
+              orderItem.cancelledAt ||
+              orderItem.returnRequestStatus === "Approved",
+          );
+          if (allInactive) {
+            updatedOrder.paymentStatus = "Refunded";
+          }
+          await updatedOrder.save();
+        }
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: "Item status updated successfully",
+      order: updatedOrder,
+    });
+  } catch (error) {
+    console.error("Update item status error:", error);
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
+      success: false,
+      message: error.message || "Failed to update item status",
+    });
+  }
+};
 export const downloadInvoice = async (req, res) => {
   try {
     const { id } = req.params;
@@ -376,6 +529,9 @@ export const downloadInvoice = async (req, res) => {
   } catch (error) {
     res
       .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-      .json({ success: false, message: MESSAGES.CUSTOM.FAILED_TO_GENERATE_INVOICE });
+      .json({
+        success: false,
+        message: MESSAGES.CUSTOM.FAILED_TO_GENERATE_INVOICE,
+      });
   }
 };

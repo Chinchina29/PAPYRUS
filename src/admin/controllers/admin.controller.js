@@ -70,40 +70,152 @@ export const dashboard = async (req, res) => {
     let revenue = 0;
     let totalOrders = 0;
     let recentOrders = [];
-    
+    let bestSellingProducts = [];
+    let bestSellingCategories = [];
+    let bestSellingBrands = [];
+
     try {
       stats = await userService.getDashboardStats();
       recentUsers = await userService.getRecentUsers(5);
-      
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const lastMonth = new Date();
       lastMonth.setDate(lastMonth.getDate() - 30);
-      
+
       const deliveredOrders = await Order.find({
         orderStatus: "Delivered",
-        createdAt: { $gte: lastMonth }
+        createdAt: { $gte: lastMonth },
       });
-      
-      revenue = deliveredOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+
+      revenue = deliveredOrders.reduce(
+        (sum, order) => sum + (order.totalAmount || 0),
+        0,
+      );
       totalOrders = await Order.countDocuments();
-      
+
       recentOrders = await Order.find()
         .populate("user", "firstName lastName")
         .populate("items.product", "title")
         .sort({ createdAt: -1 })
         .limit(5);
-      
-      recentOrders = recentOrders.map(order => {
+
+      recentOrders = recentOrders.map((order) => {
         const firstItem = order.items[0];
         return {
           title: firstItem?.title || "N/A",
-          customer: order.user ? `${order.user.firstName} ${order.user.lastName}` : "Guest",
+          customer: order.user
+            ? `${order.user.firstName} ${order.user.lastName}`
+            : "Guest",
           price: order.totalAmount || 0,
           time: getTimeAgo(order.createdAt),
         };
       });
-      
+
+      bestSellingProducts = await Order.aggregate([
+        { $match: { orderStatus: { $ne: "Cancelled" } } },
+        { $unwind: "$items" },
+        {
+          $match: {
+            "items.status": "Available",
+            "items.itemStatus": { $nin: ["Cancelled", "Returned"] },
+          },
+        },
+        {
+          $group: {
+            _id: "$items.product",
+            title: { $first: "$items.title" },
+            totalQty: { $sum: "$items.quantity" },
+            totalRevenue: { $sum: "$items.subtotal" },
+          },
+        },
+        {
+          $lookup: {
+            from: "products",
+            localField: "_id",
+            foreignField: "_id",
+            as: "productInfo",
+          },
+        },
+        { $unwind: { path: "$productInfo", preserveNullAndEmptyArrays: true } },
+        { $sort: { totalQty: -1 } },
+        { $limit: 10 },
+      ]);
+
+      bestSellingCategories = await Order.aggregate([
+        { $match: { orderStatus: { $ne: "Cancelled" } } },
+        { $unwind: "$items" },
+        {
+          $match: {
+            "items.status": "Available",
+            "items.itemStatus": { $nin: ["Cancelled", "Returned"] },
+          },
+        },
+        {
+          $lookup: {
+            from: "products",
+            localField: "items.product",
+            foreignField: "_id",
+            as: "productInfo",
+          },
+        },
+        { $unwind: "$productInfo" },
+        {
+          $group: {
+            _id: "$productInfo.category",
+            totalQty: { $sum: "$items.quantity" },
+            totalRevenue: { $sum: "$items.subtotal" },
+          },
+        },
+        {
+          $lookup: {
+            from: "categories",
+            localField: "_id",
+            foreignField: "_id",
+            as: "categoryInfo",
+          },
+        },
+        { $unwind: "$categoryInfo" },
+        {
+          $project: {
+            categoryName: "$categoryInfo.name",
+            totalQty: 1,
+            totalRevenue: 1,
+          },
+        },
+        { $sort: { totalQty: -1 } },
+        { $limit: 10 },
+      ]);
+
+      bestSellingBrands = await Order.aggregate([
+        { $match: { orderStatus: { $ne: "Cancelled" } } },
+        { $unwind: "$items" },
+        {
+          $match: {
+            "items.status": "Available",
+            "items.itemStatus": { $nin: ["Cancelled", "Returned"] },
+          },
+        },
+        {
+          $lookup: {
+            from: "products",
+            localField: "items.product",
+            foreignField: "_id",
+            as: "productInfo",
+          },
+        },
+        { $unwind: "$productInfo" },
+        {
+          $group: {
+            _id: "$productInfo.brand",
+            totalQty: { $sum: "$items.quantity" },
+            totalRevenue: { $sum: "$items.subtotal" },
+          },
+        },
+        { $match: { _id: { $ne: null, $ne: "" } } },
+        { $sort: { totalQty: -1 } },
+        { $limit: 10 },
+      ]);
     } catch (serviceError) {
       console.error("Dashboard stats error:", serviceError);
       stats = {
@@ -113,7 +225,7 @@ export const dashboard = async (req, res) => {
         newUsersToday: 0,
       };
     }
-    
+
     res.render("admin/dashboard", {
       user: req.session.adminUser || req.adminUser,
       currentPage_name: "dashboard",
@@ -129,16 +241,146 @@ export const dashboard = async (req, res) => {
       },
       recentUsers: recentUsers || [],
       recentOrders: recentOrders,
+      bestSellingProducts,
+      bestSellingCategories,
+      bestSellingBrands,
     });
   } catch (error) {
     console.error("Dashboard error:", error);
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).render("error/500", { error: "Dashboard loading failed" });
+    res
+      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+      .render("error/500", { error: "Dashboard loading failed" });
+  }
+};
+
+export const getChartData = async (req, res) => {
+  try {
+    const filter = req.query.filter || "monthly";
+    const now = new Date();
+    let labels = [];
+    let data = [];
+
+    if (filter === "weekly") {
+      const startOfWeek = new Date();
+      startOfWeek.setDate(now.getDate() - 6);
+      startOfWeek.setHours(0, 0, 0, 0);
+
+      const weeklyData = await Order.aggregate([
+        {
+          $match: {
+            orderStatus: { $ne: "Cancelled" },
+            createdAt: { $gte: startOfWeek },
+          },
+        },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            revenue: { $sum: "$totalAmount" },
+          },
+        },
+      ]);
+
+      const weeklyMap = {};
+      weeklyData.forEach((item) => {
+        weeklyMap[item._id] = item.revenue;
+      });
+
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(now.getDate() - i);
+        const yyyymmdd = d.toISOString().split("T")[0];
+        const label = d.toLocaleDateString("en-US", {
+          weekday: "short",
+          day: "numeric",
+        });
+        labels.push(label);
+        data.push(weeklyMap[yyyymmdd] || 0);
+      }
+    } else if (filter === "yearly") {
+      const startOfFiveYearsAgo = new Date(now.getFullYear() - 4, 0, 1);
+
+      const yearlyData = await Order.aggregate([
+        {
+          $match: {
+            orderStatus: { $ne: "Cancelled" },
+            createdAt: { $gte: startOfFiveYearsAgo },
+          },
+        },
+        {
+          $group: {
+            _id: { $year: "$createdAt" },
+            revenue: { $sum: "$totalAmount" },
+          },
+        },
+      ]);
+
+      const yearlyMap = {};
+      yearlyData.forEach((item) => {
+        yearlyMap[item._id] = item.revenue;
+      });
+
+      const currentYear = now.getFullYear();
+      for (let i = 4; i >= 0; i--) {
+        const year = currentYear - i;
+        labels.push(year.toString());
+        data.push(yearlyMap[year] || 0);
+      }
+    } else {
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      const endOfYear = new Date(now.getFullYear() + 1, 0, 1);
+
+      const monthlyData = await Order.aggregate([
+        {
+          $match: {
+            orderStatus: { $ne: "Cancelled" },
+            createdAt: { $gte: startOfYear, $lt: endOfYear },
+          },
+        },
+        {
+          $group: {
+            _id: { $month: "$createdAt" },
+            revenue: { $sum: "$totalAmount" },
+          },
+        },
+      ]);
+
+      const monthlyMap = {};
+      monthlyData.forEach((item) => {
+        monthlyMap[item._id] = item.revenue;
+      });
+
+      const months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
+      for (let i = 0; i < 12; i++) {
+        labels.push(months[i]);
+        data.push(monthlyMap[i + 1] || 0);
+      }
+    }
+
+    return res.json({ success: true, labels, data });
+  } catch (error) {
+    console.error("Error fetching chart data:", error);
+    return res
+      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+      .json({ success: false, error: error.message });
   }
 };
 
 function getTimeAgo(date) {
   const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-  
+
   if (seconds < 60) return `${seconds} sec ago`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
@@ -162,7 +404,9 @@ export const getUserManagement = async (req, res) => {
       status,
     });
   } catch (error) {
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).render("error/500", { error: "Failed to load users" });
+    res
+      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+      .render("error/500", { error: "Failed to load users" });
   }
 };
 export const blockUnblockUser = async (req, res) => {
@@ -183,9 +427,7 @@ export const blockUnblockUser = async (req, res) => {
     }
     return res.json({
       success: true,
-      message: user.isBlocked
-        ? MESSAGES.USER.BLOCKED
-        : MESSAGES.USER.UNBLOCKED,
+      message: user.isBlocked ? MESSAGES.USER.BLOCKED : MESSAGES.USER.UNBLOCKED,
       data: { isBlocked: user.isBlocked },
     });
   } catch (error) {
@@ -261,7 +503,8 @@ export const forgotPassword = async (req, res) => {
     if (!user || user.role !== "admin") {
       return res.json({
         success: true,
-        message: MESSAGES.CUSTOM.IF_THAT_EMAIL_EXISTS_A_RESET_CODE_HAS_BEEN_SENT,
+        message:
+          MESSAGES.CUSTOM.IF_THAT_EMAIL_EXISTS_A_RESET_CODE_HAS_BEEN_SENT,
       });
     }
     const throttle = otpService.checkThrottle(user);
@@ -295,7 +538,9 @@ export const forgotPassword = async (req, res) => {
       redirectUrl: "/admin/forgot-password/verify",
     });
   } catch (error) {
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: MESSAGES.CUSTOM.SERVER_ERROR });
+    return res
+      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+      .json({ success: false, message: MESSAGES.CUSTOM.SERVER_ERROR });
   }
 };
 export const verifyForgotOTP = async (req, res) => {
@@ -336,7 +581,9 @@ export const verifyForgotOTP = async (req, res) => {
       redirectUrl: "/admin/forgot-password/reset",
     });
   } catch (error) {
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: MESSAGES.CUSTOM.SERVER_ERROR });
+    return res
+      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+      .json({ success: false, message: MESSAGES.CUSTOM.SERVER_ERROR });
   }
 };
 export const resendForgotOTP = async (req, res) => {
@@ -381,7 +628,9 @@ export const resendForgotOTP = async (req, res) => {
       expiresIn: 600,
     });
   } catch (error) {
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: MESSAGES.CUSTOM.SERVER_ERROR });
+    return res
+      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+      .json({ success: false, message: MESSAGES.CUSTOM.SERVER_ERROR });
   }
 };
 export const resetPassword = async (req, res) => {
@@ -392,7 +641,8 @@ export const resetPassword = async (req, res) => {
     if (!email || !verified) {
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
-        message: MESSAGES.CUSTOM.UNAUTHORIZED_PLEASE_COMPLETE_VERIFICATION_FIRST,
+        message:
+          MESSAGES.CUSTOM.UNAUTHORIZED_PLEASE_COMPLETE_VERIFICATION_FIRST,
       });
     }
     if (!newPassword || newPassword.length < 8) {
@@ -425,6 +675,8 @@ export const resetPassword = async (req, res) => {
       redirectUrl: "/admin/signin",
     });
   } catch (error) {
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: MESSAGES.CUSTOM.SERVER_ERROR });
+    return res
+      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+      .json({ success: false, message: MESSAGES.CUSTOM.SERVER_ERROR });
   }
 };

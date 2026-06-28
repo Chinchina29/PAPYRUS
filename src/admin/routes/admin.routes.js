@@ -65,11 +65,18 @@ router.get(
   isAdmin,
   adminController.dashboard,
 );
+router.get(
+  "/dashboard/chart-data",
+  blockUserFromAdmin,
+  isAdmin,
+  adminController.getChartData,
+);
 router.get("/orders", blockUserFromAdmin, isAdmin, orderController.getOrders);
 router.get("/return-requests", blockUserFromAdmin, isAdmin, orderController.getReturnRequests);
 router.get("/orders/:id", blockUserFromAdmin, isAdmin, orderController.getOrderDetail);
 router.get("/orders/:id/invoice", blockUserFromAdmin, isAdmin, orderController.downloadInvoice);
 router.patch("/orders/:id/status", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.updateOrderStatus);
+router.patch("/orders/:orderId/items/:itemId/status", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.updateItemStatus);
 router.patch("/orders/:id/payment", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.updatePaymentStatus);
 router.post("/orders/:id/cancel", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.cancelOrder);
 router.post("/orders/:id/return/approve", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.approveReturnRequest);
