@@ -76,7 +76,6 @@ export const getSalesReport = async (req, res) => {
       user: req.session.adminUser,
     });
   } catch (error) {
-    console.error("Error fetching sales report:", error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).render("admin/reports", {
       orders: [],
       metrics: { totalSalesCount: 0, totalOrderAmount: 0, totalDiscount: 0 },
@@ -136,7 +135,6 @@ export const downloadPdfReport = async (req, res) => {
     });
     doc.end();
   } catch (error) {
-    console.error("Error generating PDF:", error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send("Error generating PDF report");
   }
 };
@@ -187,7 +185,6 @@ export const downloadExcelReport = async (req, res) => {
     await workbook.xlsx.write(res);
     res.end();
   } catch (error) {
-    console.error("Error generating Excel:", error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send("Error generating Excel report");
   }
 };

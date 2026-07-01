@@ -101,8 +101,7 @@ export const addCategory = async (req, res) => {
               isSubcategory: true,
             });
           } catch (subError) {
-            console.log(`Skipping duplicate subcategory: ${subName}`);
-          }
+            }
         }
       }
     }
@@ -211,8 +210,7 @@ export const editCategory = async (req, res) => {
               isSubcategory: true,
             });
           } catch (subError) {
-            console.log(`Skipping duplicate subcategory: ${subName}`);
-          }
+            }
         }
       }
     }

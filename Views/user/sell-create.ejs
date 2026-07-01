@@ -411,7 +411,6 @@
           btn.textContent = '✦ Publish Listing';
         }
       } catch(err) {
-        console.error('Submission error:', err);
         errorMsg.textContent = 'Something went wrong. Please try again.';
         errorMsg.style.display = 'block';
         btn.disabled = false;
@@ -488,7 +487,6 @@
         }
       } catch (error) {
         Swal.close();
-        console.error('Video upload error:', error);
         Swal.fire({ icon: 'error', title: 'Upload failed', text: 'Something went wrong. Please try again.', timer: 3000, showConfirmButton: false });
       }
     }

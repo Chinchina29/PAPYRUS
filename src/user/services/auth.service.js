@@ -2,25 +2,56 @@ import MESSAGES from "../../shared/constants/messages.js";
 import * as userService from "../../shared/services/user.service.js";
 import * as otpService from "../../shared/services/otp.service.js";
 import * as emailService from "../../shared/services/email.service.js";
+import * as referralService from "../../shared/services/referral.service.js";
+
 export const signupUser = async (userData) => {
   try {
     const existingUser = await userService.findUserByEmail(userData.email);
     if (existingUser) {
       return { success: false, message: MESSAGES.AUTH.EMAIL_ALREADY_EXISTS };
     }
+
+    let referralValidation = { isValid: true };
+    if (userData.referralCode) {
+      referralValidation = await referralService.validateReferralCode(
+        userData.referralCode,
+        userData.email
+      );
+      if (!referralValidation.isValid) {
+        return {
+          success: false,
+          message: referralValidation.message,
+          errorType: "INVALID_REFERRAL_CODE",
+        };
+      }
+    }
+
+    const referralCode = await referralService.generateReferralCode();
+
     const user = await userService.createUser({
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,
       password: userData.password,
       role: "user",
+      referralCode,
     });
+
+    if (referralValidation.isValid && referralValidation.referrerId) {
+      await referralService.createReferralRecord(
+        referralValidation.referrerId,
+        user._id,
+        referralValidation.referralCode
+      );
+    }
+
     const otp = otpService.setOTP(user);
     await user.save();
+
     const emailResult = await emailService.sendOTPEmail(
       user.email,
       user.firstName,
-      otp,
+      otp
     );
     if (!emailResult.success) {
       await userService.deleteUser(user._id);
@@ -29,6 +60,7 @@ export const signupUser = async (userData) => {
         message: MESSAGES.AUTH.OTP_SENT,
       };
     }
+
     return {
       success: true,
       user,
@@ -47,13 +79,16 @@ export const loginUser = async (email, password) => {
     if (!user.password) {
       return {
         success: false,
-        message: MESSAGES.CUSTOM.THIS_ACCOUNT_USES_GOOGLE_SIGN_IN_PLEASE_LOGIN_WITH_GOOGLE,
+        message:
+          MESSAGES.CUSTOM
+            .THIS_ACCOUNT_USES_GOOGLE_SIGN_IN_PLEASE_LOGIN_WITH_GOOGLE,
       };
     }
     if (user.isBlocked) {
       return {
         success: false,
-        message: MESSAGES.CUSTOM.YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT,
+        message:
+          MESSAGES.CUSTOM.YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT,
       };
     }
     if (!user.isVerified) {
@@ -71,7 +106,9 @@ export const loginUser = async (email, password) => {
       await emailService.sendOTPEmail(user.email, user.firstName, otp);
       return {
         success: false,
-        message: MESSAGES.CUSTOM.PLEASE_VERIFY_YOUR_EMAIL_FIRST_A_NEW_OTP_HAS_BEEN_SENT_TO_YOUR_EMAIL,
+        message:
+          MESSAGES.CUSTOM
+            .PLEASE_VERIFY_YOUR_EMAIL_FIRST_A_NEW_OTP_HAS_BEEN_SENT_TO_YOUR_EMAIL,
         needsVerification: true,
         email: user.email,
         userId: user._id,
@@ -87,7 +124,10 @@ export const loginUser = async (email, password) => {
     await user.save();
     return { success: true, user, message: MESSAGES.AUTH.LOGIN_SUCCESS };
   } catch (error) {
-    return { success: false, message: MESSAGES.CUSTOM.SERVER_ERROR_DURING_LOGIN };
+    return {
+      success: false,
+      message: MESSAGES.CUSTOM.SERVER_ERROR_DURING_LOGIN,
+    };
   }
 };
 export const verifyUserOTP = async (userId, otp) => {
@@ -103,9 +143,21 @@ export const verifyUserOTP = async (userId, otp) => {
     user.isVerified = true;
     otpService.clearOTP(user);
     await user.save();
-    return { success: true, user, message: MESSAGES.CUSTOM.EMAIL_VERIFIED_SUCCESSFULLY };
+
+    if (user.referredBy) {
+      await referralService.distributeRefereeReward(user._id);
+    }
+
+    return {
+      success: true,
+      user,
+      message: MESSAGES.CUSTOM.EMAIL_VERIFIED_SUCCESSFULLY,
+    };
   } catch (error) {
-    return { success: false, message: MESSAGES.CUSTOM.SERVER_ERROR_DURING_VERIFICATION };
+    return {
+      success: false,
+      message: MESSAGES.CUSTOM.SERVER_ERROR_DURING_VERIFICATION,
+    };
   }
 };
 export const resendUserOTP = async (userId) => {
@@ -117,7 +169,8 @@ export const resendUserOTP = async (userId) => {
     if (user.isBlocked) {
       return {
         success: false,
-        message: MESSAGES.CUSTOM.YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT,
+        message:
+          MESSAGES.CUSTOM.YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT,
       };
     }
     const throttle = otpService.checkThrottle(user);
@@ -136,7 +189,10 @@ export const resendUserOTP = async (userId) => {
       otp,
     );
     if (!emailResult.success) {
-      return { success: false, message: MESSAGES.CUSTOM.FAILED_TO_SEND_OTP_EMAIL };
+      return {
+        success: false,
+        message: MESSAGES.CUSTOM.FAILED_TO_SEND_OTP_EMAIL,
+      };
     }
     return { success: true, message: MESSAGES.AUTH.OTP_SENT };
   } catch (error) {
@@ -155,7 +211,8 @@ export const forgotPassword = async (email) => {
     if (user.isBlocked) {
       return {
         success: false,
-        message: MESSAGES.CUSTOM.YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT,
+        message:
+          MESSAGES.CUSTOM.YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT,
       };
     }
     const throttle = otpService.checkThrottle(user);
@@ -174,9 +231,15 @@ export const forgotPassword = async (email) => {
       otp,
     );
     if (!emailResult.success) {
-      return { success: false, message: MESSAGES.CUSTOM.FAILED_TO_SEND_RESET_EMAIL };
+      return {
+        success: false,
+        message: MESSAGES.CUSTOM.FAILED_TO_SEND_RESET_EMAIL,
+      };
     }
-    return { success: true, message: MESSAGES.CUSTOM.PASSWORD_RESET_OTP_SENT_TO_YOUR_EMAIL };
+    return {
+      success: true,
+      message: MESSAGES.CUSTOM.PASSWORD_RESET_OTP_SENT_TO_YOUR_EMAIL,
+    };
   } catch (error) {
     return { success: false, message: MESSAGES.CUSTOM.SERVER_ERROR };
   }
@@ -194,7 +257,10 @@ export const resetPassword = async (email, otp, newPassword) => {
     user.password = newPassword;
     otpService.clearOTP(user);
     await user.save();
-    return { success: true, message: MESSAGES.CUSTOM.PASSWORD_RESET_SUCCESSFULLY };
+    return {
+      success: true,
+      message: MESSAGES.CUSTOM.PASSWORD_RESET_SUCCESSFULLY,
+    };
   } catch (error) {
     return { success: false, message: MESSAGES.CUSTOM.SERVER_ERROR };
   }

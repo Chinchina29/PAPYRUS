@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Referrals - Papyrus</title>
+  <link rel="stylesheet" href="/css/profile.css" />
+  <style>
+    .referral-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .referral-hero {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px 30px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .referral-hero h1 {
+      margin: 0 0 10px 0;
+      font-size: 2rem;
+    }
+
+    .referral-hero p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+
+    .referral-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #667eea;
+      margin: 10px 0;
+    }
+
+    .stat-label {
+      color: #666;
+      font-size: 0.95rem;
+    }
+
+    .referral-share {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    .referral-share h2 {
+      margin-top: 0;
+      color: #333;
+      font-size: 1.5rem;
+    }
+
+    .share-option {
+      margin-bottom: 25px;
+    }
+
+    .share-option h3 {
+      margin-bottom: 10px;
+      color: #555;
+      font-size: 1.1rem;
+    }
+
+    .copy-box {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .copy-input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 1rem;
+      background: #f9f9f9;
+    }
+
+    .copy-btn {
+      padding: 12px 25px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+
+    .copy-btn:hover {
+      background: #5568d3;
+    }
+
+    .copy-btn.copied {
+      background: #28a745;
+    }
+
+    .how-it-works {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    .how-it-works h2 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .step {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      align-items: flex-start;
+    }
+
+    .step-number {
+      background: #667eea;
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .step-content h3 {
+      margin: 0 0 5px 0;
+      color: #333;
+    }
+
+    .step-content p {
+      margin: 0;
+      color: #666;
+    }
+
+    .referral-history {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .referral-history h2 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .history-table th,
+    .history-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .history-table th {
+      background: #f9f9f9;
+      font-weight: 600;
+      color: #555;
+    }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-completed {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .no-referrals {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <a href="/home" class="logo" style="text-decoration: none; color: inherit; cursor: pointer;">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 70 L50 85 Q48 90 45 90 L15 90 Q10 90 10 85 Z" fill="#7A5C3E"/>
+          <path d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 70 L50 85 Q52 90 55 90 L85 90 Q90 90 90 85 Z" fill="#7A5C3E"/>
+          <path d="M50 70 L45 50 L50 30 L55 50 Z" fill="#5a4a3a"/>
+          <circle cx="50" cy="25" r="6" fill="#5a4a3a"/>
+          <ellipse cx="50" cy="15" rx="4" ry="7" fill="#7A5C3E"/>
+          <ellipse cx="42" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
+          <ellipse cx="58" cy="20" rx="4" ry="6" fill="#7A5C3E"/>
+          <ellipse cx="38" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
+          <ellipse cx="62" cy="28" rx="5" ry="7" fill="#7A5C3E"/>
+          <ellipse cx="35" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
+          <ellipse cx="65" cy="38" rx="4" ry="6" fill="#7A5C3E"/>
+        </svg>
+        <span>Papyrus</span>
+      </a>
+      <nav class="nav">
+        <a href="/home">Browse</a>
+        <a href="/shop">Books</a>
+        <a href="/sell">Sell</a>
+        <a href="/about">About</a>
+      </nav>
+      <div class="header-icons">
+        <a href="/cart" class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 2L7 6H21L19 2H9Z"/>
+            <path d="M7 6L5 20H19L21 6"/>
+          </svg>
+        </a>
+        <a href="/wishlist" class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </a>
+        <a href="/profile" class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="breadcrumb">
+    <div class="container">
+      <a href="/home">SHOP</a> / <span>REFERRALS</span>
+    </div>
+  </div>
+
+  <div class="referral-container">
+    <!-- Hero Section -->
+    <div class="referral-hero">
+      <h1>🎁 Refer & Earn</h1>
+      <p>Share Papyrus with friends and earn rewards together!</p>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="referral-stats">
+      <div class="stat-card">
+        <div class="stat-label">Your Referral Code</div>
+        <div class="stat-value" id="referralCodeDisplay">---</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Referrals</div>
+        <div class="stat-value" id="totalReferrals">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Earnings</div>
+        <div class="stat-value">₹<span id="totalEarnings">0</span></div>
+      </div>
+    </div>
+
+    <!-- Share Options -->
+    <div class="referral-share">
+      <h2>Share Your Referral</h2>
+      
+      <div class="share-option">
+        <h3>📱 Referral Link (Automatic)</h3>
+        <p style="color: #666; margin-bottom: 10px;">Share this link - referral code will be automatically applied</p>
+        <div class="copy-box">
+          <input type="text" class="copy-input" id="referralLink" readonly />
+          <button class="copy-btn" onclick="copyToClipboard('referralLink', this)">Copy Link</button>
+        </div>
+      </div>
+
+      <div class="share-option">
+        <h3>🔑 Referral Code (Manual)</h3>
+        <p style="color: #666; margin-bottom: 10px;">Share this code for manual entry during signup</p>
+        <div class="copy-box">
+          <input type="text" class="copy-input" id="referralCodeInput" readonly />
+          <button class="copy-btn" onclick="copyToClipboard('referralCodeInput', this)">Copy Code</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="how-it-works">
+      <h2>How It Works</h2>
+      
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h3>Share Your Link or Code</h3>
+          <p>Send your unique referral link or code to friends via WhatsApp, email, or social media</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h3>Friend Signs Up</h3>
+          <p>When they sign up using your link/code and verify their account, they get ₹50 bonus</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h3>You Get Rewarded</h3>
+          <p>Once your friend completes their first order, you receive ₹100 in your wallet!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Referral History -->
+    <div class="referral-history">
+      <h2>Referral History</h2>
+      <div id="historyContainer" class="loading">Loading...</div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <div class="footer-logo">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 70 L50 85 Q48 90 45 90 L15 90 Q10 90 10 85 Z" fill="currentColor"/>
+              <path d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 70 L50 85 Q52 90 55 90 L85 90 Q90 90 90 85 Z" fill="currentColor"/>
+              <path d="M50 70 L45 50 L50 30 L55 50 Z" fill="currentColor"/>
+              <circle cx="50" cy="25" r="6" fill="currentColor"/>
+              <ellipse cx="50" cy="15" rx="4" ry="7" fill="currentColor"/>
+              <ellipse cx="42" cy="20" rx="4" ry="6" fill="currentColor"/>
+              <ellipse cx="58" cy="20" rx="4" ry="6" fill="currentColor"/>
+            </svg>
+            <span>PAPYRUS</span>
+          </div>
+          <p>Preserving literary heritage through sustainable book trading.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="/browse">Browse Books</a></li>
+            <li><a href="/shop">Shop</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Support</h4>
+          <ul>
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="/terms">Terms of Service</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2024 PAPYRUS. PRESERVING STORIES SINCE 1974.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Load stats and history on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadStats();
+      await loadHistory();
+    });
+
+    async function loadStats() {
+      try {
+        const response = await fetch('/referrals/stats');
+        const data = await response.json();
+
+        if (data.success) {
+          const stats = data.stats;
+          document.getElementById('referralCodeDisplay').textContent = stats.referralCode;
+          document.getElementById('totalReferrals').textContent = stats.referralCount || 0;
+          document.getElementById('totalEarnings').textContent = stats.referralEarnings || 0;
+
+          // Set referral link and code
+          const baseUrl = window.location.origin;
+          const referralLink = `${baseUrl}/signup?ref=${stats.referralCode}`;
+          document.getElementById('referralLink').value = referralLink;
+          document.getElementById('referralCodeInput').value = stats.referralCode;
+        }
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      }
+    }
+
+    async function loadHistory() {
+      try {
+        const response = await fetch('/referrals/history');
+        const data = await response.json();
+
+        const container = document.getElementById('historyContainer');
+
+        if (data.success && data.history && data.history.length > 0) {
+          container.innerHTML = `
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Friend</th>
+                  <th>Signed Up</th>
+                  <th>Status</th>
+                  <th>Your Reward</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${data.history.map(ref => `
+                  <tr>
+                    <td>${ref.referredUserName}</td>
+                    <td>${new Date(ref.referredAt).toLocaleDateString()}</td>
+                    <td>
+                      <span class="status-badge ${ref.rewardGiven ? 'status-completed' : 'status-pending'}">
+                        ${ref.rewardGiven ? 'Completed' : 'Pending Order'}
+                      </span>
+                    </td>
+                    <td>₹${ref.rewardGiven ? '100' : '0'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+        } else {
+          container.innerHTML = `
+            <div class="no-referrals">
+              <p>No referrals yet. Start sharing your link to earn rewards!</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Error loading history:', error);
+        document.getElementById('historyContainer').innerHTML = `
+          <div class="no-referrals">
+            <p>Unable to load referral history</p>
+          </div>
+        `;
+      }
+    }
+
+    function copyToClipboard(inputId, button) {
+      const input = document.getElementById(inputId);
+      input.select();
+      input.setSelectionRange(0, 99999); // For mobile
+
+      try {
+        document.execCommand('copy');
+        
+        // Visual feedback
+        const originalText = button.textContent;
+        button.textContent = '✓ Copied!';
+        button.classList.add('copied');
+
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.classList.remove('copied');
+        }, 2000);
+      } catch (err) {
+        alert('Failed to copy. Please copy manually.');
+      }
+    }
+  </script>
+</body>
+</html>

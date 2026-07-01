@@ -688,8 +688,6 @@
             }
 
             try {
-                console.log('Sending review request:', { action, adminNote });
-                
                 const response = await fetch(`/admin/submissions/<%= submission._id %>/review`, {
                     method: 'POST',
                     headers: { 
@@ -699,17 +697,12 @@
                     body: JSON.stringify({ action, adminNote })
                 });
 
-                console.log('Response status:', response.status);
-                
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('Response error:', errorText);
                     throw new Error(`HTTP ${response.status}: ${errorText}`);
                 }
 
                 const data = await response.json();
-                console.log('Response data:', data);
-
                 if (data.success) {
                     await Swal.fire({
                         icon: 'success',
@@ -727,7 +720,6 @@
                     });
                 }
             } catch (error) {
-                console.error('Request failed:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Request Failed',
@@ -740,8 +732,7 @@
         document.getElementById('curatorNotes').addEventListener('input', function() {
             clearTimeout(saveTimeout);
             saveTimeout = setTimeout(() => {
-                console.log('Auto-saving notes...');
-            }, 2000);
+                }, 2000);
         });
     </script>
 </body>

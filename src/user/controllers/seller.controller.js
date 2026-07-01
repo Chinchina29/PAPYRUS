@@ -301,8 +301,7 @@ export const deleteSubmission = async (req, res) => {
           try {
             await cloudinary.uploader.destroy(image.publicId);
           } catch (err) {
-            console.error(`Failed to delete image ${image.publicId}:`, err);
-          }
+            }
         }
       }
     }
@@ -314,8 +313,7 @@ export const deleteSubmission = async (req, res) => {
               resource_type: "video",
             });
           } catch (err) {
-            console.error(`Failed to delete video ${video.publicId}:`, err);
-          }
+            }
         }
       }
     }

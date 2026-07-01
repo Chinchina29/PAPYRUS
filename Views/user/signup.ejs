@@ -235,6 +235,25 @@
             </div>
           </div>
 
+          <div class="form-group full-width">
+            <label for="referralCode">Referral Code (Optional)</label>
+            <input
+              type="text"
+              id="referralCode"
+              name="referralCode"
+              placeholder="Enter referral code if you have one"
+              value="<%= typeof referralCode !== 'undefined' ? referralCode : '' %>"
+              maxlength="12"
+              novalidate
+              style="text-transform: uppercase;"
+            />
+            <% if (typeof referralCode !== 'undefined' && referralCode) { %>
+            <small style="color: #28a745; font-size: 0.85rem; margin-top: 4px; display: block;">
+              ✓ Referral code applied! You'll get ₹50 bonus after verification.
+            </small>
+            <% } %>
+          </div>
+
           <button type="submit" class="submit-btn">Create Account</button>
           <p
             id="errorMessage"
@@ -432,6 +451,7 @@
           const emailValue = email.value.trim();
           const passwordValue = password.value;
           const confirmPasswordValue = confirmPassword.value;
+          const referralCodeValue = document.getElementById('referralCode').value.trim().toUpperCase();
 
           if (!firstNameValue) {
             await Swal.fire({
@@ -598,6 +618,7 @@
             email: emailValue,
             password: passwordValue,
             confirmPassword: confirmPasswordValue,
+            referralCode: referralCodeValue,
           };
 
           submitBtn.disabled = true;

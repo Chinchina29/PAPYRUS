@@ -19,7 +19,6 @@ export const createNotification = async ({
     });
     return notification;
   } catch (error) {
-    console.error("Error creating notification:", error);
     throw error;
   }
 };
@@ -83,7 +82,6 @@ export const notifyAdminsReturnRequest = async ({
     );
     await Promise.all(notifications);
   } catch (error) {
-    console.error("Error notifying admins:", error);
     throw error;
   }
 };

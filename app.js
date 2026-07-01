@@ -15,9 +15,12 @@ import {
   userSessionStore,
   adminSessionStore,
 } from "./src/shared/config/session.config.js";
+import * as userService from "./src/shared/services/user.service.js";
 import authRoutes from "./src/user/routes/auth.routes.js";
 import userRoutes from "./src/user/routes/user.routes.js";
 import adminRoutes from "./src/admin/routes/admin.routes.js";
+import referralRoutes from "./src/user/routes/referral.routes.js";
+import adminReferralRoutes from "./src/admin/routes/referral.routes.js";
 const requiredEnvVars = [
   "MONGODB_URI",
   "SESSION_SECRET",
@@ -82,6 +85,46 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+app.use(async (req, res, next) => {
+  if (req.path.startsWith("/admin")) return next();
+  
+  const publicPaths = ["/", "/login", "/signup", "/forgot-password", "/reset-password", "/auth/google", "/auth/google/callback"];
+  const isPublicPath = publicPaths.some(path => req.path === path || req.path.startsWith("/signup/") || req.path.startsWith("/auth/"));
+  
+  if (isPublicPath) return next();
+  
+  if (req.session && req.session.userId) {
+    try {
+      const user = await userService.findUserById(req.session.userId);
+      
+      if (!user || user.isBlocked) {
+        return req.session.destroy(() => {
+          res.clearCookie("papyrus.user.sid");
+          
+          if (req.xhr || req.headers.accept?.includes("json")) {
+            return res.status(HTTP_STATUS.FORBIDDEN).json({
+              success: false,
+              message: user && user.isBlocked 
+                ? MESSAGES.CUSTOM.YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT
+                : MESSAGES.AUTH.SESSION_EXPIRED,
+              redirectUrl: "/login",
+              blocked: true
+            });
+          }
+          
+          return res.redirect("/login?error=" + encodeURIComponent(
+            user && user.isBlocked ? "blocked" : "session_expired"
+          ));
+        });
+      }
+    } catch (error) {
+      
+    }
+  }
+  
+  next();
+});
 app.use("/admin", (req, res, next) => {
   if (req.session && req.session.adminId && req.session.lastActivity) {
     const timeDiff = Date.now() - new Date(req.session.lastActivity).getTime();
@@ -123,8 +166,10 @@ app.use((req, res, next) => {
 app.use(setUserLocals);
 app.use(generalApiLimiter);
 app.use("/admin", preventUserFromAdminRoutes, adminRoutes);
+app.use("/admin/referrals", preventUserFromAdminRoutes, adminReferralRoutes);
 app.use("/", authRoutes);
 app.use("/", userRoutes);
+app.use("/referrals", referralRoutes);
 app.use((req, res) => {
   const isAjax = req.xhr || req.headers.accept?.includes("application/json");
   if (isAjax) {

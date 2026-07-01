@@ -819,8 +819,7 @@
           });
         }
       } catch (error) {
-        console.error('Failed to update checkout summary:', error);
-      }
+        }
     }
 
     // Reduced frequency for better performance
@@ -941,7 +940,6 @@
           placeOrderBtn.textContent = 'PLACE ORDER';
         }
       } catch (error) {
-        console.error('Place order error:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
@@ -1081,7 +1079,6 @@
         button.innerHTML = originalText;
         button.disabled = false;
       } catch (error) {
-        console.error('Load coupons error:', error);
         button.innerHTML = originalText;
         button.disabled = false;
         
@@ -1139,7 +1136,6 @@
           });
         }
       } catch (error) {
-        console.error('Apply coupon error:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
@@ -1179,7 +1175,6 @@
           });
         }
       } catch (error) {
-        console.error('Remove coupon error:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',

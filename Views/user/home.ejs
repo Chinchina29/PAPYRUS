@@ -110,66 +110,90 @@
           </div>
         </div>
         <div class="books-carousel">
-          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
-            <div class="book-image">
-              <img
-                src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop"
-                alt="The Garden of Evening"
-              />
-            </div>
-            <h3>THE GARDEN OF EVENING</h3>
-            <p class="price">$8.8</p>
-          </a>
-          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
-            <div class="book-image">
-              <img
-                src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&h=400&fit=crop"
-                alt="Notebook 1947"
-              />
-            </div>
-            <h3>NOTEBOOK 1947</h3>
-            <p class="price">$6.5</p>
-          </a>
-          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
-            <div class="book-image">
-              <img
-                src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=300&h=400&fit=crop"
-                alt="Spectre"
-              />
-            </div>
-            <h3>SPECTRE</h3>
-            <p class="price">$7.5</p>
-          </a>
-          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
-            <div class="book-image">
-              <img
-                src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&h=400&fit=crop"
-                alt="Notes of the Air"
-              />
-            </div>
-            <h3>NOTES OF THE AIR</h3>
-            <p class="price">$8.8</p>
-          </a>
-          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
-            <div class="book-image">
-              <img
-                src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=300&h=400&fit=crop"
-                alt="The Secret History"
-              />
-            </div>
-            <h3>THE SECRET HISTORY</h3>
-            <p class="price">$9.9</p>
-          </a>
-          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
-            <div class="book-image">
-              <img
-                src="https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=300&h=400&fit=crop"
-                alt="One Summer's Day"
-              />
-            </div>
-            <h3>ONE SUMMER'S DAY</h3>
-            <p class="price">$6.2</p>
-          </a>
+          <% if (recommendedProducts && recommendedProducts.length > 0) { %>
+            <% recommendedProducts.forEach(product => { %>
+              <a href="/shop/<%= product._id %>" class="book-card" style="text-decoration: none; color: inherit;">
+                <div class="book-image">
+                  <% if (product.discount > 0) { %>
+                    <span class="badge">-<%= product.discount %>% OFF</span>
+                  <% } %>
+                  <img
+                    src="<%= product.productImage && product.productImage.length > 0 ? product.productImage[0] : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop' %>"
+                    alt="<%= product.title %>"
+                  />
+                </div>
+                <h3><%= product.title.toUpperCase() %></h3>
+                <p class="price">
+                  ₹<%= product.salePrice.toFixed(2) %>
+                  <% if (product.discount > 0) { %>
+                    <span class="old-price">₹<%= product.regularPrice.toFixed(2) %></span>
+                  <% } %>
+                </p>
+              </a>
+            <% }) %>
+          <% } else { %>
+            <!-- Fallback to hardcoded if no products -->
+            <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+              <div class="book-image">
+                <img
+                  src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop"
+                  alt="The Garden of Evening"
+                />
+              </div>
+              <h3>THE GARDEN OF EVENING</h3>
+              <p class="price">₹720</p>
+            </a>
+            <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+              <div class="book-image">
+                <img
+                  src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&h=400&fit=crop"
+                  alt="Notebook 1947"
+                />
+              </div>
+              <h3>NOTEBOOK 1947</h3>
+              <p class="price">₹530</p>
+            </a>
+            <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+              <div class="book-image">
+                <img
+                  src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=300&h=400&fit=crop"
+                  alt="Spectre"
+                />
+              </div>
+              <h3>SPECTRE</h3>
+              <p class="price">₹615</p>
+            </a>
+            <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+              <div class="book-image">
+                <img
+                  src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&h=400&fit=crop"
+                  alt="Notes of the Air"
+                />
+              </div>
+              <h3>NOTES OF THE AIR</h3>
+              <p class="price">₹720</p>
+            </a>
+            <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+              <div class="book-image">
+                <img
+                  src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=300&h=400&fit=crop"
+                  alt="The Secret History"
+                />
+              </div>
+              <h3>THE SECRET HISTORY</h3>
+              <p class="price">₹810</p>
+            </a>
+            <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+              <div class="book-image">
+                <img
+                  src="https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=300&h=400&fit=crop"
+                  alt="One Summer's Day"
+                />
+              </div>
+              <h3>ONE SUMMER'S DAY</h3>
+              <p class="price">₹507</p>
+            </a>
+          <% } %>
         </div>
       </div>
     </section>
@@ -178,58 +202,52 @@
       <div class="container">
         <h2>Top Sellers This Week</h2>
         <div class="books-grid">
-          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
-            <div class="book-image">
-              <span class="badge">-15% OFF</span>
-              <img
-                src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&h=400&fit=crop"
-                alt="The Bluest Eye"
-              />
-            </div>
-            <h3>THE BLUEST EYE</h3>
-            <p class="price">$8.8 <span class="old-price">$10</span></p>
-          </a>
-          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
-            <div class="book-image">
-              <span class="badge new">NEW</span>
-              <img
-                src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop"
-                alt="Frost Song"
-              />
-            </div>
-            <h3>FROST SONG</h3>
-            <p class="price">$10.0</p>
-          </a>
-          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
-            <div class="book-image">
-              <img
-                src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=300&h=400&fit=crop"
-                alt="Watership Daisies"
-              />
-            </div>
-            <h3>WATERSHIP DAISIES</h3>
-            <p class="price">$7.5</p>
-          </a>
-          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
-            <div class="book-image">
-              <img
-                src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&h=400&fit=crop"
-                alt="Green Lantern"
-              />
-            </div>
-            <h3>GREEN LANTERN</h3>
-            <p class="price">$8.0</p>
-          </a>
-          <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
-            <div class="book-image">
-              <img
-                src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=300&h=400&fit=crop"
-                alt="The Alchemist"
-              />
-            </div>
-            <h3>THE ALCHEMIST</h3>
-            <p class="price">$9.7</p>
-          </a>
+          <% if (topSellers && topSellers.length > 0) { %>
+            <% topSellers.forEach(product => { %>
+              <a href="/shop/<%= product._id %>" class="book-card" style="text-decoration: none; color: inherit;">
+                <div class="book-image">
+                  <% if (product.discount > 0) { %>
+                    <span class="badge">-<%= product.discount %>% OFF</span>
+                  <% } %>
+                  <img
+                    src="<%= product.productImage && product.productImage.length > 0 ? product.productImage[0] : 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&h=400&fit=crop' %>"
+                    alt="<%= product.title %>"
+                  />
+                </div>
+                <h3><%= product.title.toUpperCase() %></h3>
+                <p class="price">
+                  ₹<%= product.salePrice.toFixed(2) %>
+                  <% if (product.discount > 0) { %>
+                    <span class="old-price">₹<%= product.regularPrice.toFixed(2) %></span>
+                  <% } %>
+                </p>
+              </a>
+            <% }) %>
+          <% } else { %>
+            <!-- Fallback to hardcoded if no products -->
+            <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+              <div class="book-image">
+                <span class="badge">-15% OFF</span>
+                <img
+                  src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&h=400&fit=crop"
+                  alt="The Bluest Eye"
+                />
+              </div>
+              <h3>THE BLUEST EYE</h3>
+              <p class="price">₹720 <span class="old-price">₹820</span></p>
+            </a>
+            <a href="/shop" class="book-card" style="text-decoration: none; color: inherit;">
+              <div class="book-image">
+                <span class="badge new">NEW</span>
+                <img
+                  src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop"
+                  alt="Frost Song"
+                />
+              </div>
+              <h3>FROST SONG</h3>
+              <p class="price">₹650</p>
+            </a>
+          <% } %>
         </div>
       </div>
     </section>
@@ -748,7 +766,6 @@
             document.getElementById('genreModal').style.display = 'none';
           }
         } catch (error) {
-          console.error('Error skipping genre selection:', error);
           document.getElementById('genreModal').style.display = 'none';
         }
       }

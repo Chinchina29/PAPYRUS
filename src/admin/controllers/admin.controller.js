@@ -217,7 +217,6 @@ export const dashboard = async (req, res) => {
         { $limit: 10 },
       ]);
     } catch (serviceError) {
-      console.error("Dashboard stats error:", serviceError);
       stats = {
         totalUsers: 0,
         activeUsers: 0,
@@ -246,7 +245,6 @@ export const dashboard = async (req, res) => {
       bestSellingBrands,
     });
   } catch (error) {
-    console.error("Dashboard error:", error);
     res
       .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
       .render("error/500", { error: "Dashboard loading failed" });
@@ -371,7 +369,6 @@ export const getChartData = async (req, res) => {
 
     return res.json({ success: true, labels, data });
   } catch (error) {
-    console.error("Error fetching chart data:", error);
     return res
       .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
       .json({ success: false, error: error.message });

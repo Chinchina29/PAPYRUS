@@ -8,13 +8,14 @@ import {
 } from "../../shared/helpers/response.helper.js";
 export const signup = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, confirmPassword } = req.body;
+    const { firstName, lastName, email, password, confirmPassword, referralCode } = req.body;
     const signupData = {
       firstName: firstName?.trim(),
       lastName: lastName?.trim(),
       email: email?.trim(),
       password,
       confirmPassword,
+      referralCode: referralCode?.trim(),
     };
     const result = await authService.signupUser(signupData);
     if (!result.success) {
