@@ -33,7 +33,6 @@ export const getWallet = async (req, res) => {
       user: req.session.user || null,
     });
   } catch (error) {
-    console.error("Get wallet error:", error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).render("user/wallet", {
       walletBalance: 0,
       transactions: [],

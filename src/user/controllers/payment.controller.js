@@ -22,7 +22,6 @@ export const verifyPayment = async (req, res) => {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: MESSAGES.PAYMENT.VERIFICATION_FAILED });
     }
   } catch (error) {
-    console.error("Verification error:", error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || MESSAGES.PAYMENT.VERIFICATION_FAILED });
   }
 };
@@ -32,7 +31,6 @@ export const handlePaymentFailure = async (req, res) => {
     await paymentService.processPaymentFailure(orderId, reason);
     res.json({ success: true, message: MESSAGES.PAYMENT.PAYMENT_FAILED });
   } catch (error) {
-    console.error("Payment failure handling error:", error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message });
   }
 };
@@ -57,7 +55,6 @@ export const getPaymentSuccess = async (req, res) => {
       user: req.session.user || null,
     });
   } catch (error) {
-    console.error("Payment success page error:", error);
     res.redirect("/orders");
   }
 };
@@ -82,7 +79,6 @@ export const getPaymentFailure = async (req, res) => {
       user: req.session.user || null,
     });
   } catch (error) {
-    console.error("Payment failure page error:", error);
     res.redirect("/cart");
   }
 };

@@ -26,7 +26,6 @@ export const getReturnRequests = async (req, res) => {
       user: req.session.adminUser,
     });
   } catch (error) {
-    console.error("Get return requests error:", error);
     res.render("admin/return-requests", {
       orders: [],
       total: 0,
@@ -303,7 +302,13 @@ export const approveItemReturn = async (req, res) => {
       { returnDocument: "after" },
     );
 
-    const refundAmount = item.subtotal || item.price * item.quantity;
+    const orderSubtotal = order.items.reduce((sum, item) => sum + (item.subtotal || item.price * item.quantity), 0);
+    const discountPercentage = orderSubtotal > 0 ? (order.discount || 0) / orderSubtotal : 0;
+    
+    const itemSubtotal = item.subtotal || item.price * item.quantity;
+    const itemDiscountAmount = itemSubtotal * discountPercentage;
+    const refundAmount = itemSubtotal - itemDiscountAmount;
+    
     if (refundAmount > 0 && order.paymentStatus === "Paid") {
       const user = await User.findById(order.user._id || order.user);
       if (user) {
@@ -360,7 +365,6 @@ export const approveItemReturn = async (req, res) => {
           .ITEM_RETURN_REQUEST_APPROVED_SUCCESSFULLY_AND_INVENTORY_RESTORED,
     });
   } catch (error) {
-    console.error("Approve item return error:", error);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message || "Failed to approve item return request",
@@ -412,7 +416,6 @@ export const rejectItemReturn = async (req, res) => {
       message: MESSAGES.CUSTOM.ITEM_RETURN_REQUEST_REJECTED_SUCCESSFULLY,
     });
   } catch (error) {
-    console.error("Reject item return error:", error);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message || "Failed to reject item return request",
@@ -471,7 +474,13 @@ export const updateItemStatus = async (req, res) => {
         $inc: { stock: item.quantity },
       });
       if (order.paymentStatus === "Paid") {
-        const refundAmount = item.subtotal || item.price * item.quantity;
+        const orderSubtotal = order.items.reduce((sum, i) => sum + (i.subtotal || i.price * i.quantity), 0);
+        const discountPercentage = orderSubtotal > 0 ? (order.discount || 0) / orderSubtotal : 0;
+        
+        const itemSubtotal = item.subtotal || item.price * item.quantity;
+        const itemDiscountAmount = itemSubtotal * discountPercentage;
+        const refundAmount = itemSubtotal - itemDiscountAmount;
+        
         if (refundAmount > 0) {
           const user = await User.findById(order.user._id || order.user);
           if (user) {
@@ -509,7 +518,6 @@ export const updateItemStatus = async (req, res) => {
       order: updatedOrder,
     });
   } catch (error) {
-    console.error("Update item status error:", error);
     return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: error.message || "Failed to update item status",

@@ -33,7 +33,6 @@ class PaymentGatewayService {
                 status: paymentOrder.status
             };
         } catch (error) {
-            console.error('Payment order creation failed:', error);
             throw new Error(`${MESSAGES.PAYMENT.ORDER_CREATION_FAILED}: ${error.message}`);
         }
     }
@@ -58,13 +57,12 @@ class PaymentGatewayService {
                 orderId: razorpay_order_id
             };
         } catch (error) {
-            console.error('Payment signature verification error:', error);
             throw error;
         }
     }
     async processPaymentSuccess(orderId, paymentDetails) {
         try {
-            const order = await Order.findById(orderId);
+            const order = await Order.findById(orderId).populate('user');
             if (!order) {
                 throw new Error(MESSAGES.PAYMENT.ORDER_NOT_FOUND);
             }
@@ -77,9 +75,25 @@ class PaymentGatewayService {
                 gateway: paymentDetails.gateway || 'razorpay'
             };
             await order.save();
+
+            const User = (await import('../models/User.js')).default;
+            const user = await User.findById(order.user);
+            if (user && user.referredBy) {
+                const Order = (await import('../models/Order.js')).default;
+                const previousOrders = await Order.countDocuments({
+                    user: user._id,
+                    paymentStatus: 'Paid',
+                    _id: { $ne: order._id }
+                });
+                
+                if (previousOrders === 0) {
+                    const referralService = await import('./referral.service.js');
+                    await referralService.distributeReferrerReward(user._id);
+                }
+            }
+
             return order;
         } catch (error) {
-            console.error('Payment success processing error:', error);
             throw error;
         }
     }
@@ -100,7 +114,6 @@ class PaymentGatewayService {
             await order.save();
             return order;
         } catch (error) {
-            console.error('Payment failure processing error:', error);
             throw error;
         }
     }
@@ -122,11 +135,9 @@ class PaymentGatewayService {
                     await this.handlePaymentFailed(event.payload.payment.entity);
                     break;
                 default:
-                    console.log(`Unhandled webhook event: ${event.event}`);
-            }
+                    }
             return { success: true };
         } catch (error) {
-            console.error('Webhook handling error:', error);
             throw error;
         }
     }
@@ -142,7 +153,6 @@ class PaymentGatewayService {
                 });
             }
         } catch (error) {
-            console.error('Payment captured webhook error:', error);
             throw error;
         }
     }
@@ -155,7 +165,6 @@ class PaymentGatewayService {
                 await this.processPaymentFailure(order._id, paymentEntity.error_description || MESSAGES.PAYMENT.PAYMENT_FAILED);
             }
         } catch (error) {
-            console.error('Payment failed webhook error:', error);
             throw error;
         }
     }

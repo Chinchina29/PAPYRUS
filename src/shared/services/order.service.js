@@ -20,7 +20,11 @@ export const getReturnRequests = async ({
   } else {
     query.$or = [
       { returnRequestStatus: { $in: ["Requested", "Approved", "Rejected"] } },
-      { "items.returnRequestStatus": { $in: ["Requested", "Approved", "Rejected"] } },
+      {
+        "items.returnRequestStatus": {
+          $in: ["Requested", "Approved", "Rejected"],
+        },
+      },
     ];
   }
   if (search) {
@@ -137,24 +141,25 @@ export const getUserOrders = async (
 };
 export const recalculateOrderStatus = (order) => {
   const statusProgression = {
-    "Pending": 1,
-    "Processing": 2,
-    "Shipped": 3,
-    "Delivered": 4,
+    Pending: 1,
+    Processing: 2,
+    Shipped: 3,
+    Delivered: 4,
   };
 
-  // Filter out items that are cancelled or returned
-  const activeItems = order.items.filter(item => 
-    item.itemStatus !== "Cancelled" && 
-    item.itemStatus !== "Returned" && 
-    !item.cancelledAt && 
-    item.returnRequestStatus !== "Approved"
+  const activeItems = order.items.filter(
+    (item) =>
+      item.itemStatus !== "Cancelled" &&
+      item.itemStatus !== "Returned" &&
+      !item.cancelledAt &&
+      item.returnRequestStatus !== "Approved",
   );
 
   if (activeItems.length === 0) {
-    const hasReturned = order.items.some(item => 
-      item.itemStatus === "Returned" || 
-      item.returnRequestStatus === "Approved"
+    const hasReturned = order.items.some(
+      (item) =>
+        item.itemStatus === "Returned" ||
+        item.returnRequestStatus === "Approved",
     );
     return hasReturned ? "Returned" : "Cancelled";
   }
@@ -162,7 +167,7 @@ export const recalculateOrderStatus = (order) => {
   let minLevel = Infinity;
   let computedStatus = "Pending";
 
-  activeItems.forEach(item => {
+  activeItems.forEach((item) => {
     const status = item.itemStatus || "Pending";
     const level = statusProgression[status] || 1;
     if (level < minLevel) {
@@ -223,22 +228,33 @@ export const updateOrderStatus = async (id, status) => {
     throw new Error(MESSAGES.ORDER.NOT_FOUND);
   }
   const statusProgression = {
-    "Pending": 1,
-    "Processing": 2,
-    "Shipped": 3,
-    "Delivered": 4,
-    "Cancelled": 5,
-    "Returned": 6
+    Pending: 1,
+    Processing: 2,
+    Shipped: 3,
+    Delivered: 4,
+    Cancelled: 5,
+    Returned: 6,
   };
   const currentStatusLevel = statusProgression[order.orderStatus];
   const newStatusLevel = statusProgression[status];
-  if (currentStatusLevel && newStatusLevel && newStatusLevel < currentStatusLevel) {
+  if (
+    currentStatusLevel &&
+    newStatusLevel &&
+    newStatusLevel < currentStatusLevel
+  ) {
     if (order.orderStatus === "Delivered" && status !== "Returned") {
-      throw new Error(MESSAGES.CUSTOM.CANNOT_ROLLBACK_ORDER_STATUS_FROM_DELIVERED_ONLY_RETURNS_ARE_ALLOWED);
+      throw new Error(
+        MESSAGES.CUSTOM
+          .CANNOT_ROLLBACK_ORDER_STATUS_FROM_DELIVERED_ONLY_RETURNS_ARE_ALLOWED,
+      );
     } else if (order.orderStatus === "Shipped" && status === "Pending") {
-      throw new Error(MESSAGES.CUSTOM.CANNOT_ROLLBACK_SHIPPED_ORDER_TO_PENDING_STATUS);
+      throw new Error(
+        MESSAGES.CUSTOM.CANNOT_ROLLBACK_SHIPPED_ORDER_TO_PENDING_STATUS,
+      );
     } else if (order.orderStatus === "Processing" && status === "Pending") {
-      throw new Error(MESSAGES.CUSTOM.CANNOT_ROLLBACK_PROCESSING_ORDER_TO_PENDING_STATUS);
+      throw new Error(
+        MESSAGES.CUSTOM.CANNOT_ROLLBACK_PROCESSING_ORDER_TO_PENDING_STATUS,
+      );
     }
   }
   order.orderStatus = status;

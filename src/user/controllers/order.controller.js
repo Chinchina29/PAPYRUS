@@ -136,14 +136,21 @@ export const cancelOrder = async (req, res) => {
       }
       let refundAmount = 0;
       if (order.paymentStatus === "Paid") {
-        for (const item of order.items) {
-          if (productIds.includes(item._id.toString()) && item.itemStatus === "Cancelled") {
-            refundAmount += (item.subtotal || item.price * item.quantity);
-          }
-        }
         if (allItemsCancelled) {
           refundAmount = order.totalAmount;
           order.paymentStatus = 'Refunded';
+        } else {
+          const orderSubtotal = order.items.reduce((sum, item) => sum + (item.subtotal || item.price * item.quantity), 0);
+          const discountPercentage = orderSubtotal > 0 ? (order.discount || 0) / orderSubtotal : 0;
+          
+          for (const item of order.items) {
+            if (productIds.includes(item._id.toString()) && item.itemStatus === "Cancelled") {
+              const itemSubtotal = item.subtotal || item.price * item.quantity;
+              const itemDiscountAmount = itemSubtotal * discountPercentage;
+              const itemRefund = itemSubtotal - itemDiscountAmount;
+              refundAmount += itemRefund;
+            }
+          }
         }
       }
       if (refundAmount > 0) {
@@ -201,7 +208,6 @@ export const cancelOrder = async (req, res) => {
       message: MESSAGES.ORDER.CANCELLED + (refundAmount > 0 ? " Amount refunded to wallet." : ""),
     });
   } catch (error) {
-    console.error("Cancel order error:", error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: MESSAGES.CUSTOM.FAILED_TO_CANCEL_ORDER,
@@ -213,12 +219,6 @@ export const returnOrder = async (req, res) => {
     const userId = req.session.userId;
     const { orderId } = req.params;
     const { reason, comments, productIds } = req.body;
-    console.log("Return request received:", {
-      orderId,
-      userId,
-      reason,
-      productIds,
-    });
     if (!reason || !reason.trim()) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
@@ -227,23 +227,17 @@ export const returnOrder = async (req, res) => {
     }
     const order = await orderService.getOrderById(orderId);
     if (!order) {
-      console.log("Order not found:", orderId);
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
         message: MESSAGES.ORDER.NOT_FOUND,
       });
     }
     if (order.user._id.toString() !== userId.toString()) {
-      console.log("Unauthorized access:", {
-        orderUser: order.user._id,
-        requestUser: userId,
-      });
       return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,
         message: MESSAGES.COMMON.UNAUTHORIZED,
       });
     }
-    console.log("Order status:", order.orderStatus);
     if (order.orderStatus !== "Delivered") {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
@@ -251,7 +245,6 @@ export const returnOrder = async (req, res) => {
       });
     }
     if (!order.deliveredAt) {
-      console.log("Order has no deliveredAt date");
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         message: MESSAGES.CUSTOM.ORDER_DELIVERY_DATE_NOT_FOUND,
@@ -260,7 +253,6 @@ export const returnOrder = async (req, res) => {
     const daysSinceDelivery = Math.floor(
       (new Date() - new Date(order.deliveredAt)) / (1000 * 60 * 60 * 24),
     );
-    console.log("Days since delivery:", daysSinceDelivery);
     if (daysSinceDelivery > 7) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
@@ -268,29 +260,17 @@ export const returnOrder = async (req, res) => {
       });
     }
     if (productIds && Array.isArray(productIds) && productIds.length > 0) {
-      console.log("Processing item-level return for items:", productIds);
       let returnedCount = 0;
       for (const item of order.items) {
         const itemId = item._id.toString();
         if (productIds.includes(itemId)) {
-          console.log(
-            "Processing item:",
-            itemId,
-            "Status:",
-            item.itemStatus,
-            "Return status:",
-            item.returnRequestStatus,
-          );
           if (item.returnRequestStatus === "Requested") {
-            console.log("Item already has pending return request");
             continue;
           }
           if (item.returnRequestStatus === "Approved") {
-            console.log("Item return already approved");
             continue;
           }
           const effectiveStatus = item.itemStatus || order.orderStatus;
-          console.log("Effective item status:", effectiveStatus);
           if (effectiveStatus !== "Delivered") {
             return res.status(HTTP_STATUS.BAD_REQUEST).json({
               success: false,
@@ -302,18 +282,15 @@ export const returnOrder = async (req, res) => {
           item.returnReason = reason.trim();
           item.returnComments = comments?.trim() || "";
           returnedCount++;
-          console.log("Item marked for return:", itemId);
-        }
+          }
       }
       if (returnedCount === 0) {
-        console.log("No items were marked for return");
         return res.status(HTTP_STATUS.BAD_REQUEST).json({
           success: false,
           message: MESSAGES.CUSTOM.NO_ITEMS_WERE_MARKED_FOR_RETURN_THEY_MAY_ALREADY_HAVE_PENDING_RETURN_REQUESTS,
         });
       }
       await order.save();
-      console.log("Order saved with", returnedCount, "items marked for return");
       const itemTitles = order.items
         .filter((item) => productIds.includes(item._id.toString()))
         .map((item) => item.title)
@@ -331,7 +308,6 @@ export const returnOrder = async (req, res) => {
             : `Return requests submitted successfully for ${returnedCount} items. Awaiting admin approval.`,
       });
     }
-    console.log("Processing full order return");
     if (order.returnRequestStatus === "Requested") {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
@@ -357,7 +333,6 @@ export const returnOrder = async (req, res) => {
       }
     }
     await order.save();
-    console.log("Full order return request saved");
     await notificationService.notifyAdminsReturnRequest({
       orderId: order._id,
       customerName: `${order.user.firstName} ${order.user.lastName}`,
@@ -368,7 +343,6 @@ export const returnOrder = async (req, res) => {
       message: MESSAGES.CUSTOM.RETURN_REQUEST_SUBMITTED_SUCCESSFULLY_AWAITING_ADMIN_APPROVAL,
     });
   } catch (error) {
-    console.error("Return order error:", error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message || "Failed to process return request",

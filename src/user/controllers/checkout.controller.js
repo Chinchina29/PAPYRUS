@@ -298,6 +298,23 @@ export const placeOrder = async (req, res) => {
       });
       order.paymentStatus = 'Paid';
       await order.save();
+
+      const User = (await import('../../shared/models/User.js')).default;
+      const Order = (await import('../../shared/models/Order.js')).default;
+      const referralService = await import('../../shared/services/referral.service.js');
+      
+      const orderUser = await User.findById(userId);
+      if (orderUser && orderUser.referredBy) {
+        const previousOrders = await Order.countDocuments({
+          user: userId,
+          paymentStatus: 'Paid',
+          _id: { $ne: order._id }
+        });
+        
+        if (previousOrders === 0) {
+          await referralService.distributeReferrerReward(userId);
+        }
+      }
     }
     await cartService.clearCart(userId);
     req.session.appliedCoupon = null;
@@ -320,7 +337,6 @@ export const placeOrder = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Place order error:", error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message || MESSAGES.COMMON.INTERNAL_ERROR,

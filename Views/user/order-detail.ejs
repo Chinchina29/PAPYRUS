@@ -609,14 +609,6 @@
 
       if (result.isConfirmed) {
         try {
-          console.log('Sending return request:', {
-            orderId,
-            itemId,
-            productIds: [itemId],
-            reason: result.value.reason,
-            comments: result.value.comments
-          });
-          
           const response = await fetch(`/orders/${orderId}/return`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

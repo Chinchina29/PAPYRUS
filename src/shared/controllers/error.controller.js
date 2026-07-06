@@ -11,7 +11,6 @@ export const show404 = (req, res) => {
     res.redirect('/?error=The page you\'re looking for doesn\'t exist. It might have been moved or deleted.');
 };
 export const show500 = (err, req, res, next) => {
-    console.error('Server Error:', err);
     const isAjax = req.xhr || req.headers.accept?.includes('application/json');
     if (isAjax) {
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({

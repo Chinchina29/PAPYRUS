@@ -195,7 +195,6 @@ export const getAvailableCoupons = async (userId, cartTotal, cartItems) => {
         });
       }
     } catch (error) {
-      console.error("Error processing coupon:", coupon.code, error);
       continue;
     }
   }
@@ -213,12 +212,8 @@ export const getAvailableCouponsSimple = async () => {
     .populate("applicableProducts", "title")
     .sort({ discountValue: -1 })
     .limit(15);
-  console.log("Simple coupon fetch - found:", coupons.length);
   coupons.forEach((coupon) => {
-    console.log(
-      `Coupon: ${coupon.code}, Min: ${coupon.minPurchaseAmount}, Active: ${coupon.isActive}, ValidUntil: ${coupon.validUntil}`,
-    );
-  });
+    });
   return coupons;
 };
 export const validateCouponForActiveItems = async (

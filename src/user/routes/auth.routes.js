@@ -37,25 +37,57 @@ router.get("/home", async (req, res) => {
     res.set("Expires", "0");
     const isNewUser = req.session.isNewUser || false;
     let categories = [];
+    let recommendedProducts = [];
+    let topSellers = [];
+    
     if (isNewUser) {
       try {
-        const categoryService = await import("../../admin/services/category.service.js");
-        categories = await categoryService.getMainCategories();
+        const Category = (await import("../../shared/models/Category.js")).default;
+        categories = await Category.find({ isListed: true, parentCategory: null }).select('_id name').lean();
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        categories = [];
       }
     }
+
+    try {
+      const Product = (await import("../../shared/models/Product.js")).default;
+      
+      recommendedProducts = await Product.find({ 
+        isListed: true,
+        quantity: { $gt: 0 }
+      })
+      .select('title salePrice regularPrice productImage discount')
+      .limit(6)
+      .sort({ createdAt: -1 })
+      .lean();
+
+      topSellers = await Product.find({ 
+        isListed: true,
+        quantity: { $gt: 0 }
+      })
+      .select('title salePrice regularPrice productImage discount')
+      .limit(6)
+      .sort({ salesCount: -1, createdAt: -1 })
+      .lean();
+    } catch (error) {
+      recommendedProducts = [];
+      topSellers = [];
+    }
+
     return res.render("user/home", { 
       user: req.session.user,
       isNewUser,
-      categories
+      categories,
+      recommendedProducts,
+      topSellers
     });
   }
   res.redirect("/");
 });
-router.get("/signup", isNotAuthenticated, (req, res) =>
-  res.render("user/signup"),
-);
+router.get("/signup", isNotAuthenticated, (req, res) => {
+  const referralCode = req.query.ref || '';
+  res.render("user/signup", { referralCode });
+});
 router.post("/signup", signupValidation, validate, authLimiter, authController.signup);
 router.get("/signup/verify-otp", (req, res) => {
   if (!req.session.tempUserId) {

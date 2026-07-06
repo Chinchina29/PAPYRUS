@@ -17,7 +17,6 @@ export const getSettings = async (req, res) => {
       success: null,
     });
   } catch (error) {
-    console.error("Error fetching settings:", error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).render("admin/settings", {
       title: "Settings",
       admin: null,
@@ -60,7 +59,6 @@ export const updateProfile = async (req, res) => {
       message: MESSAGES.USER.PROFILE_UPDATED,
     });
   } catch (error) {
-    console.error("Error updating profile:", error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: MESSAGES.COMMON.INTERNAL_ERROR,
@@ -120,7 +118,6 @@ export const updatePassword = async (req, res) => {
       message: MESSAGES.AUTH.PASSWORD_CHANGED,
     });
   } catch (error) {
-    console.error("Error updating password:", error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: MESSAGES.COMMON.INTERNAL_ERROR,

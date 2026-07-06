@@ -16,16 +16,18 @@ export const isAuthenticated = async (req, res, next) => {
     const user = await userService.findUserById(req.session.userId);
     if (!user || user.isBlocked) {
       req.session.destroy((err) => {
-        if (err) console.error('Session destruction error:', err);
+        if (err) {
+          
+        }
       });
       if (req.xhr || req.headers.accept?.includes('application/json')) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
           success: false,
-          message: MESSAGES.AUTH.SESSION_EXPIRED,
+          message: user && user.isBlocked ? MESSAGES.CUSTOM.YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT : MESSAGES.AUTH.SESSION_EXPIRED,
           redirectUrl: "/login",
         });
       }
-      return res.redirect("/login");
+      return res.redirect("/login?error=" + encodeURIComponent(user && user.isBlocked ? "blocked" : "session_expired"));
     }
     req.session.user = {
       id: user._id,
@@ -36,7 +38,6 @@ export const isAuthenticated = async (req, res, next) => {
     };
     next();
   } catch (error) {
-    console.error('User authentication error:', error);
     if (req.xhr || req.headers.accept?.includes('application/json')) {
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         success: false,
