@@ -1,6 +1,7 @@
 import WalletTransaction from "../../shared/models/WalletTransaction.js";
 import HTTP_STATUS from "../../shared/constants/httpStatus.js";
 import MESSAGES from "../../shared/constants/messages.js";
+import User from "../../shared/models/User.js";
 
 export const getWalletLedger = async (req, res) => {
   try {
@@ -8,26 +9,44 @@ export const getWalletLedger = async (req, res) => {
     const limit = 10;
     const skip = (page - 1) * limit;
     const query = {};
+
     if (req.query.search) {
-      const total = await WalletTransaction.countDocuments(query);
-      const totalPages = Math.ceil(total / limit) || 1;
-      const transactions = await WalletTransaction.find(query)
-        .populate("user", "firstName lastName email")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit);
-      res.render("admin/wallet", {
-        title: "Wallet Ledger",
-        transactions,
-        currentPage: page,
-        totalPages,
-        total,
-        search: req.query.search || "",
-        currentPage_name: "wallet",
-        user: req.session.adminUser,
-        error: null,
-      });
+      const searchRegex = new RegExp(req.query.search.trim(), "i");
+      const matchingUsers = await User.find({
+        $or: [
+          { firstName: searchRegex },
+          { lastName: searchRegex },
+          { email: searchRegex },
+        ]
+      }).select("_id");
+
+      const userIds = matchingUsers.map(u => u._id);
+      query.$or = [
+        { user: { $in: userIds } },
+        { type: searchRegex },
+        { description: searchRegex }
+      ];
     }
+
+    const total = await WalletTransaction.countDocuments(query);
+    const totalPages = Math.ceil(total / limit) || 1;
+    const transactions = await WalletTransaction.find(query)
+      .populate("user", "firstName lastName email")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.render("admin/wallet", {
+      title: "Wallet Ledger",
+      transactions,
+      currentPage: page,
+      totalPages,
+      total,
+      search: req.query.search || "",
+      currentPage_name: "wallet",
+      user: req.session.adminUser,
+      error: null,
+    });
   } catch (error) {
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).render("admin/wallet", {
       title: "Wallet Ledger",
