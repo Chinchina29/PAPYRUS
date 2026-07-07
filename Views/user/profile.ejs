@@ -224,14 +224,7 @@
     </footer>
     
     <script>
-        history.pushState(null, null, location.href);
-        window.onpopstate = function () {
-            history.go(1);
-        };
-        
-        window.addEventListener('beforeunload', function() {
-            history.replaceState(null, null, location.href);
-        });
+        // Back button navigation enabled
     </script>
 
     <script>

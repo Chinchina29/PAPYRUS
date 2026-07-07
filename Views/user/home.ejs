@@ -66,36 +66,52 @@
           <a href="/shop" class="view-all">VIEW ALL ></a>
         </div>
         <div class="collections-grid">
-          <div class="collection-card">
-            <img
-              src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=300&fit=crop"
-              alt="Rare Finds"
-            />
-            <div class="collection-info">
-              <h3>Rare Finds</h3>
-              <p>View More</p>
+          <% if (featuredCollections && featuredCollections.length > 0) { %>
+            <% featuredCollections.forEach(product => { %>
+              <a href="/shop/<%= product._id %>" class="collection-card" style="text-decoration: none; color: inherit;">
+                <img
+                  src="<%= product.images && product.images.length > 0 ? product.images[0].url : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=300&fit=crop' %>"
+                  alt="<%= product.title %>"
+                />
+                <div class="collection-info">
+                  <h3><%= product.title.substring(0, 20) %><%= product.title.length > 20 ? '...' : '' %></h3>
+                  <p>₹<%= product.price ? product.price.toFixed(2) : 'N/A' %></p>
+                </div>
+              </a>
+            <% }) %>
+          <% } else { %>
+            <!-- Fallback to static if no products -->
+            <div class="collection-card">
+              <img
+                src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=300&fit=crop"
+                alt="Rare Finds"
+              />
+              <div class="collection-info">
+                <h3>Rare Finds</h3>
+                <p>View More</p>
+              </div>
             </div>
-          </div>
-          <div class="collection-card">
-            <img
-              src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=300&fit=crop"
-              alt="The Classics"
-            />
-            <div class="collection-info">
-              <h3>The Classics</h3>
-              <p>View More</p>
+            <div class="collection-card">
+              <img
+                src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=300&fit=crop"
+                alt="The Classics"
+              />
+              <div class="collection-info">
+                <h3>The Classics</h3>
+                <p>View More</p>
+              </div>
             </div>
-          </div>
-          <div class="collection-card">
-            <img
-              src="https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=400&h=300&fit=crop"
-              alt="Nonfiction Picks"
-            />
-            <div class="collection-info">
-              <h3>Nonfiction Picks</h3>
-              <p>View More</p>
+            <div class="collection-card">
+              <img
+                src="https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=400&h=300&fit=crop"
+                alt="Nonfiction Picks"
+              />
+              <div class="collection-info">
+                <h3>Nonfiction Picks</h3>
+                <p>View More</p>
+              </div>
             </div>
-          </div>
+          <% } %>
         </div>
       </div>
     </section>
@@ -114,19 +130,21 @@
             <% recommendedProducts.forEach(product => { %>
               <a href="/shop/<%= product._id %>" class="book-card" style="text-decoration: none; color: inherit;">
                 <div class="book-image">
-                  <% if (product.discount > 0) { %>
-                    <span class="badge">-<%= product.discount %>% OFF</span>
+                  <% if (product.originalPrice && product.price < product.originalPrice) { 
+                    const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+                  %>
+                    <span class="badge">-<%= discount %>% OFF</span>
                   <% } %>
                   <img
-                    src="<%= product.productImage && product.productImage.length > 0 ? product.productImage[0] : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop' %>"
+                    src="<%= product.images && product.images.length > 0 ? product.images[0].url : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop' %>"
                     alt="<%= product.title %>"
                   />
                 </div>
                 <h3><%= product.title.toUpperCase() %></h3>
                 <p class="price">
-                  ₹<%= product.salePrice.toFixed(2) %>
-                  <% if (product.discount > 0) { %>
-                    <span class="old-price">₹<%= product.regularPrice.toFixed(2) %></span>
+                  ₹<%= product.price.toFixed(2) %>
+                  <% if (product.originalPrice && product.price < product.originalPrice) { %>
+                    <span class="old-price">₹<%= product.originalPrice.toFixed(2) %></span>
                   <% } %>
                 </p>
               </a>
@@ -206,19 +224,21 @@
             <% topSellers.forEach(product => { %>
               <a href="/shop/<%= product._id %>" class="book-card" style="text-decoration: none; color: inherit;">
                 <div class="book-image">
-                  <% if (product.discount > 0) { %>
-                    <span class="badge">-<%= product.discount %>% OFF</span>
+                  <% if (product.originalPrice && product.price < product.originalPrice) { 
+                    const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+                  %>
+                    <span class="badge">-<%= discount %>% OFF</span>
                   <% } %>
                   <img
-                    src="<%= product.productImage && product.productImage.length > 0 ? product.productImage[0] : 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&h=400&fit=crop' %>"
+                    src="<%= product.images && product.images.length > 0 ? product.images[0].url : 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&h=400&fit=crop' %>"
                     alt="<%= product.title %>"
                   />
                 </div>
                 <h3><%= product.title.toUpperCase() %></h3>
                 <p class="price">
-                  ₹<%= product.salePrice.toFixed(2) %>
-                  <% if (product.discount > 0) { %>
-                    <span class="old-price">₹<%= product.regularPrice.toFixed(2) %></span>
+                  ₹<%= product.price.toFixed(2) %>
+                  <% if (product.originalPrice && product.price < product.originalPrice) { %>
+                    <span class="old-price">₹<%= product.originalPrice.toFixed(2) %></span>
                   <% } %>
                 </p>
               </a>
@@ -338,32 +358,47 @@
       <div class="container">
         <h2>Recent Stories</h2>
         <div class="stories-grid">
-          <div class="story-card">
-            <img
-              src="https:
-              alt="Story"
-            />
-            <p>Love among the Daisies</p>
-          </div>
-          <div class="story-card">
-            <img
-              src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=300&h=400&fit=crop"
-              alt="Story"
-            />
-            <p>Stories in the Attic</p>
-          </div>
-          <div class="story-card">
-            <img
-              src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop"
-              alt="Story"
-            />
-          </div>
-          <div class="story-card">
-            <img
-              src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&h=400&fit=crop"
-              alt="Story"
-            />
-          </div>
+          <% if (recentStories && recentStories.length > 0) { %>
+            <% recentStories.forEach(product => { %>
+              <a href="/shop/<%= product._id %>" class="story-card" style="text-decoration: none; color: inherit;">
+                <img
+                  src="<%= product.images && product.images.length > 0 ? product.images[0].url : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop' %>"
+                  alt="<%= product.title %>"
+                />
+                <% if (product.title) { %>
+                  <p><%= product.title.substring(0, 25) %><%= product.title.length > 25 ? '...' : '' %></p>
+                <% } %>
+              </a>
+            <% }) %>
+          <% } else { %>
+            <!-- Fallback to static if no products -->
+            <div class="story-card">
+              <img
+                src="https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=300&h=400&fit=crop"
+                alt="Story"
+              />
+              <p>Love among the Daisies</p>
+            </div>
+            <div class="story-card">
+              <img
+                src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=300&h=400&fit=crop"
+                alt="Story"
+              />
+              <p>Stories in the Attic</p>
+            </div>
+            <div class="story-card">
+              <img
+                src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop"
+                alt="Story"
+              />
+            </div>
+            <div class="story-card">
+              <img
+                src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&h=400&fit=crop"
+                alt="Story"
+              />
+            </div>
+          <% } %>
         </div>
       </div>
     </section>

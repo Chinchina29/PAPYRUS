@@ -9,7 +9,6 @@ import connectDB from "./src/shared/config/mongo.config.js";
 import passport from "./src/shared/config/passport.config.js";
 import { setUserLocals } from "./src/user/middleware/auth.middleware.js";
 import { secureHeaders } from "./src/shared/middleware/cache.middleware.js";
-import { generalApiLimiter } from "./src/shared/middleware/rateLimiting.middleware.js";
 import { registerCurrencyHelpers } from "./src/shared/utils/currency.js";
 import {
   userSessionStore,
@@ -164,7 +163,6 @@ app.use((req, res, next) => {
   next();
 });
 app.use(setUserLocals);
-app.use(generalApiLimiter);
 app.use("/admin", preventUserFromAdminRoutes, adminRoutes);
 app.use("/admin/referrals", preventUserFromAdminRoutes, adminReferralRoutes);
 app.use("/", authRoutes);

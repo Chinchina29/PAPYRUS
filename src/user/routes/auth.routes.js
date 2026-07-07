@@ -19,146 +19,58 @@ import {
   setGooglePassword,
   skipSetPassword,
 } from "../controllers/password.controller.js";
-import {
-  authLimiter,
-  emailLimiter,
-} from "../../shared/middleware/rateLimiting.middleware.js";
+
 const router = express.Router();
-router.get("/", (req, res) => {
-  if (req.session && req.session.userId) {
-    return res.redirect("/home");
-  }
-  res.render("user/home-landing", { user: null });
-});
-router.get("/home", async (req, res) => {
-  if (req.session && req.session.userId) {
-    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
-    res.set("Pragma", "no-cache");
-    res.set("Expires", "0");
-    const isNewUser = req.session.isNewUser || false;
-    let categories = [];
-    let recommendedProducts = [];
-    let topSellers = [];
-    
-    if (isNewUser) {
-      try {
-        const Category = (await import("../../shared/models/Category.js")).default;
-        categories = await Category.find({ isListed: true, parentCategory: null }).select('_id name').lean();
-      } catch (error) {
-        categories = [];
-      }
-    }
 
-    try {
-      const Product = (await import("../../shared/models/Product.js")).default;
-      
-      recommendedProducts = await Product.find({ 
-        isListed: true,
-        quantity: { $gt: 0 }
-      })
-      .select('title salePrice regularPrice productImage discount')
-      .limit(6)
-      .sort({ createdAt: -1 })
-      .lean();
+router.get("/", authController.getLandingPage);
+router.get("/home", authController.getHomePage);
 
-      topSellers = await Product.find({ 
-        isListed: true,
-        quantity: { $gt: 0 }
-      })
-      .select('title salePrice regularPrice productImage discount')
-      .limit(6)
-      .sort({ salesCount: -1, createdAt: -1 })
-      .lean();
-    } catch (error) {
-      recommendedProducts = [];
-      topSellers = [];
-    }
+router.get("/signup", isNotAuthenticated, authController.getSignupPage);
+router.post("/signup", signupValidation, validate, authController.signup);
+router.get("/signup/verify-otp", authController.getVerifyOtpPage);
+router.post("/signup/verify-otp", authController.verifyOTP);
+router.post("/signup/resend-otp", authController.resendOTP);
 
-    return res.render("user/home", { 
-      user: req.session.user,
-      isNewUser,
-      categories,
-      recommendedProducts,
-      topSellers
-    });
-  }
-  res.redirect("/");
-});
-router.get("/signup", isNotAuthenticated, (req, res) => {
-  const referralCode = req.query.ref || '';
-  res.render("user/signup", { referralCode });
-});
-router.post("/signup", signupValidation, validate, authLimiter, authController.signup);
-router.get("/signup/verify-otp", (req, res) => {
-  if (!req.session.tempUserId) {
-    return res.redirect("/signup");
-  }
-  res.render("user/verifyotp", {
-    email: req.session.tempUserEmail,
-    type: "signup",
-  });
-});
-router.post("/signup/verify-otp", authLimiter, authController.verifyOTP);
-router.post("/signup/resend-otp", emailLimiter, authController.resendOTP);
 router.get(
   "/login",
   isNotAuthenticated,
   preventAdminFromUserAuth,
-  (req, res) => res.render("user/login"),
+  authController.getLoginPage,
 );
 router.get(
   "/signin",
   isNotAuthenticated,
   preventAdminFromUserAuth,
-  (req, res) => res.render("user/login"),
+  authController.getLoginPage,
 );
 router.post(
   "/login",
   loginValidation,
   validate,
-  authLimiter,
   preventAdminFromUserAuth,
   authController.login,
 );
-router.get("/forgot-password", isNotAuthenticated, (req, res) =>
-  res.render("user/forgotpassword"),
+
+router.get(
+  "/forgot-password",
+  isNotAuthenticated,
+  authController.getForgotPasswordPage,
 );
-router.post(
-  "/forgot-password/send",
-  emailLimiter,
-  passwordController.forgotPassword,
-);
-router.get("/forgot-password/verify", (req, res) => {
-  if (!req.session.resetEmail) {
-    return res.redirect("/forgot-password");
-  }
-  res.render("user/verifyotp", {
-    email: req.session.resetEmail,
-    type: "reset",
-  });
-});
-router.post(
+router.post("/forgot-password/send", passwordController.forgotPassword);
+router.get(
   "/forgot-password/verify",
-  authLimiter,
-  passwordController.verifyResetOTP,
+  authController.getForgotPasswordVerifyPage,
 );
-router.post(
-  "/forgot-password/resend",
-  emailLimiter,
-  passwordController.resendResetOTP,
-);
-router.get("/forgot-password/reset", (req, res) => {
-  if (!req.session.resetEmail || !req.session.resetVerified) {
-    return res.redirect("/forgot-password");
-  }
-  res.render("user/resetpassword");
-});
+router.post("/forgot-password/verify", passwordController.verifyResetOTP);
+router.post("/forgot-password/resend", passwordController.resendResetOTP);
+router.get("/forgot-password/reset", authController.getForgotPasswordResetPage);
 router.post(
   "/forgot-password/reset",
   passwordResetValidation,
   validate,
   passwordController.resetPassword,
 );
+
 router.get(
   "/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] }),
@@ -168,12 +80,17 @@ router.get(
   passport.authenticate("google", { failureRedirect: "/login" }),
   oauthController.googleCallback,
 );
+
 router.get("/set-password", showSetPassword);
-router.post("/set-password", authLimiter, setGooglePassword);
+router.post("/set-password", setGooglePassword);
 router.get("/set-password/skip", skipSetPassword);
+
 router.get("/logout", authController.logout);
+
 router.post("/save-genre-preferences", authController.saveGenrePreferences);
 router.post("/skip-genre-selection", authController.skipGenreSelection);
+
 router.get("/shop", productController.getShop);
 router.get("/shop/:id", productController.getProductDetail);
+
 export default router;

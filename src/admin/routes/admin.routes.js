@@ -21,10 +21,6 @@ import {
   adminLoginValidation,
   validate,
 } from "../../shared/middleware/validation.middleware.js";
-import { 
-  authLimiter, 
-  generalApiLimiter 
-} from "../../shared/middleware/rateLimiting.middleware.js";
 const router = express.Router();
 router.use(noCache);
 router.use(preventUserFromAdminRoutes);
@@ -39,7 +35,7 @@ router.get("/migrate-genres", blockUserFromAdmin, isAdmin, async (req, res) => {
 router.get("/signin", isAdminNotAuthenticated, (req, res) => {
   res.render("admin/adminsignin", { error: req.query.error || null });
 });
-router.post("/signin", authLimiter, isAdminNotAuthenticated, adminController.signin);
+router.post("/signin", isAdminNotAuthenticated, adminController.signin);
 router.get("/forgot-password", isAdminNotAuthenticated, (req, res) => {
   res.render("admin/adminforgotpassword");
 });
@@ -75,14 +71,14 @@ router.get("/orders", blockUserFromAdmin, isAdmin, orderController.getOrders);
 router.get("/return-requests", blockUserFromAdmin, isAdmin, orderController.getReturnRequests);
 router.get("/orders/:id", blockUserFromAdmin, isAdmin, orderController.getOrderDetail);
 router.get("/orders/:id/invoice", blockUserFromAdmin, isAdmin, orderController.downloadInvoice);
-router.patch("/orders/:id/status", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.updateOrderStatus);
-router.patch("/orders/:orderId/items/:itemId/status", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.updateItemStatus);
-router.patch("/orders/:id/payment", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.updatePaymentStatus);
-router.post("/orders/:id/cancel", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.cancelOrder);
-router.post("/orders/:id/return/approve", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.approveReturnRequest);
-router.post("/orders/:id/return/reject", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.rejectReturnRequest);
-router.post("/orders/:orderId/items/:itemId/return/approve", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.approveItemReturn);
-router.post("/orders/:orderId/items/:itemId/return/reject", blockUserFromAdmin, isAdmin, generalApiLimiter, orderController.rejectItemReturn);
+router.patch("/orders/:id/status", blockUserFromAdmin, isAdmin, orderController.updateOrderStatus);
+router.patch("/orders/:orderId/items/:itemId/status", blockUserFromAdmin, isAdmin, orderController.updateItemStatus);
+router.patch("/orders/:id/payment", blockUserFromAdmin, isAdmin, orderController.updatePaymentStatus);
+router.post("/orders/:id/cancel", blockUserFromAdmin, isAdmin, orderController.cancelOrder);
+router.post("/orders/:id/return/approve", blockUserFromAdmin, isAdmin, orderController.approveReturnRequest);
+router.post("/orders/:id/return/reject", blockUserFromAdmin, isAdmin, orderController.rejectReturnRequest);
+router.post("/orders/:orderId/items/:itemId/return/approve", blockUserFromAdmin, isAdmin, orderController.approveItemReturn);
+router.post("/orders/:orderId/items/:itemId/return/reject", blockUserFromAdmin, isAdmin, orderController.rejectItemReturn);
 router.get("/wallet", blockUserFromAdmin, isAdmin, walletController.getWalletLedger);
 router.get("/wallet/export-csv", blockUserFromAdmin, isAdmin, walletController.exportWalletCSV);
 router.get("/wallet/transaction/:id", blockUserFromAdmin, isAdmin, walletController.getTransactionDetails);
@@ -92,8 +88,8 @@ router.get("/sales-report", blockUserFromAdmin, isAdmin, (req, res) => res.redir
 router.get("/reports/download/pdf", blockUserFromAdmin, isAdmin, reportController.downloadPdfReport);
 router.get("/reports/download/excel", blockUserFromAdmin, isAdmin, reportController.downloadExcelReport);
 router.get("/settings", blockUserFromAdmin, isAdmin, settingsController.getSettings);
-router.post("/settings/profile", blockUserFromAdmin, isAdmin, generalApiLimiter, settingsController.updateProfile);
-router.post("/settings/password", blockUserFromAdmin, isAdmin, generalApiLimiter, settingsController.updatePassword);
+router.post("/settings/profile", blockUserFromAdmin, isAdmin, settingsController.updateProfile);
+router.post("/settings/password", blockUserFromAdmin, isAdmin, settingsController.updatePassword);
 router.get("/support", blockUserFromAdmin, isAdmin, (req, res) => {
   res.render("admin/support", { 
     title: "Help & Support",
@@ -104,12 +100,12 @@ router.get("/support", blockUserFromAdmin, isAdmin, (req, res) => {
 });
 router.get("/coupons", blockUserFromAdmin, isAdmin, couponController.getCoupons);
 router.get("/coupons/add", blockUserFromAdmin, isAdmin, couponController.getAddCoupon);
-router.post("/coupons/add", blockUserFromAdmin, isAdmin, generalApiLimiter, couponController.addCoupon);
+router.post("/coupons/add", blockUserFromAdmin, isAdmin, couponController.addCoupon);
 router.get("/coupons/edit/:id", blockUserFromAdmin, isAdmin, couponController.getEditCoupon);
-router.post("/coupons/edit/:id", blockUserFromAdmin, isAdmin, generalApiLimiter, couponController.editCoupon);
-router.delete("/coupons/delete/:id", blockUserFromAdmin, isAdmin, generalApiLimiter, couponController.deleteCoupon);
-router.patch("/coupons/toggle/:id", blockUserFromAdmin, isAdmin, generalApiLimiter, couponController.toggleCoupon);
-router.post("/coupons/validate", generalApiLimiter, couponController.validateCoupon);
+router.post("/coupons/edit/:id", blockUserFromAdmin, isAdmin, couponController.editCoupon);
+router.delete("/coupons/delete/:id", blockUserFromAdmin, isAdmin, couponController.deleteCoupon);
+router.patch("/coupons/toggle/:id", blockUserFromAdmin, isAdmin, couponController.toggleCoupon);
+router.post("/coupons/validate", couponController.validateCoupon);
 
 router.get(
   "/users",
@@ -235,14 +231,13 @@ router.post(
   "/submissions/:id/review",
   blockUserFromAdmin,
   isAdmin,
-  generalApiLimiter,
   submissionController.reviewSubmission,
 );
 router.patch(
   "/submissions/:id/review",
   blockUserFromAdmin,
   isAdmin,
-  generalApiLimiter,
   submissionController.reviewSubmission,
 );
 export default router;
+
