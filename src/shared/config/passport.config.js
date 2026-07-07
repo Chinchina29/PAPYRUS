@@ -17,7 +17,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `http://localhost:${process.env.PORT || 3000}/auth/google/callback`,
+      callbackURL: "/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -41,7 +41,8 @@ passport.use(
           firstName: profile.name.givenName,
           lastName: profile.name.familyName,
           email: profile.emails[0].value,
-          profilePicture: profile.photos[0]?.value || "/images/default-avatar.png",
+          profilePicture:
+            profile.photos[0]?.value || "/images/default-avatar.png",
           isVerified: true,
           lastLogin: new Date(),
         });
@@ -49,7 +50,7 @@ passport.use(
       } catch (error) {
         done(error, null);
       }
-    }
-  )
+    },
+  ),
 );
 export default passport;
