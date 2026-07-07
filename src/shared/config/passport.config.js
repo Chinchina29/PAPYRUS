@@ -35,7 +35,9 @@ passport.use(
           user.lastLogin = new Date();
           await user.save();
           return done(null, user);
+
         }
+<<<<<<< HEAD
         const newUser = await User.create({
           googleId: profile.id,
           firstName: profile.name.givenName,
@@ -47,6 +49,18 @@ passport.use(
           lastLogin: new Date(),
         });
         done(null, newUser);
+=======
+console.log(profile);
+const newUser = await User.create({
+  googleId: profile.id,
+  firstName: profile.name.givenName || profile.displayName,
+  lastName: profile.name.familyName || "-",
+  email: profile.emails[0].value,
+  profilePicture: profile.photos[0]?.value || "/images/default-avatar.png",
+  isVerified: true,
+  lastLogin: new Date(),
+});        done(null, newUser);
+>>>>>>> becb9e4 (Google auth fixes)
       } catch (error) {
         done(error, null);
       }

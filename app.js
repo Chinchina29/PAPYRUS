@@ -30,6 +30,7 @@ if (missingEnvVars.length > 0) {
   process.exit(1);
 }
 const app = express();
+app.set('trust proxy', 1);
 connectDB();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
