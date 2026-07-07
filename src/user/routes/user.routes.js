@@ -13,13 +13,6 @@ import * as checkoutController from "../controllers/checkout.controller.js";
 import * as walletController from "../controllers/wallet.controller.js";
 import paymentRoutes from "./payment.routes.js";
 import { upload, videoUpload } from "../../shared/config/cloudinary.config.js";
-import {
-  generalApiLimiter,
-  uploadLimiter,
-  cartLimiter,
-  emailLimiter,
-  searchLimiter,
-} from "../../shared/middleware/rateLimiting.middleware.js";
 const router = express.Router();
 const requireAuth = (req, res, next) => {
   if (!req.session?.userId) {
@@ -39,20 +32,18 @@ const requireAuth = (req, res, next) => {
   }
   next();
 };
-router.get("/shop", searchLimiter, productController.getShop);
-router.get("/shop/:id", generalApiLimiter, productController.getProductDetail);
+router.get("/shop", productController.getShop);
+router.get("/shop/:id", productController.getProductDetail);
 router.get("/profile", requireAuth, profileController.showProfile);
 router.get("/profile/edit", requireAuth, profileController.showEditProfile);
 router.post(
   "/profile/edit",
   requireAuth,
-  generalApiLimiter,
   profileController.updateProfile,
 );
 router.post(
   "/profile/update",
   requireAuth,
-  generalApiLimiter,
   profileController.updateProfile,
 );
 router.get(
@@ -63,44 +54,37 @@ router.get(
 router.post(
   "/profile/change-password",
   requireAuth,
-  generalApiLimiter,
   profileController.changePassword,
 );
 router.post(
   "/profile/upload-avatar",
   requireAuth,
-  uploadLimiter,
   upload.single("avatar"),
   profileController.uploadAvatar,
 );
 router.delete(
   "/profile/profile-picture",
   requireAuth,
-  generalApiLimiter,
   profileController.removeProfilePicture,
 );
 router.post(
   "/profile/request-email-change",
   requireAuth,
-  emailLimiter,
   profileController.requestEmailChange,
 );
 router.post(
   "/profile/verify-email-change",
   requireAuth,
-  generalApiLimiter,
   profileController.verifyEmailChange,
 );
 router.post(
   "/profile/resend-email-otp",
   requireAuth,
-  emailLimiter,
   profileController.resendEmailOTP,
 );
 router.post(
   "/profile/cancel-email-change",
   requireAuth,
-  generalApiLimiter,
   profileController.cancelEmailChange,
 );
 router.get("/profile/addresses", requireAuth, addressController.showAddresses);
@@ -112,7 +96,6 @@ router.get(
 router.post(
   "/profile/addresses/add",
   requireAuth,
-  generalApiLimiter,
   addressController.addAddress,
 );
 router.get(
@@ -123,52 +106,44 @@ router.get(
 router.post(
   "/profile/addresses/edit/:id",
   requireAuth,
-  generalApiLimiter,
   addressController.updateAddress,
 );
 router.put(
   "/profile/addresses/:id",
   requireAuth,
-  generalApiLimiter,
   addressController.updateAddress,
 );
 router.delete(
   "/profile/addresses/:id",
   requireAuth,
-  generalApiLimiter,
   addressController.deleteAddress,
 );
 router.delete(
   "/profile/addresses/delete/:id",
   requireAuth,
-  generalApiLimiter,
   addressController.deleteAddress,
 );
 router.post(
   "/profile/addresses/:id/set-default",
   requireAuth,
-  generalApiLimiter,
   addressController.setDefaultAddress,
 );
 router.get("/profile/wallet", requireAuth, walletController.getWallet);
 router.get("/cart", requireAuth, cartController.getCart);
-router.post("/cart/add", requireAuth, cartLimiter, cartController.addToCart);
+router.post("/cart/add", requireAuth, cartController.addToCart);
 router.put(
   "/cart/update/:productId",
   requireAuth,
-  cartLimiter,
   cartController.updateCartItem,
 );
 router.delete(
   "/cart/remove/:productId",
   requireAuth,
-  cartLimiter,
   cartController.removeFromCart,
 );
 router.delete(
   "/cart/clear",
   requireAuth,
-  cartLimiter,
   cartController.clearCart,
 );
 router.get("/cart/count", cartController.getCartCount);
@@ -177,19 +152,16 @@ router.get("/cart/available-coupons", requireAuth, cartController.getAvailableCo
 router.post(
   "/cart/validate-coupon",
   requireAuth,
-  generalApiLimiter,
   cartController.validateCoupon,
 );
 router.post(
   "/cart/remove-coupon",
   requireAuth,
-  generalApiLimiter,
   cartController.removeCoupon,
 );
 router.post(
   "/cart/check-stock",
   requireAuth,
-  generalApiLimiter,
   cartController.checkStock,
 );
 router.get("/sell", requireAuth, sellerController.getSellPage);
@@ -197,7 +169,6 @@ router.post("/sell", requireAuth, sellerController.submitBook);
 router.post(
   "/sell/upload-video",
   requireAuth,
-  uploadLimiter,
   videoUpload.single("video"),
   sellerController.uploadVideo,
 );
@@ -206,56 +177,47 @@ router.get("/sell/create", requireAuth, sellerController.getCreatePage);
 router.delete(
   "/sell/submission/:id",
   requireAuth,
-  generalApiLimiter,
   sellerController.deleteSubmission,
 );
 router.patch(
   "/sell/product/:productId/stock",
   requireAuth,
-  generalApiLimiter,
   sellerController.updateProductStock,
 );
 router.post(
   "/reviews",
   requireAuth,
-  generalApiLimiter,
   reviewController.addReview,
 );
 router.get("/reviews/product/:productId", reviewController.getProductReviews);
 router.put(
   "/reviews/:reviewId",
   requireAuth,
-  generalApiLimiter,
   reviewController.updateReview,
 );
 router.delete(
   "/reviews/:reviewId",
   requireAuth,
-  generalApiLimiter,
   reviewController.deleteReview,
 );
 router.post(
   "/reviews/:reviewId/helpful",
-  generalApiLimiter,
   reviewController.markHelpful,
 );
 router.get("/wishlist", requireAuth, wishlistController.getWishlist);
 router.post(
   "/wishlist/add",
   requireAuth,
-  cartLimiter,
   wishlistController.addToWishlist,
 );
 router.delete(
   "/wishlist/remove/:productId",
   requireAuth,
-  cartLimiter,
   wishlistController.removeFromWishlist,
 );
 router.delete(
   "/wishlist/clear",
   requireAuth,
-  cartLimiter,
   wishlistController.clearWishlist,
 );
 router.get("/wishlist/count", wishlistController.getWishlistCount);
@@ -281,7 +243,6 @@ router.get("/checkout", requireAuth, checkoutController.getCheckout);
 router.post(
   "/checkout/place-order",
   requireAuth,
-  generalApiLimiter,
   checkoutController.placeOrder,
 );
 router.get(
@@ -296,3 +257,4 @@ router.get(
 );
 router.use("/payment", paymentRoutes);
 export default router;
+

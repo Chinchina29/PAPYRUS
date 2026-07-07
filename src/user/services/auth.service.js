@@ -265,3 +265,141 @@ export const resetPassword = async (email, otp, newPassword) => {
     return { success: false, message: MESSAGES.CUSTOM.SERVER_ERROR };
   }
 };
+
+export const getLandingPageProducts = async () => {
+  try {
+    const Product = (await import("../../shared/models/Product.js")).default;
+    const recommendedProducts = await Product.find({ 
+      isListed: true
+    })
+    .select('title price originalPrice images')
+    .limit(3)
+    .sort({ createdAt: -1 })
+    .lean();
+    
+    return { success: true, products: recommendedProducts };
+  } catch (error) {
+    return { success: false, products: [] };
+  }
+};
+
+export const getHomePageData = async (isNewUser) => {
+  try {
+    const Product = (await import("../../shared/models/Product.js")).default;
+    const Category = (await import("../../shared/models/Category.js")).default;
+    
+    let categories = [];
+    
+    // Fetch categories only if new user
+    if (isNewUser) {
+      categories = await Category.find({ 
+        isListed: true, 
+        parentCategory: null 
+      })
+      .select('_id name')
+      .lean();
+    }
+
+    // Fetch all data in parallel
+    const [recommendedProducts, topSellers, featuredCollections, recentStories] = await Promise.all([
+      // Recommended products (6 newest)
+      Product.find({ isListed: true })
+        .select('title price originalPrice images')
+        .limit(6)
+        .sort({ createdAt: -1 })
+        .lean(),
+      
+      // Top sellers (6 products)
+      Product.find({ isListed: true })
+        .select('title price originalPrice images')
+        .limit(6)
+        .sort({ createdAt: -1 })
+        .lean(),
+      
+      // Featured collections (3 products with distinct categories)
+      Product.find({ isListed: true })
+        .select('title price originalPrice images category')
+        .populate('category', 'name')
+        .limit(3)
+        .sort({ views: -1 })
+        .lean(),
+      
+      // Recent stories (4 newest products)
+      Product.find({ isListed: true })
+        .select('title images')
+        .limit(4)
+        .sort({ createdAt: -1 })
+        .lean()
+    ]);
+
+    return {
+      success: true,
+      data: {
+        categories,
+        recommendedProducts,
+        topSellers,
+        featuredCollections,
+        recentStories
+      }
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: {
+        categories: [],
+        recommendedProducts: [],
+        topSellers: [],
+        featuredCollections: [],
+        recentStories: []
+      }
+    };
+  }
+};
+
+export const saveUserGenrePreferences = async (userId, genreIds) => {
+  try {
+    const Category = (await import("../../shared/models/Category.js")).default;
+    const User = (await import("../../shared/models/User.js")).default;
+    
+    const categories = await Category.find({ 
+      _id: { $in: genreIds } 
+    }).select("name");
+    
+    const genreNames = categories.map((cat) => cat.name);
+    
+    await User.findByIdAndUpdate(userId, {
+      favoriteGenres: genreNames,
+      hasSelectedGenres: true,
+    });
+    
+    return {
+      success: true,
+      message: MESSAGES.CUSTOM.PREFERENCES_SAVED_SUCCESSFULLY,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: MESSAGES.CUSTOM.FAILED_TO_SAVE_PREFERENCES,
+    };
+  }
+};
+
+export const skipUserGenreSelection = async (userId) => {
+  try {
+    const User = (await import("../../shared/models/User.js")).default;
+    
+    await User.findByIdAndUpdate(userId, {
+      hasSelectedGenres: true,
+    });
+    
+    return {
+      success: true,
+      message: MESSAGES.CUSTOM.SKIPPED_GENRE_SELECTION,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: MESSAGES.CUSTOM.FAILED_TO_SKIP,
+    };
+  }
+};

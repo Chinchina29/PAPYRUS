@@ -8,7 +8,14 @@ import {
 } from "../../shared/helpers/response.helper.js";
 export const signup = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, confirmPassword, referralCode } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+      referralCode,
+    } = req.body;
     const signupData = {
       firstName: firstName?.trim(),
       lastName: lastName?.trim(),
@@ -62,7 +69,11 @@ export const verifyOTP = async (req, res) => {
     delete req.session.tempUserEmail;
     return redirectResponse(res, result.message, "/home");
   } catch (error) {
-    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    return errorResponse(
+      res,
+      "Server error",
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+    );
   }
 };
 export const resendOTP = async (req, res) => {
@@ -71,7 +82,11 @@ export const resendOTP = async (req, res) => {
     if (!result.success) return errorResponse(res, result.message);
     return successResponse(res, result.message, { expiresIn: 600 });
   } catch (error) {
-    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    return errorResponse(
+      res,
+      "Server error",
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+    );
   }
 };
 export const login = async (req, res) => {
@@ -104,7 +119,8 @@ export const login = async (req, res) => {
     if (result.user.isBlocked) {
       return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,
-        message: MESSAGES.CUSTOM.YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT,
+        message:
+          MESSAGES.CUSTOM.YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT,
         errorType: "ACCOUNT_BLOCKED",
       });
     }
@@ -151,32 +167,35 @@ export const saveGenrePreferences = async (req, res) => {
   try {
     const userId = req.session.userId;
     const { genres } = req.body;
+
     if (!userId) {
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
         message: MESSAGES.CUSTOM.PLEASE_LOG_IN_TO_CONTINUE,
       });
     }
+
     if (!genres || !Array.isArray(genres) || genres.length === 0) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         message: MESSAGES.CUSTOM.PLEASE_SELECT_AT_LEAST_ONE_GENRE,
       });
     }
-    const User = (await import("../../shared/models/User.js")).default;
-    const Category = (await import("../../shared/models/Category.js")).default;
-    const categories = await Category.find({ _id: { $in: genres } }).select(
-      "name",
-    );
-    const genreNames = categories.map((cat) => cat.name);
-    await User.findByIdAndUpdate(userId, {
-      favoriteGenres: genreNames,
-      hasSelectedGenres: true,
-    });
+
+    const result = await authService.saveUserGenrePreferences(userId, genres);
+
+    if (!result.success) {
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: result.message,
+      });
+    }
+
     req.session.isNewUser = false;
+
     return res.json({
       success: true,
-      message: MESSAGES.CUSTOM.PREFERENCES_SAVED_SUCCESSFULLY,
+      message: result.message,
     });
   } catch (error) {
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
@@ -185,23 +204,32 @@ export const saveGenrePreferences = async (req, res) => {
     });
   }
 };
+
 export const skipGenreSelection = async (req, res) => {
   try {
     const userId = req.session.userId;
+
     if (!userId) {
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
         message: MESSAGES.CUSTOM.PLEASE_LOG_IN_TO_CONTINUE,
       });
     }
-    const User = (await import("../../shared/models/User.js")).default;
-    await User.findByIdAndUpdate(userId, {
-      hasSelectedGenres: true,
-    });
+
+    const result = await authService.skipUserGenreSelection(userId);
+
+    if (!result.success) {
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: result.message,
+      });
+    }
+
     req.session.isNewUser = false;
+
     return res.json({
       success: true,
-      message: MESSAGES.CUSTOM.SKIPPED_GENRE_SELECTION,
+      message: result.message,
     });
   } catch (error) {
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
@@ -209,4 +237,102 @@ export const skipGenreSelection = async (req, res) => {
       message: MESSAGES.CUSTOM.FAILED_TO_SKIP,
     });
   }
+};
+
+export const getLandingPage = async (req, res) => {
+  try {
+    if (req.session && req.session.userId) {
+      return res.redirect("/home");
+    }
+
+    const result = await authService.getLandingPageProducts();
+
+    return res.render("user/home-landing", {
+      user: null,
+      recommendedProducts: result.products,
+    });
+  } catch (error) {
+    console.error("Error loading landing page:", error);
+    return res.render("user/home-landing", {
+      user: null,
+      recommendedProducts: [],
+    });
+  }
+};
+
+export const getHomePage = async (req, res) => {
+  try {
+    if (!req.session || !req.session.userId) {
+      return res.redirect("/");
+    }
+
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
+
+    const isNewUser = req.session.isNewUser || false;
+
+    const result = await authService.getHomePageData(isNewUser);
+
+    return res.render("user/home", {
+      user: req.session.user,
+      isNewUser,
+      categories: result.data.categories,
+      recommendedProducts: result.data.recommendedProducts,
+      topSellers: result.data.topSellers,
+      featuredCollections: result.data.featuredCollections,
+      recentStories: result.data.recentStories,
+    });
+  } catch (error) {
+    console.error("Error loading home page:", error);
+    return res.render("user/home", {
+      user: req.session.user,
+      isNewUser: false,
+      categories: [],
+      recommendedProducts: [],
+      topSellers: [],
+      featuredCollections: [],
+      recentStories: [],
+    });
+  }
+};
+
+export const getSignupPage = (req, res) => {
+  const referralCode = req.query.ref || "";
+  return res.render("user/signup", { referralCode });
+};
+
+export const getVerifyOtpPage = (req, res) => {
+  if (!req.session.tempUserId) {
+    return res.redirect("/signup");
+  }
+  return res.render("user/verifyotp", {
+    email: req.session.tempUserEmail,
+    type: "signup",
+  });
+};
+
+export const getLoginPage = (req, res) => {
+  return res.render("user/login");
+};
+
+export const getForgotPasswordPage = (req, res) => {
+  return res.render("user/forgotpassword");
+};
+
+export const getForgotPasswordVerifyPage = (req, res) => {
+  if (!req.session.resetEmail) {
+    return res.redirect("/forgot-password");
+  }
+  return res.render("user/verifyotp", {
+    email: req.session.resetEmail,
+    type: "reset",
+  });
+};
+
+export const getForgotPasswordResetPage = (req, res) => {
+  if (!req.session.resetEmail || !req.session.resetVerified) {
+    return res.redirect("/forgot-password");
+  }
+  return res.render("user/resetpassword");
 };

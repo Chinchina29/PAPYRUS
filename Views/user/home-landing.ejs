@@ -805,38 +805,42 @@
     </div>
 
     <div class="books-grid" id="booksGrid">
-      <a href="/shop" class="book-card">
-        <div class="book-image">
-          <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop" alt="Moby Dick"/>
-        </div>
-        <div class="book-info">
-          <div class="book-title">Moby Dick</div>
-          <div class="book-meta">Herman Melville • 1851 Edition</div>
-          <div class="book-price">₹2.50</div>
-        </div>
-      </a>
-
-      <a href="/shop" class="book-card">
-        <div class="book-image">
-          <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop" alt="The Great Gatsby"/>
-        </div>
-        <div class="book-info">
-          <div class="book-title">The Great Gatsby</div>
-          <div class="book-meta">F. Scott Fitzgerald • First Edition</div>
-          <div class="book-price">₹12.00</div>
-        </div>
-      </a>
-
-      <a href="/shop" class="book-card">
-        <div class="book-image">
-          <img src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=400&h=600&fit=crop" alt="Leaves of Grass"/>
-        </div>
-        <div class="book-info">
-          <div class="book-title">Leaves of Grass</div>
-          <div class="book-meta">Walt Whitman • 1855 Edition</div>
-          <div class="book-price">₹8.75</div>
-        </div>
-      </a>
+      <% if (recommendedProducts && recommendedProducts.length > 0) { %>
+        <% recommendedProducts.forEach(product => { %>
+          <a href="/shop/<%= product._id %>" class="book-card">
+            <div class="book-image">
+              <% if (product.images && product.images.length > 0) { %>
+                <img src="<%= product.images[0].url %>" alt="<%= product.title %>"/>
+              <% } else { %>
+                <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop" alt="<%= product.title %>"/>
+              <% } %>
+            </div>
+            <div class="book-info">
+              <div class="book-title"><%= product.title %></div>
+              <div class="book-meta">Available Now</div>
+              <div class="book-price">
+                <% if (product.originalPrice && product.price < product.originalPrice) { %>
+                  <span style="text-decoration: line-through; color: #999; font-size: 14px; margin-right: 8px;">₹<%= product.originalPrice.toFixed(2) %></span>
+                  ₹<%= product.price.toFixed(2) %>
+                <% } else { %>
+                  ₹<%= product.price.toFixed(2) %>
+                <% } %>
+              </div>
+            </div>
+          </a>
+        <% }) %>
+      <% } else { %>
+        <a href="/shop" class="book-card">
+          <div class="book-image">
+            <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop" alt="Browse Books"/>
+          </div>
+          <div class="book-info">
+            <div class="book-title">Discover Books</div>
+            <div class="book-meta">Explore our collection</div>
+            <div class="book-price">Visit Shop</div>
+          </div>
+        </a>
+      <% } %>
     </div>
   </section>
 
