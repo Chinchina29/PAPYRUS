@@ -30,7 +30,7 @@ if (missingEnvVars.length > 0) {
   process.exit(1);
 }
 const app = express();
-app.set('trust proxy', 1);
+app.set("trust proxy", 1); // Required for secure cookies behind Render/Heroku/Railway reverse proxy
 connectDB();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
@@ -213,7 +213,10 @@ app.use((err, req, res, next) => {
       message: MESSAGES.CUSTOM.SERVER_ERROR_OCCURRED_OUR_TEAM_HAS_BEEN_NOTIFIED_AND_IS_WORKING_ON_IT,
     });
   }
-  res.redirect("/?error=A server error occurred. Our team has been notified and we're working on it.");
+  const redirectUrl = req.path.startsWith("/shop") || req.path.startsWith("/admin")
+    ? (req.path.startsWith("/admin") ? "/admin/dashboard" : "/shop")
+    : "/";
+  res.redirect(`${redirectUrl}?error=A server error occurred. Our team has been notified and we're working on it.`);
 });
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

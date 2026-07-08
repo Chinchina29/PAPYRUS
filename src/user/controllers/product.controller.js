@@ -66,7 +66,7 @@ export const getProductDetail = async (req, res) => {
       })
         .populate("category", "name isListed")
         .populate("subcategory", "name isListed")
-        .populate("seller", "name email");
+        .populate("seller", "firstName lastName email");
       if (product) {
         await Product.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
       }
