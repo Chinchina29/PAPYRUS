@@ -31,8 +31,8 @@
   
   /* Z-Index Layers */
   --z-header: 1000;
-  --z-mobile-menu: 999;
-  --z-overlay: 998;
+  --z-mobile-menu: 1100;
+  --z-overlay: 1050;
 }
 
 /* ========================================
@@ -49,6 +49,11 @@ html {
 body {
   overflow-x: hidden;
   position: relative;
+}
+
+/* Prevent body scroll when menu is open */
+body.menu-open {
+  overflow: hidden;
 }
 
 /* Base Typography - Mobile */
@@ -73,7 +78,7 @@ h3 { font-size: 20px; }
 
 /* Hamburger Button - Visible on mobile only */
 .hamburger-btn {
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: center;
   min-width: var(--touch-target-min);
@@ -84,6 +89,7 @@ h3 { font-size: 20px; }
   cursor: pointer;
   z-index: calc(var(--z-header) + 1);
   position: relative;
+  order: -1; /* Place hamburger button first in flex container */
 }
 
 .hamburger-icon {
@@ -119,38 +125,46 @@ h3 { font-size: 20px; }
 
 /* Desktop Navigation - Hidden on mobile */
 .nav-desktop {
-  display: none;
+  display: none !important;
 }
 
 /* Mobile Navigation Menu */
 .nav-mobile {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 280px;
-  height: 100vh;
-  background: #f5f1ed;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 280px !important;
+  height: 100vh !important;
+  background: #f5f1ed !important;
   transform: translateX(-100%);
   transition: transform var(--transition-normal) var(--easing-standard);
-  z-index: var(--z-mobile-menu);
-  padding-top: 80px;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
+  z-index: var(--z-mobile-menu) !important;
+  padding-top: 80px !important;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1) !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  pointer-events: auto !important;
 }
 
 .menu-open .nav-mobile {
-  transform: translateX(0);
+  transform: translateX(0) !important;
+  pointer-events: auto !important;
 }
 
 .nav-mobile a {
-  display: block;
-  padding: var(--spacing-md) var(--spacing-lg);
-  color: #2d1f14;
-  text-decoration: none;
-  font-size: 18px;
-  font-weight: 500;
-  border-bottom: 1px solid #e8dcc8;
-  transition: background-color 0.2s;
+  display: block !important;
+  padding: var(--spacing-md) var(--spacing-lg) !important;
+  color: #2d1f14 !important;
+  text-decoration: none !important;
+  font-size: 18px !important;
+  font-weight: 500 !important;
+  border-bottom: 1px solid #e8dcc8 !important;
+  transition: background-color 0.2s !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 10 !important;
 }
 
 .nav-mobile a:hover,
@@ -161,31 +175,46 @@ h3 { font-size: 20px; }
 
 /* Mobile Menu Overlay */
 .menu-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: calc(var(--z-mobile-menu) - 1);
-  opacity: 0;
-  transition: opacity var(--transition-normal) var(--easing-standard);
+  display: none !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 280px !important; /* Position AFTER the menu, not over it */
+  width: calc(100% - 280px) !important; /* Only cover the area outside the menu */
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  z-index: var(--z-overlay) !important;
+  opacity: 0 !important;
+  transition: opacity var(--transition-normal) var(--easing-standard) !important;
+  cursor: pointer !important;
+  pointer-events: none !important;
 }
 
 .menu-open .menu-overlay {
-  display: block;
-  opacity: 1;
+  display: block !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 /* ========================================
    4. RESPONSIVE HEADER
    ======================================== */
 
+/* Header z-index to ensure it's above content but below mobile menu */
+.header {
+  position: relative;
+  z-index: var(--z-header);
+}
+
 /* Header adjustments for mobile */
 @media (max-width: 767px) {
   header {
     padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .header .container {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
   }
   
   .logo {
