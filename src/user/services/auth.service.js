@@ -270,7 +270,8 @@ export const getLandingPageProducts = async () => {
   try {
     const Product = (await import("../../shared/models/Product.js")).default;
     const recommendedProducts = await Product.find({ 
-      isListed: true
+      isListed: true,
+      isDeleted: false
     })
     .select('title price originalPrice images')
     .limit(3)
@@ -303,21 +304,21 @@ export const getHomePageData = async (isNewUser) => {
     // Fetch all data in parallel
     const [recommendedProducts, topSellers, featuredCollections, recentStories] = await Promise.all([
       // Recommended products (6 newest)
-      Product.find({ isListed: true })
+      Product.find({ isListed: true, isDeleted: false })
         .select('title price originalPrice images')
         .limit(6)
         .sort({ createdAt: -1 })
         .lean(),
       
       // Top sellers (6 products)
-      Product.find({ isListed: true })
+      Product.find({ isListed: true, isDeleted: false })
         .select('title price originalPrice images')
         .limit(6)
         .sort({ createdAt: -1 })
         .lean(),
       
       // Featured collections (3 products with distinct categories)
-      Product.find({ isListed: true })
+      Product.find({ isListed: true, isDeleted: false })
         .select('title price originalPrice images category')
         .populate('category', 'name')
         .limit(3)
@@ -325,7 +326,7 @@ export const getHomePageData = async (isNewUser) => {
         .lean(),
       
       // Recent stories (4 newest products)
-      Product.find({ isListed: true })
+      Product.find({ isListed: true, isDeleted: false })
         .select('title images')
         .limit(4)
         .sort({ createdAt: -1 })

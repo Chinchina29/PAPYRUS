@@ -1,9 +1,11 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import User from "../models/User.js";
+
 passport.serializeUser((user, done) => {
   done(null, user._id);
 });
+
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findById(id);
@@ -12,6 +14,7 @@ passport.deserializeUser(async (id, done) => {
     done(error, null);
   }
 });
+
 passport.use(
   new GoogleStrategy(
     {
@@ -27,6 +30,7 @@ passport.use(
           await user.save();
           return done(null, user);
         }
+
         user = await User.findOne({ email: profile.emails[0].value });
         if (user) {
           user.googleId = profile.id;
@@ -35,36 +39,24 @@ passport.use(
           user.lastLogin = new Date();
           await user.save();
           return done(null, user);
-
         }
-<<<<<<< HEAD
+        
+        console.log(profile);
         const newUser = await User.create({
           googleId: profile.id,
-          firstName: profile.name.givenName,
-          lastName: profile.name.familyName,
+          firstName: profile.name.givenName || profile.displayName,
+          lastName: profile.name.familyName || "-",
           email: profile.emails[0].value,
-          profilePicture:
-            profile.photos[0]?.value || "/images/default-avatar.png",
+          profilePicture: profile.photos[0]?.value || "/images/default-avatar.png",
           isVerified: true,
           lastLogin: new Date(),
         });
         done(null, newUser);
-=======
-console.log(profile);
-const newUser = await User.create({
-  googleId: profile.id,
-  firstName: profile.name.givenName || profile.displayName,
-  lastName: profile.name.familyName || "-",
-  email: profile.emails[0].value,
-  profilePicture: profile.photos[0]?.value || "/images/default-avatar.png",
-  isVerified: true,
-  lastLogin: new Date(),
-});        done(null, newUser);
->>>>>>> becb9e4 (Google auth fixes)
       } catch (error) {
         done(error, null);
       }
     },
   ),
 );
+
 export default passport;
