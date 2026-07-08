@@ -1,6 +1,21 @@
 <header class="header">
     <div class="container">
-        <a href="/home" class="logo" style="text-decoration: none; color: inherit; cursor: pointer;">
+        <!-- Mobile Hamburger Button -->
+        <button 
+            class="hamburger-btn" 
+            aria-label="Toggle navigation menu"
+            aria-expanded="false"
+            aria-controls="mobile-nav"
+            type="button">
+            <span class="hamburger-icon">
+                <span class="line line-1"></span>
+                <span class="line line-2"></span>
+                <span class="line line-3"></span>
+            </span>
+        </button>
+
+        <!-- Logo -->
+        <a href="/home" class="logo" style="text-decoration: none; color: inherit; cursor: pointer;" aria-label="Papyrus home">
             <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M10 70 Q10 75 15 75 L45 75 Q48 75 50 70 L50 85 Q48 90 45 90 L15 90 Q10 90 10 85 Z" fill="#7A5C3E"/>
                 <path d="M90 70 Q90 75 85 75 L55 75 Q52 75 50 70 L50 85 Q52 90 55 90 L85 90 Q90 90 90 85 Z" fill="#7A5C3E"/>
@@ -17,13 +32,15 @@
             <span>Papyrus</span>
         </a>
 
-        <nav class="nav">
+        <!-- Desktop Navigation (hidden on mobile) -->
+        <nav class="nav nav-desktop" aria-label="Main navigation">
             <a href="/home">Browse</a>
             <a href="/shop">Books</a>
             <a href="/sell">Sell</a>
             <a href="#" onclick="showComingSoon(event, 'About')">About</a>
         </nav>
 
+        <!-- Header Icons (visible on all screens) -->
         <div class="header-icons">
             <a href="/cart" class="icon-btn cart-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -60,7 +77,19 @@
 
         </div>
     </div>
+
+    <!-- Mobile Navigation Menu (hidden by default) -->
+    <nav class="nav nav-mobile" id="mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
+        <a href="/home">Browse</a>
+        <a href="/shop">Books</a>
+        <a href="/sell">Sell</a>
+        <a href="#" onclick="showComingSoon(event, 'About')">About</a>
+    </nav>
 </header>
+
+<!-- Include Mobile Responsive CSS and JavaScript -->
+<link rel="stylesheet" href="/css/mobile-responsive.css">
+<script src="/js/hamburger-menu.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="/js/blocked-user-handler.js"></script>
