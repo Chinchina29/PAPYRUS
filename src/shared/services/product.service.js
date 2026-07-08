@@ -190,7 +190,7 @@ export const getListedProductById = async (id) => {
       select: "name isListed",
       match: { isListed: true, isDeleted: false },
     })
-    .populate("seller", "name email");
+    .populate("seller", "firstName lastName email");
   if (product && !product.category) return null;
   if (product) {
     await Product.findByIdAndUpdate(id, { $inc: { views: 1 } });
@@ -210,7 +210,7 @@ export const getRelatedProducts = async (categoryId, excludeId, limit = 4) => {
       select: "name isListed",
       match: { isListed: true, isDeleted: false },
     })
-    .populate("seller", "name")
+    .populate("seller", "firstName lastName email")
     .sort({ createdAt: -1 });
   return products.filter((p) => p.category !== null);
 };
