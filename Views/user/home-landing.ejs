@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Papyrus - Discover Timeless Books</title>
   <link rel="stylesheet" href="/css/home.css">
+  <link rel="stylesheet" href="/css/mobile-responsive.css">
   <style>
     * {
       margin: 0;
@@ -27,8 +28,56 @@
       background-color: #f5f1ed;
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 1000;
       border-bottom: 1px solid #e8dcc8;
+    }
+    
+    /* Hide hamburger button on desktop */
+    .landing-header .hamburger-btn {
+      display: none;
+    }
+    
+    /* Mobile styles for landing header */
+    @media (max-width: 1023px) {
+      .landing-header {
+        padding: 15px 20px;
+      }
+      
+      .landing-header .hamburger-btn {
+        display: flex !important;
+        order: -1;
+      }
+      
+      .landing-header .nav-desktop {
+        display: none !important;
+      }
+      
+      .logo-text {
+        font-size: 18px;
+        order: 0;
+      }
+      
+      .header-actions {
+        order: 1;
+        gap: 12px;
+      }
+      
+      .btn-signin {
+        padding: 6px 16px;
+        font-size: 12px;
+      }
+      
+      .icon-btn {
+        width: 20px;
+        height: 20px;
+      }
+    }
+    
+    /* Hide search icon on very small screens */
+    @media (max-width: 480px) {
+      .header-actions .icon-btn {
+        display: none;
+      }
     }
 
     .logo-text {
@@ -652,10 +701,6 @@
     }
 
     @media (max-width: 968px) {
-      .landing-header {
-        padding: 20px 30px;
-      }
-
       .hero-section {
         padding: 60px 30px 80px;
       }
@@ -713,13 +758,30 @@
 <body>
 
   <header class="landing-header">
+    <!-- Mobile Hamburger Button -->
+    <button 
+        class="hamburger-btn" 
+        aria-label="Toggle navigation menu"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        type="button">
+        <span class="hamburger-icon">
+            <span class="line line-1"></span>
+            <span class="line line-2"></span>
+            <span class="line line-3"></span>
+        </span>
+    </button>
+
     <a href="/" class="logo-text" style="text-decoration: none; color: inherit; cursor: pointer;">Papyrus</a>
-    <nav class="header-nav">
+    
+    <!-- Desktop Navigation -->
+    <nav class="header-nav nav-desktop" aria-label="Main navigation">
       <a href="/shop">Books</a>
       <a href="/sell">Sell</a>
       <a href="#" onclick="showComingSoon(event, 'About')">About</a>
       <a href="#" onclick="showComingSoon(event, 'Stories')">Stories</a>
     </nav>
+    
     <div class="header-actions">
       <% if (user) { %>
         <a href="/profile" class="btn-signin">My Account</a>
@@ -731,7 +793,49 @@
         <path d="m21 21-4.35-4.35"></path>
       </svg>
     </div>
+
+    <!-- Mobile Navigation Menu -->
+    <nav class="nav nav-mobile" id="mobile-nav" aria-label="Mobile navigation" aria-hidden="true" style="pointer-events: auto !important;">
+      <a href="/shop" style="pointer-events: auto !important; cursor: pointer !important;">Books</a>
+      <a href="/sell" style="pointer-events: auto !important; cursor: pointer !important;">Sell</a>
+      <a href="#about" class="coming-soon-link" data-page="About" style="pointer-events: auto !important; cursor: pointer !important;">About</a>
+      <a href="#stories" class="coming-soon-link" data-page="Stories" style="pointer-events: auto !important; cursor: pointer !important;">Stories</a>
+      <% if (user) { %>
+        <a href="/profile" style="pointer-events: auto !important; cursor: pointer !important;">My Account</a>
+      <% } else { %>
+        <a href="/login" style="pointer-events: auto !important; cursor: pointer !important;">Sign In</a>
+      <% } %>
+    </nav>
   </header>
+
+  <script>
+    // Handle coming soon links in mobile menu
+    document.addEventListener('DOMContentLoaded', function() {
+      const comingSoonLinks = document.querySelectorAll('.nav-mobile .coming-soon-link');
+      comingSoonLinks.forEach(link => {
+        link.addEventListener('click', function(event) {
+          event.preventDefault(); // Prevent navigation to # href
+          
+          const pageName = this.getAttribute('data-page');
+          
+          // Show coming soon dialog
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              icon: 'info',
+              title: `${pageName} Page`,
+              html: `<p>The <strong>${pageName}</strong> page is currently under development.</p><p>We're working hard to bring you this feature soon!</p>`,
+              confirmButtonText: 'Got it',
+              confirmButtonColor: '#7A5C3E',
+              iconColor: '#7A5C3E'
+            });
+          }
+          
+          // Let the hamburger menu handler close the menu
+          // (removed stopPropagation to allow event bubbling)
+        });
+      });
+    });
+  </script>
 
   <section class="hero-section">
     <div class="autumn-leaf">
@@ -954,6 +1058,7 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="/js/hamburger-menu.js"></script>
   <script>
     function showComingSoon(event, pageName) {
         event.preventDefault();

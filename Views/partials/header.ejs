@@ -42,7 +42,7 @@
 
         <!-- Header Icons (visible on all screens) -->
         <div class="header-icons">
-            <a href="/cart" class="icon-btn cart-icon">
+            <a href="#" class="icon-btn cart-icon" onclick="handleCartClick(event)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="9" cy="21" r="1"></circle>
                     <circle cx="20" cy="21" r="1"></circle>
@@ -50,13 +50,13 @@
                 </svg>
                 <span class="cart-count">0</span>
             </a>
-            <a href="/wishlist" class="icon-btn wishlist-icon">
+            <a href="#" class="icon-btn wishlist-icon" onclick="handleWishlistClick(event)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
                 <span class="wishlist-count">0</span>
             </a>
-            <a href="/profile" class="icon-btn">
+            <a href="#" class="icon-btn" onclick="handleProfileClick(event)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                     <circle cx="12" cy="7" r="4"/>
@@ -78,18 +78,99 @@
         </div>
     </div>
 
+<script>
+    // Check if user is logged in
+    const isUserLoggedIn = <%= JSON.stringify(locals.isLoggedIn || (locals.user && locals.user.id) || false) %>;
+    
+    function handleCartClick(event) {
+        event.preventDefault();
+        if (!isUserLoggedIn) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Login Required',
+                text: 'Please log in to access your shopping cart.',
+                confirmButtonText: 'Go to Login',
+                confirmButtonColor: '#7A5C3E',
+                showCancelButton: true,
+                cancelButtonText: 'Cancel',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/login?redirect=/cart';
+                }
+            });
+        } else {
+            window.location.href = '/cart';
+        }
+    }
+    
+    function handleWishlistClick(event) {
+        event.preventDefault();
+        if (!isUserLoggedIn) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Login Required',
+                text: 'Please log in to access your wishlist.',
+                confirmButtonText: 'Go to Login',
+                confirmButtonColor: '#7A5C3E',
+                showCancelButton: true,
+                cancelButtonText: 'Cancel',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/login?redirect=/wishlist';
+                }
+            });
+        } else {
+            window.location.href = '/wishlist';
+        }
+    }
+    
+    function handleProfileClick(event) {
+        event.preventDefault();
+        if (!isUserLoggedIn) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Login Required',
+                text: 'Please log in to access your profile.',
+                confirmButtonText: 'Go to Login',
+                confirmButtonColor: '#7A5C3E',
+                showCancelButton: true,
+                cancelButtonText: 'Cancel',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/login?redirect=/profile';
+                }
+            });
+        } else {
+            window.location.href = '/profile';
+        }
+    }
+</script>
+
     <!-- Mobile Navigation Menu (hidden by default) -->
-    <nav class="nav nav-mobile" id="mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
-        <a href="/home">Browse</a>
-        <a href="/shop">Books</a>
-        <a href="/sell">Sell</a>
-        <a href="#" onclick="showComingSoon(event, 'About')">About</a>
+    <nav class="nav nav-mobile" id="mobile-nav" aria-label="Mobile navigation" aria-hidden="true" style="pointer-events: auto !important;">
+        <a href="/home" style="pointer-events: auto !important; cursor: pointer !important;">Browse</a>
+        <a href="/shop" style="pointer-events: auto !important; cursor: pointer !important;">Books</a>
+        <a href="/sell" style="pointer-events: auto !important; cursor: pointer !important;">Sell</a>
+        <a href="#" onclick="showComingSoon(event, 'About')" style="pointer-events: auto !important; cursor: pointer !important;">About</a>
     </nav>
 </header>
 
 <!-- Include Mobile Responsive CSS and JavaScript -->
 <link rel="stylesheet" href="/css/mobile-responsive.css">
 <script src="/js/hamburger-menu.js"></script>
+<script>
+  // Debug: Check if elements are found
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== Hamburger Menu Debug ===');
+    console.log('Hamburger button:', document.querySelector('.hamburger-btn'));
+    console.log('Mobile nav:', document.querySelector('.nav-mobile'));
+    console.log('Desktop nav:', document.querySelector('.nav-desktop'));
+    console.log('Body classes:', document.body.className);
+  });
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="/js/blocked-user-handler.js"></script>

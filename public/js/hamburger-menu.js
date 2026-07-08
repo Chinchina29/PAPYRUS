@@ -29,12 +29,22 @@ const HamburgerMenu = (() => {
     elements.hamburgerBtn = document.querySelector('.hamburger-btn');
     elements.mobileNav = document.querySelector('.nav-mobile');
     
+    console.log('Caching elements:', {
+      hamburgerBtn: elements.hamburgerBtn,
+      mobileNav: elements.mobileNav,
+      body: elements.body
+    });
+    
     if (!elements.hamburgerBtn || !elements.mobileNav) {
-      console.warn('Hamburger menu elements not found');
+      console.warn('Hamburger menu elements not found', {
+        hamburgerBtn: elements.hamburgerBtn,
+        mobileNav: elements.mobileNav
+      });
       return false;
     }
     
     elements.navLinks = elements.mobileNav.querySelectorAll('a');
+    console.log('Found nav links:', elements.navLinks.length, elements.navLinks);
     
     // Create overlay if it doesn't exist
     if (!document.querySelector('.menu-overlay')) {
@@ -42,6 +52,7 @@ const HamburgerMenu = (() => {
       overlay.className = 'menu-overlay';
       overlay.setAttribute('aria-hidden', 'true');
       document.body.appendChild(overlay);
+      console.log('Created menu overlay');
     }
     elements.overlay = document.querySelector('.menu-overlay');
     
@@ -168,8 +179,35 @@ const HamburgerMenu = (() => {
   /**
    * Handle nav link clicks
    */
-  const handleNavLinkClick = () => {
-    // Close menu when a nav link is clicked
+  const handleNavLinkClick = (event) => {
+    const href = event.currentTarget.getAttribute('href');
+    const isComingSoonLink = event.currentTarget.classList.contains('coming-soon-link');
+    
+    console.log('handleNavLinkClick triggered:', {
+      href,
+      isComingSoonLink,
+      text: event.currentTarget.textContent
+    });
+    
+    // For coming soon links (hash links), just close the menu and let their handler work
+    if (isComingSoonLink) {
+      // Don't prevent default here - let the coming-soon handler do it
+      console.log('Coming soon link - closing menu with delay');
+      setTimeout(() => closeMenu(), 10); // Close menu with tiny delay
+      return;
+    }
+    
+    // For regular navigation links
+    if (href && href !== '#' && !href.startsWith('javascript:')) {
+      // Don't prevent default - allow navigation to proceed normally
+      // Close menu without blocking navigation
+      console.log('Regular navigation link - closing menu and navigating to:', href);
+      setTimeout(() => closeMenu(), 10); // Tiny delay ensures click completes first
+      return;
+    }
+    
+    // For any other case, just close the menu
+    console.log('Other link type - just closing menu');
     closeMenu();
   };
 
@@ -197,9 +235,14 @@ const HamburgerMenu = (() => {
     // Keyboard events
     document.addEventListener('keydown', handleKeyboard);
     
-    // Nav link clicks
+    // Nav link clicks - use capture phase to ensure we get the event first
     elements.navLinks.forEach(link => {
-      link.addEventListener('click', handleNavLinkClick);
+      link.addEventListener('click', handleNavLinkClick, false);
+      
+      // Debug: log clicks
+      link.addEventListener('click', (e) => {
+        console.log('Link clicked:', e.currentTarget.textContent, 'href:', e.currentTarget.getAttribute('href'));
+      }, true);
     });
     
     // Overlay click to close
