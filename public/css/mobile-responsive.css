@@ -1,0 +1,500 @@
+/* ========================================
+   PAPYRUS MOBILE RESPONSIVE DESIGN SYSTEM
+   Mobile-First Approach
+   Breakpoints: 320px (base), 768px (tablet), 1024px (desktop)
+   ======================================== */
+
+/* ========================================
+   1. CSS CUSTOM PROPERTIES (Design Tokens)
+   ======================================== */
+:root {
+  /* Breakpoints */
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1024px;
+  
+  /* Spacing Scale */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  
+  /* Touch Targets */
+  --touch-target-min: 44px;
+  --touch-spacing-min: 8px;
+  
+  /* Animation Timing */
+  --transition-fast: 150ms;
+  --transition-normal: 300ms;
+  --easing-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
+  
+  /* Z-Index Layers */
+  --z-header: 1000;
+  --z-mobile-menu: 999;
+  --z-overlay: 998;
+}
+
+/* ========================================
+   2. BASE MOBILE STYLES (320px - 767px)
+   ======================================== */
+
+/* Viewport Configuration */
+html {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+/* Prevent horizontal scroll */
+body {
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Base Typography - Mobile */
+body {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+h1 { font-size: 32px; }
+h2 { font-size: 24px; }
+h3 { font-size: 20px; }
+
+/* Container adjustments */
+.container {
+  padding-left: var(--spacing-md);
+  padding-right: var(--spacing-md);
+}
+
+/* ========================================
+   3. HAMBURGER MENU & NAVIGATION
+   ======================================== */
+
+/* Hamburger Button - Visible on mobile only */
+.hamburger-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  padding: var(--spacing-sm);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: calc(var(--z-header) + 1);
+  position: relative;
+}
+
+.hamburger-icon {
+  width: 24px;
+  height: 18px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hamburger-icon .line {
+  width: 100%;
+  height: 2px;
+  background-color: #2d1f14;
+  transition: transform var(--transition-normal) var(--easing-standard),
+              opacity var(--transition-normal) var(--easing-standard);
+  transform-origin: center;
+}
+
+/* Hamburger Animation - Transform to X */
+.menu-open .hamburger-icon .line-1 {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.menu-open .hamburger-icon .line-2 {
+  opacity: 0;
+}
+
+.menu-open .hamburger-icon .line-3 {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+/* Desktop Navigation - Hidden on mobile */
+.nav-desktop {
+  display: none;
+}
+
+/* Mobile Navigation Menu */
+.nav-mobile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background: #f5f1ed;
+  transform: translateX(-100%);
+  transition: transform var(--transition-normal) var(--easing-standard);
+  z-index: var(--z-mobile-menu);
+  padding-top: 80px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+.menu-open .nav-mobile {
+  transform: translateX(0);
+}
+
+.nav-mobile a {
+  display: block;
+  padding: var(--spacing-md) var(--spacing-lg);
+  color: #2d1f14;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 500;
+  border-bottom: 1px solid #e8dcc8;
+  transition: background-color 0.2s;
+}
+
+.nav-mobile a:hover,
+.nav-mobile a:focus {
+  background-color: #e8dcc8;
+  outline: none;
+}
+
+/* Mobile Menu Overlay */
+.menu-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: calc(var(--z-mobile-menu) - 1);
+  opacity: 0;
+  transition: opacity var(--transition-normal) var(--easing-standard);
+}
+
+.menu-open .menu-overlay {
+  display: block;
+  opacity: 1;
+}
+
+/* ========================================
+   4. RESPONSIVE HEADER
+   ======================================== */
+
+/* Header adjustments for mobile */
+@media (max-width: 767px) {
+  header {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .logo {
+    font-size: 18px !important;
+  }
+  
+  .logo svg {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .header-icons a,
+  .header-icons button {
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .header-icons {
+    gap: var(--spacing-sm);
+  }
+}
+
+/* ========================================
+   5. RESPONSIVE LAYOUTS - MOBILE BASE
+   ======================================== */
+
+/* Hero Section - Mobile */
+@media (max-width: 767px) {
+  .hero-title {
+    font-size: 48px !important;
+    line-height: 1.1;
+  }
+  
+  .hero-section {
+    padding: var(--spacing-xl) var(--spacing-md) var(--spacing-2xl);
+  }
+  
+  .hero-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .hero-buttons .btn-primary,
+  .hero-buttons .btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .search-container {
+    width: 100%;
+  }
+}
+
+/* Grids - Mobile (1 column) */
+@media (max-width: 767px) {
+  .books-grid,
+  .collections-grid,
+  .features-grid,
+  .stories-grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--spacing-lg);
+  }
+  
+  .books-carousel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+  }
+  
+  .carousel-controls {
+    display: none;
+  }
+}
+
+/* Newsletter - Mobile Stack */
+@media (max-width: 767px) {
+  .newsletter-content {
+    grid-template-columns: 1fr !important;
+    gap: var(--spacing-lg);
+  }
+  
+  .newsletter-text h2 {
+    font-size: 32px !important;
+  }
+}
+
+/* Footer - Mobile Stack */
+@media (max-width: 767px) {
+  .footer-content {
+    grid-template-columns: 1fr !important;
+    gap: var(--spacing-xl);
+  }
+  
+  .footer-bottom {
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    text-align: center;
+  }
+}
+
+/* Forms - Mobile Optimization */
+@media (max-width: 767px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  textarea,
+  select {
+    font-size: 16px !important;
+    padding: 14px !important;
+    width: 100%;
+  }
+  
+  button[type="submit"],
+  .btn-primary,
+  .btn-secondary {
+    min-height: var(--touch-target-min);
+    width: 100%;
+    font-size: 16px;
+    padding: var(--spacing-md);
+  }
+}
+
+/* Product Cards - Mobile */
+@media (max-width: 767px) {
+  .book-card {
+    max-width: 100%;
+  }
+  
+  .book-image {
+    height: 300px;
+  }
+}
+
+/* Profile/Account Pages - Mobile */
+@media (max-width: 767px) {
+  .profile-container,
+  .account-container {
+    flex-direction: column;
+  }
+  
+  .profile-sidebar,
+  .account-sidebar {
+    width: 100%;
+    margin-bottom: var(--spacing-lg);
+  }
+  
+  .profile-content,
+  .account-content {
+    width: 100%;
+  }
+}
+
+/* Cart - Mobile */
+@media (max-width: 767px) {
+  .cart-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .cart-item img {
+    width: 100%;
+    max-width: 200px;
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .cart-summary {
+    position: static;
+    width: 100%;
+    margin-top: var(--spacing-lg);
+  }
+}
+
+/* ========================================
+   6. TABLET BREAKPOINT (768px - 1023px)
+   ======================================== */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Hero adjustments */
+  .hero-title {
+    font-size: 64px !important;
+  }
+  
+  /* 2-column grids */
+  .books-grid,
+  .collections-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  /* Footer - 2 columns */
+  .footer-content {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  /* Hamburger still visible on tablet */
+  .hamburger-btn {
+    display: flex;
+  }
+  
+  .nav-desktop {
+    display: none;
+  }
+}
+
+/* ========================================
+   7. DESKTOP BREAKPOINT (1024px+)
+   ======================================== */
+
+@media (min-width: 1024px) {
+  /* Hide hamburger menu on desktop */
+  .hamburger-btn {
+    display: none !important;
+  }
+  
+  /* Show desktop navigation */
+  .nav-desktop {
+    display: flex !important;
+  }
+  
+  /* Hide mobile navigation */
+  .nav-mobile {
+    display: none !important;
+  }
+  
+  /* Menu overlay not needed */
+  .menu-overlay {
+    display: none !important;
+  }
+}
+
+/* ========================================
+   8. ACCESSIBILITY
+   ======================================== */
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid #2d5016;
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .hamburger-icon .line,
+  .nav-mobile {
+    transition: none !important;
+  }
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ========================================
+   9. UTILITY CLASSES
+   ======================================== */
+
+.hide-mobile {
+  display: none !important;
+}
+
+@media (min-width: 768px) {
+  .hide-mobile {
+    display: block !important;
+  }
+  
+  .hide-tablet {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hide-desktop {
+    display: none !important;
+  }
+  
+  .hide-tablet {
+    display: block !important;
+  }
+}
+
+/* Touch target minimum enforcement */
+.touch-target {
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
