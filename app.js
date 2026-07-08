@@ -30,7 +30,7 @@ if (missingEnvVars.length > 0) {
   process.exit(1);
 }
 const app = express();
-app.set("trust proxy", 1); // Required for secure cookies behind Render/Heroku/Railway reverse proxy
+app.set("trust proxy", 1);
 connectDB();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
@@ -88,41 +88,57 @@ app.use((req, res, next) => {
 
 app.use(async (req, res, next) => {
   if (req.path.startsWith("/admin")) return next();
-  
-  const publicPaths = ["/", "/login", "/signup", "/forgot-password", "/reset-password", "/auth/google", "/auth/google/callback"];
-  const isPublicPath = publicPaths.some(path => req.path === path || req.path.startsWith("/signup/") || req.path.startsWith("/auth/"));
-  
+
+  const publicPaths = [
+    "/",
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+    "/auth/google",
+    "/auth/google/callback",
+  ];
+  const isPublicPath = publicPaths.some(
+    (path) =>
+      req.path === path ||
+      req.path.startsWith("/signup/") ||
+      req.path.startsWith("/auth/"),
+  );
+
   if (isPublicPath) return next();
-  
+
   if (req.session && req.session.userId) {
     try {
       const user = await userService.findUserById(req.session.userId);
-      
+
       if (!user || user.isBlocked) {
         return req.session.destroy(() => {
           res.clearCookie("papyrus.user.sid");
-          
+
           if (req.xhr || req.headers.accept?.includes("json")) {
             return res.status(HTTP_STATUS.FORBIDDEN).json({
               success: false,
-              message: user && user.isBlocked 
-                ? MESSAGES.CUSTOM.YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT
-                : MESSAGES.AUTH.SESSION_EXPIRED,
+              message:
+                user && user.isBlocked
+                  ? MESSAGES.CUSTOM
+                      .YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT
+                  : MESSAGES.AUTH.SESSION_EXPIRED,
               redirectUrl: "/login",
-              blocked: true
+              blocked: true,
             });
           }
-          
-          return res.redirect("/login?error=" + encodeURIComponent(
-            user && user.isBlocked ? "blocked" : "session_expired"
-          ));
+
+          return res.redirect(
+            "/login?error=" +
+              encodeURIComponent(
+                user && user.isBlocked ? "blocked" : "session_expired",
+              ),
+          );
         });
       }
-    } catch (error) {
-      
-    }
+    } catch (error) {}
   }
-  
+
   next();
 });
 app.use("/admin", (req, res, next) => {
@@ -210,13 +226,20 @@ app.use((err, req, res, next) => {
   if (isAjax) {
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: MESSAGES.CUSTOM.SERVER_ERROR_OCCURRED_OUR_TEAM_HAS_BEEN_NOTIFIED_AND_IS_WORKING_ON_IT,
+      message:
+        MESSAGES.CUSTOM
+          .SERVER_ERROR_OCCURRED_OUR_TEAM_HAS_BEEN_NOTIFIED_AND_IS_WORKING_ON_IT,
     });
   }
-  const redirectUrl = req.path.startsWith("/shop") || req.path.startsWith("/admin")
-    ? (req.path.startsWith("/admin") ? "/admin/dashboard" : "/shop")
-    : "/";
-  res.redirect(`${redirectUrl}?error=A server error occurred. Our team has been notified and we're working on it.`);
+  const redirectUrl =
+    req.path.startsWith("/shop") || req.path.startsWith("/admin")
+      ? req.path.startsWith("/admin")
+        ? "/admin/dashboard"
+        : "/shop"
+      : "/";
+  res.redirect(
+    `${redirectUrl}?error=A server error occurred. Our team has been notified and we're working on it.`,
+  );
 });
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
