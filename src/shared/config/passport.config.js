@@ -25,6 +25,7 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       try {
         let user = await User.findOne({ googleId: profile.id });
+
         if (user) {
           user.lastLogin = new Date();
           await user.save();
@@ -32,16 +33,17 @@ passport.use(
         }
 
         user = await User.findOne({ email: profile.emails[0].value });
+
         if (user) {
           user.googleId = profile.id;
           user.isVerified = true;
-          user.profilePicture = profile.photos[0]?.value || user.profilePicture;
+          user.profilePicture =
+            profile.photos[0]?.value || user.profilePicture;
           user.lastLogin = new Date();
+
           await user.save();
           return done(null, user);
         }
-        
-        console.log(profile);
         const newUser = await User.create({
           googleId: profile.id,
           firstName: profile.name.givenName || profile.displayName,
@@ -52,11 +54,13 @@ passport.use(
           lastLogin: new Date(),
         });
         done(null, newUser);
+
+        return done(null, newUser);
       } catch (error) {
-        done(error, null);
+        return done(error, null);
       }
-    },
-  ),
+    }
+  )
 );
 
 export default passport;
