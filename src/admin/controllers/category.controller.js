@@ -58,23 +58,26 @@ export const addCategory = async (req, res) => {
   try {
     const { name, description, parentCategory, subcategories } = req.body;
     if (!name?.trim()) {
-      return res
-        .status(HTTP_STATUS.BAD_REQUEST)
-        .json({ success: false, message: MESSAGES.CUSTOM.CATEGORY_NAME_IS_REQUIRED });
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        message: MESSAGES.CUSTOM.CATEGORY_NAME_IS_REQUIRED,
+      });
     }
     let isSubcategory = false;
     let parentId = null;
     if (parentCategory && parentCategory !== "") {
       const parent = await categoryService.getCategoryById(parentCategory);
       if (!parent) {
-        return res
-          .status(HTTP_STATUS.BAD_REQUEST)
-          .json({ success: false, message: MESSAGES.CUSTOM.INVALID_PARENT_CATEGORY });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          message: MESSAGES.CUSTOM.INVALID_PARENT_CATEGORY,
+        });
       }
       if (parent.isSubcategory) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({
           success: false,
-          message: MESSAGES.CUSTOM.CANNOT_CREATE_SUBCATEGORY_UNDER_ANOTHER_SUBCATEGORY,
+          message:
+            MESSAGES.CUSTOM.CANNOT_CREATE_SUBCATEGORY_UNDER_ANOTHER_SUBCATEGORY,
         });
       }
       isSubcategory = true;
@@ -100,8 +103,7 @@ export const addCategory = async (req, res) => {
               parentCategory: category._id,
               isSubcategory: true,
             });
-          } catch (subError) {
-            }
+          } catch (subError) {}
         }
       }
     }
@@ -209,8 +211,7 @@ export const editCategory = async (req, res) => {
               parentCategory: id,
               isSubcategory: true,
             });
-          } catch (subError) {
-            }
+          } catch (subError) {}
         }
       }
     }
@@ -245,7 +246,9 @@ export const deleteCategory = async (req, res) => {
     if (category.subcategories && category.subcategories.length > 0) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: MESSAGES.CUSTOM.CANNOT_DELETE_CATEGORY_WITH_SUBCATEGORIES_DELETE_SUBCATEGORIES_FIRST,
+        message:
+          MESSAGES.CUSTOM
+            .CANNOT_DELETE_CATEGORY_WITH_SUBCATEGORIES_DELETE_SUBCATEGORIES_FIRST,
       });
     }
     await categoryService.softDeleteCategory(id);
@@ -264,6 +267,7 @@ export const toggleCategory = async (req, res) => {
   try {
     const { id } = req.params;
     const category = await categoryService.toggleCategoryListed(id);
+
     if (!category) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,

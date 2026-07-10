@@ -115,6 +115,20 @@
                                     <p><%= user.gender || 'Not specified' %></p>
                                 </div>
                                 <div class="info-item">
+                                    <label>REFERRAL CODE</label>
+                                    <p style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-weight: 600; color: #2d5016;"><%= user.referralCode || 'Not generated' %></span>
+                                        <% if (user.referralCode) { %>
+                                            <button onclick="copyReferralCode()" style="background: none; border: none; cursor: pointer; padding: 4px;" title="Copy referral code">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; color: #666;">
+                                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                                </svg>
+                                            </button>
+                                        <% } %>
+                                    </p>
+                                </div>
+                                <div class="info-item">
                                     <label>VERIFICATION STATUS</label>
                                     <p><%= user.isVerified ? 'Verified' : 'Not Verified' %></p>
                                 </div>
@@ -225,6 +239,26 @@
     
     <script>
         // Back button navigation enabled
+        function copyReferralCode() {
+            const referralCode = '<%= user.referralCode %>';
+            navigator.clipboard.writeText(referralCode).then(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Copied!',
+                    text: 'Referral code copied to clipboard',
+                    confirmButtonColor: '#5a4a3a',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }).catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to copy referral code',
+                    confirmButtonColor: '#5a4a3a'
+                });
+            });
+        }
     </script>
 
     <script>

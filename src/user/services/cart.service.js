@@ -23,6 +23,9 @@ export const getOrCreateCart = async (userId, session = null) => {
     } else {
       const outOfStockItems = [];
       const stockAdjustedItems = [];
+      const priceChangedItems = [];
+      let cartModified = false;
+
       cart.items.forEach((item) => {
         if (!item.product) {
           item.product = {
@@ -33,17 +36,36 @@ export const getOrCreateCart = async (userId, session = null) => {
             stock: 0,
             isDeleted: true,
             isListed: false,
-            category: null
+            category: null,
           };
         }
-        const isProductDeletedOrUnlisted = item.product.isDeleted || !item.product.isListed;
-        const isCategoryUnavailable = !item.product.category || !item.product.category.isListed || item.product.category.isDeleted;
-        const isOwnProduct = item.product.hideFromSeller && item.product.seller && item.product.seller.toString() === userId.toString();
-        const isBlocked = isProductDeletedOrUnlisted || isCategoryUnavailable || isOwnProduct;
+        const isProductDeletedOrUnlisted =
+          item.product.isDeleted || !item.product.isListed;
+        const isCategoryUnavailable =
+          !item.product.category ||
+          !item.product.category.isListed ||
+          item.product.category.isDeleted;
+        const isOwnProduct =
+          item.product.hideFromSeller &&
+          item.product.seller &&
+          item.product.seller.toString() === userId.toString();
+        const isBlocked =
+          isProductDeletedOrUnlisted || isCategoryUnavailable || isOwnProduct;
         if (isBlocked) {
           item.isBlocked = true;
           return;
         }
+
+        if (item.product.price && item.price !== item.product.price) {
+          priceChangedItems.push({
+            title: item.product.title,
+            oldPrice: item.price,
+            newPrice: item.product.price,
+          });
+          item.price = item.product.price;
+          cartModified = true;
+        }
+
         if (item.product.stock === 0) {
           outOfStockItems.push({
             title: item.product.title,
@@ -64,13 +86,17 @@ export const getOrCreateCart = async (userId, session = null) => {
       });
       let calculatedItems = 0;
       let calculatedAmount = 0;
-      cart.items.forEach(item => {
+      cart.items.forEach((item) => {
         if (!item.isBlocked) {
           calculatedItems += item.quantity;
           calculatedAmount += item.price * item.quantity;
         }
       });
-      if (cart.totalItems !== calculatedItems || cart.totalAmount !== calculatedAmount) {
+      if (
+        cart.totalItems !== calculatedItems ||
+        cart.totalAmount !== calculatedAmount ||
+        cartModified
+      ) {
         cart.totalItems = calculatedItems;
         cart.totalAmount = calculatedAmount;
         await cart.save();
@@ -88,6 +114,12 @@ export const getOrCreateCart = async (userId, session = null) => {
           session.stockAdjustedItems = [...existing, ...stockAdjustedItems];
         }
         cart.stockAdjustedItems = stockAdjustedItems;
+      }
+      if (priceChangedItems.length > 0) {
+        if (session) {
+          session.priceChangedItems = priceChangedItems;
+        }
+        cart.priceChangedItems = priceChangedItems;
       }
     }
     return cart;
@@ -121,7 +153,9 @@ export const addToCart = async (userId, productId, quantity = 1) => {
     product.seller &&
     product.seller.toString() === userId.toString()
   ) {
-    throw new Error(MESSAGES.CUSTOM.YOU_CANNOT_ADD_YOUR_OWN_SUBMITTED_PRODUCT_TO_CART);
+    throw new Error(
+      MESSAGES.CUSTOM.YOU_CANNOT_ADD_YOUR_OWN_SUBMITTED_PRODUCT_TO_CART,
+    );
   }
   if (product.stock === 0) {
     throw new Error(MESSAGES.PRODUCT.OUT_OF_STOCK);

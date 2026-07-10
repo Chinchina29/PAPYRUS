@@ -125,9 +125,10 @@ export function verifyUserOTP(user, otpCode) {
       };
     }
     const attemptsLeft = MAX_FAILED_ATTEMPTS - user.otpFailedAttempts;
+    const attemptText = attemptsLeft === 1 ? 'attempt' : 'attempts';
     return {
       success: false,
-      message: `Invalid OTP. ${attemptsLeft} attempt(s) remaining.`,
+      message: `Invalid OTP. ${attemptsLeft} ${attemptText} remaining.`,
       type: "invalid",
       attemptsLeft,
     };

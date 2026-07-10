@@ -10,6 +10,7 @@ import * as walletController from "../controllers/wallet.controller.js";
 import * as reportController from "../controllers/report.controller.js";
 import * as settingsController from "../controllers/settings.controller.js";
 import { migrateUserGenres } from "../../shared/utils/migrateGenres.js";
+import { generateReferralCodesForExistingUsers } from "../../shared/utils/generateReferralCodes.js";
 import {
   isAdmin,
   isAdminNotAuthenticated,
@@ -24,12 +25,31 @@ import {
 const router = express.Router();
 router.use(noCache);
 router.use(preventUserFromAdminRoutes);
+
+router.get(
+  "/generate-referral-codes",
+  blockUserFromAdmin,
+  isAdmin,
+  async (req, res) => {
+    try {
+      const result = await generateReferralCodesForExistingUsers();
+      res.json(result);
+    } catch (error) {
+      res
+        .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+        .json({ success: false, error: error.message });
+    }
+  },
+);
+
 router.get("/migrate-genres", blockUserFromAdmin, isAdmin, async (req, res) => {
   try {
     const result = await migrateUserGenres();
     res.json(result);
   } catch (error) {
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, error: error.message });
+    res
+      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+      .json({ success: false, error: error.message });
   }
 });
 router.get("/signin", isAdminNotAuthenticated, (req, res) => {
@@ -68,43 +88,182 @@ router.get(
   adminController.getChartData,
 );
 router.get("/orders", blockUserFromAdmin, isAdmin, orderController.getOrders);
-router.get("/return-requests", blockUserFromAdmin, isAdmin, orderController.getReturnRequests);
-router.get("/orders/:id", blockUserFromAdmin, isAdmin, orderController.getOrderDetail);
-router.get("/orders/:id/invoice", blockUserFromAdmin, isAdmin, orderController.downloadInvoice);
-router.patch("/orders/:id/status", blockUserFromAdmin, isAdmin, orderController.updateOrderStatus);
-router.patch("/orders/:orderId/items/:itemId/status", blockUserFromAdmin, isAdmin, orderController.updateItemStatus);
-router.patch("/orders/:id/payment", blockUserFromAdmin, isAdmin, orderController.updatePaymentStatus);
-router.post("/orders/:id/cancel", blockUserFromAdmin, isAdmin, orderController.cancelOrder);
-router.post("/orders/:id/return/approve", blockUserFromAdmin, isAdmin, orderController.approveReturnRequest);
-router.post("/orders/:id/return/reject", blockUserFromAdmin, isAdmin, orderController.rejectReturnRequest);
-router.post("/orders/:orderId/items/:itemId/return/approve", blockUserFromAdmin, isAdmin, orderController.approveItemReturn);
-router.post("/orders/:orderId/items/:itemId/return/reject", blockUserFromAdmin, isAdmin, orderController.rejectItemReturn);
-router.get("/wallet", blockUserFromAdmin, isAdmin, walletController.getWalletLedger);
-router.get("/wallet/export-csv", blockUserFromAdmin, isAdmin, walletController.exportWalletCSV);
-router.get("/wallet/transaction/:id", blockUserFromAdmin, isAdmin, walletController.getTransactionDetails);
-router.get("/reports", blockUserFromAdmin, isAdmin, reportController.getSalesReport);
-router.get("/report", blockUserFromAdmin, isAdmin, (req, res) => res.redirect("/admin/reports"));
-router.get("/sales-report", blockUserFromAdmin, isAdmin, (req, res) => res.redirect("/admin/reports"));
-router.get("/reports/download/pdf", blockUserFromAdmin, isAdmin, reportController.downloadPdfReport);
-router.get("/reports/download/excel", blockUserFromAdmin, isAdmin, reportController.downloadExcelReport);
-router.get("/settings", blockUserFromAdmin, isAdmin, settingsController.getSettings);
-router.post("/settings/profile", blockUserFromAdmin, isAdmin, settingsController.updateProfile);
-router.post("/settings/password", blockUserFromAdmin, isAdmin, settingsController.updatePassword);
+router.get(
+  "/return-requests",
+  blockUserFromAdmin,
+  isAdmin,
+  orderController.getReturnRequests,
+);
+router.get(
+  "/orders/:id",
+  blockUserFromAdmin,
+  isAdmin,
+  orderController.getOrderDetail,
+);
+router.get(
+  "/orders/:id/invoice",
+  blockUserFromAdmin,
+  isAdmin,
+  orderController.downloadInvoice,
+);
+router.patch(
+  "/orders/:id/status",
+  blockUserFromAdmin,
+  isAdmin,
+  orderController.updateOrderStatus,
+);
+router.patch(
+  "/orders/:orderId/items/:itemId/status",
+  blockUserFromAdmin,
+  isAdmin,
+  orderController.updateItemStatus,
+);
+router.patch(
+  "/orders/:id/payment",
+  blockUserFromAdmin,
+  isAdmin,
+  orderController.updatePaymentStatus,
+);
+router.post(
+  "/orders/:id/cancel",
+  blockUserFromAdmin,
+  isAdmin,
+  orderController.cancelOrder,
+);
+router.post(
+  "/orders/:id/return/approve",
+  blockUserFromAdmin,
+  isAdmin,
+  orderController.approveReturnRequest,
+);
+router.post(
+  "/orders/:id/return/reject",
+  blockUserFromAdmin,
+  isAdmin,
+  orderController.rejectReturnRequest,
+);
+router.post(
+  "/orders/:orderId/items/:itemId/return/approve",
+  blockUserFromAdmin,
+  isAdmin,
+  orderController.approveItemReturn,
+);
+router.post(
+  "/orders/:orderId/items/:itemId/return/reject",
+  blockUserFromAdmin,
+  isAdmin,
+  orderController.rejectItemReturn,
+);
+router.get(
+  "/wallet",
+  blockUserFromAdmin,
+  isAdmin,
+  walletController.getWalletLedger,
+);
+router.get(
+  "/wallet/export-csv",
+  blockUserFromAdmin,
+  isAdmin,
+  walletController.exportWalletCSV,
+);
+router.get(
+  "/wallet/transaction/:id",
+  blockUserFromAdmin,
+  isAdmin,
+  walletController.getTransactionDetails,
+);
+router.get(
+  "/reports",
+  blockUserFromAdmin,
+  isAdmin,
+  reportController.getSalesReport,
+);
+router.get("/report", blockUserFromAdmin, isAdmin, (req, res) =>
+  res.redirect("/admin/reports"),
+);
+router.get("/sales-report", blockUserFromAdmin, isAdmin, (req, res) =>
+  res.redirect("/admin/reports"),
+);
+router.get(
+  "/reports/download/pdf",
+  blockUserFromAdmin,
+  isAdmin,
+  reportController.downloadPdfReport,
+);
+router.get(
+  "/reports/download/excel",
+  blockUserFromAdmin,
+  isAdmin,
+  reportController.downloadExcelReport,
+);
+router.get(
+  "/settings",
+  blockUserFromAdmin,
+  isAdmin,
+  settingsController.getSettings,
+);
+router.post(
+  "/settings/profile",
+  blockUserFromAdmin,
+  isAdmin,
+  settingsController.updateProfile,
+);
+router.post(
+  "/settings/password",
+  blockUserFromAdmin,
+  isAdmin,
+  settingsController.updatePassword,
+);
 router.get("/support", blockUserFromAdmin, isAdmin, (req, res) => {
-  res.render("admin/support", { 
+  res.render("admin/support", {
     title: "Help & Support",
-    currentPage_name: "support", 
+    currentPage_name: "support",
     user: req.session.adminUser,
-    error: null
+    error: null,
   });
 });
-router.get("/coupons", blockUserFromAdmin, isAdmin, couponController.getCoupons);
-router.get("/coupons/add", blockUserFromAdmin, isAdmin, couponController.getAddCoupon);
-router.post("/coupons/add", blockUserFromAdmin, isAdmin, couponController.addCoupon);
-router.get("/coupons/edit/:id", blockUserFromAdmin, isAdmin, couponController.getEditCoupon);
-router.post("/coupons/edit/:id", blockUserFromAdmin, isAdmin, couponController.editCoupon);
-router.delete("/coupons/delete/:id", blockUserFromAdmin, isAdmin, couponController.deleteCoupon);
-router.patch("/coupons/toggle/:id", blockUserFromAdmin, isAdmin, couponController.toggleCoupon);
+router.get(
+  "/coupons",
+  blockUserFromAdmin,
+  isAdmin,
+  couponController.getCoupons,
+);
+router.get(
+  "/coupons/add",
+  blockUserFromAdmin,
+  isAdmin,
+  couponController.getAddCoupon,
+);
+router.post(
+  "/coupons/add",
+  blockUserFromAdmin,
+  isAdmin,
+  couponController.addCoupon,
+);
+router.get(
+  "/coupons/edit/:id",
+  blockUserFromAdmin,
+  isAdmin,
+  couponController.getEditCoupon,
+);
+router.post(
+  "/coupons/edit/:id",
+  blockUserFromAdmin,
+  isAdmin,
+  couponController.editCoupon,
+);
+router.delete(
+  "/coupons/delete/:id",
+  blockUserFromAdmin,
+  isAdmin,
+  couponController.deleteCoupon,
+);
+router.patch(
+  "/coupons/toggle/:id",
+  blockUserFromAdmin,
+  isAdmin,
+  couponController.toggleCoupon,
+);
 router.post("/coupons/validate", couponController.validateCoupon);
 
 router.get(
@@ -240,4 +399,3 @@ router.patch(
   submissionController.reviewSubmission,
 );
 export default router;
-

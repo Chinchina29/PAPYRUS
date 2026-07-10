@@ -6,6 +6,33 @@ import * as referralService from "../../shared/services/referral.service.js";
 
 export const signupUser = async (userData) => {
   try {
+    if (!userData.password || userData.password.length < 8) {
+      return {
+        success: false,
+        message: "Password must be at least 8 characters long",
+        errorType: "WEAK_PASSWORD",
+      };
+    }
+
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+    if (!passwordRegex.test(userData.password)) {
+      return {
+        success: false,
+        message:
+          "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)",
+        errorType: "WEAK_PASSWORD",
+      };
+    }
+
+    if (userData.password !== userData.confirmPassword) {
+      return {
+        success: false,
+        message: "Passwords do not match",
+        errorType: "PASSWORD_MISMATCH",
+      };
+    }
+
     const existingUser = await userService.findUserByEmail(userData.email);
     if (existingUser) {
       return { success: false, message: MESSAGES.AUTH.EMAIL_ALREADY_EXISTS };
@@ -15,7 +42,7 @@ export const signupUser = async (userData) => {
     if (userData.referralCode) {
       referralValidation = await referralService.validateReferralCode(
         userData.referralCode,
-        userData.email
+        userData.email,
       );
       if (!referralValidation.isValid) {
         return {
@@ -41,7 +68,7 @@ export const signupUser = async (userData) => {
       await referralService.createReferralRecord(
         referralValidation.referrerId,
         user._id,
-        referralValidation.referralCode
+        referralValidation.referralCode,
       );
     }
 
@@ -51,7 +78,7 @@ export const signupUser = async (userData) => {
     const emailResult = await emailService.sendOTPEmail(
       user.email,
       user.firstName,
-      otp
+      otp,
     );
     if (!emailResult.success) {
       await userService.deleteUser(user._id);
@@ -269,15 +296,15 @@ export const resetPassword = async (email, otp, newPassword) => {
 export const getLandingPageProducts = async () => {
   try {
     const Product = (await import("../../shared/models/Product.js")).default;
-    const recommendedProducts = await Product.find({ 
+    const recommendedProducts = await Product.find({
       isListed: true,
-      isDeleted: false
+      isDeleted: false,
     })
-    .select('title price originalPrice images')
-    .limit(3)
-    .sort({ createdAt: -1 })
-    .lean();
-    
+      .select("title price originalPrice images")
+      .limit(3)
+      .sort({ createdAt: -1 })
+      .lean();
+
     return { success: true, products: recommendedProducts };
   } catch (error) {
     return { success: false, products: [] };
@@ -288,49 +315,47 @@ export const getHomePageData = async (isNewUser) => {
   try {
     const Product = (await import("../../shared/models/Product.js")).default;
     const Category = (await import("../../shared/models/Category.js")).default;
-    
+
     let categories = [];
-    
-    // Fetch categories only if new user
+
     if (isNewUser) {
-      categories = await Category.find({ 
-        isListed: true, 
-        parentCategory: null 
+      categories = await Category.find({
+        isListed: true,
+        parentCategory: null,
       })
-      .select('_id name')
-      .lean();
+        .select("_id name")
+        .lean();
     }
 
-    // Fetch all data in parallel
-    const [recommendedProducts, topSellers, featuredCollections, recentStories] = await Promise.all([
-      // Recommended products (6 newest)
+    const [
+      recommendedProducts,
+      topSellers,
+      featuredCollections,
+      recentStories,
+    ] = await Promise.all([
       Product.find({ isListed: true, isDeleted: false })
-        .select('title price originalPrice images')
+        .select("title price originalPrice images")
         .limit(6)
         .sort({ createdAt: -1 })
         .lean(),
-      
-      // Top sellers (6 products)
       Product.find({ isListed: true, isDeleted: false })
-        .select('title price originalPrice images')
+        .select("title price originalPrice images")
         .limit(6)
         .sort({ createdAt: -1 })
         .lean(),
-      
-      // Featured collections (3 products with distinct categories)
+
       Product.find({ isListed: true, isDeleted: false })
-        .select('title price originalPrice images category')
-        .populate('category', 'name')
+        .select("title price originalPrice images category")
+        .populate("category", "name")
         .limit(3)
         .sort({ views: -1 })
         .lean(),
-      
-      // Recent stories (4 newest products)
+
       Product.find({ isListed: true, isDeleted: false })
-        .select('title images')
+        .select("title images")
         .limit(4)
         .sort({ createdAt: -1 })
-        .lean()
+        .lean(),
     ]);
 
     return {
@@ -340,8 +365,8 @@ export const getHomePageData = async (isNewUser) => {
         recommendedProducts,
         topSellers,
         featuredCollections,
-        recentStories
-      }
+        recentStories,
+      },
     };
   } catch (error) {
     return {
@@ -351,8 +376,8 @@ export const getHomePageData = async (isNewUser) => {
         recommendedProducts: [],
         topSellers: [],
         featuredCollections: [],
-        recentStories: []
-      }
+        recentStories: [],
+      },
     };
   }
 };
@@ -361,18 +386,18 @@ export const saveUserGenrePreferences = async (userId, genreIds) => {
   try {
     const Category = (await import("../../shared/models/Category.js")).default;
     const User = (await import("../../shared/models/User.js")).default;
-    
-    const categories = await Category.find({ 
-      _id: { $in: genreIds } 
+
+    const categories = await Category.find({
+      _id: { $in: genreIds },
     }).select("name");
-    
+
     const genreNames = categories.map((cat) => cat.name);
-    
+
     await User.findByIdAndUpdate(userId, {
       favoriteGenres: genreNames,
       hasSelectedGenres: true,
     });
-    
+
     return {
       success: true,
       message: MESSAGES.CUSTOM.PREFERENCES_SAVED_SUCCESSFULLY,
@@ -388,11 +413,11 @@ export const saveUserGenrePreferences = async (userId, genreIds) => {
 export const skipUserGenreSelection = async (userId) => {
   try {
     const User = (await import("../../shared/models/User.js")).default;
-    
+
     await User.findByIdAndUpdate(userId, {
       hasSelectedGenres: true,
     });
-    
+
     return {
       success: true,
       message: MESSAGES.CUSTOM.SKIPPED_GENRE_SELECTION,

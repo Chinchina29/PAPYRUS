@@ -6,8 +6,8 @@ import * as userService from "../../shared/services/user.service.js";
 export const getSettings = async (req, res) => {
   try {
     const adminId = req.session.adminId;
-    const admin = await User.findById(adminId).select('-password');
-    
+    const admin = await User.findById(adminId).select("-password");
+
     res.render("admin/settings", {
       title: "Settings",
       admin,
@@ -43,7 +43,7 @@ export const updateProfile = async (req, res) => {
     const admin = await User.findByIdAndUpdate(
       adminId,
       { firstName, lastName, email },
-      { returnDocument: 'after' }
+      { returnDocument: "after" },
     );
 
     req.session.adminUser = {
@@ -88,12 +88,32 @@ export const updatePassword = async (req, res) => {
     if (newPassword.length < 8) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: MESSAGES.VALIDATION.INVALID_PASSWORD,
+        message: "Password must be at least 8 characters long",
+      });
+    }
+
+    const passwordValidation = {
+      uppercase: /[A-Z]/.test(newPassword),
+      lowercase: /[a-z]/.test(newPassword),
+      number: /[0-9]/.test(newPassword),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(newPassword),
+    };
+
+    if (
+      !passwordValidation.uppercase ||
+      !passwordValidation.lowercase ||
+      !passwordValidation.number ||
+      !passwordValidation.special
+    ) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        message:
+          "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
       });
     }
 
     const admin = await User.findById(adminId);
-    
+
     if (!admin) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
@@ -101,7 +121,10 @@ export const updatePassword = async (req, res) => {
       });
     }
 
-    const isMatch = await userService.comparePassword(currentPassword, admin.password);
+    const isMatch = await userService.comparePassword(
+      currentPassword,
+      admin.password,
+    );
 
     if (!isMatch) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({

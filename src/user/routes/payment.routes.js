@@ -5,6 +5,7 @@ const router = express.Router();
 router.post('/create-order', isAuthenticated, paymentController.createPaymentOrder);
 router.post('/verify', isAuthenticated, paymentController.verifyPayment);
 router.post('/failure', isAuthenticated, paymentController.handlePaymentFailure);
+router.post('/retry/:orderId', isAuthenticated, paymentController.retryPayment);
 router.get('/success', paymentController.getPaymentSuccess);
 router.get('/failure', paymentController.getPaymentFailure);
 export default router;

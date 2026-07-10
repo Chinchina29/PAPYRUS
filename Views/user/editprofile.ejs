@@ -163,7 +163,7 @@
                                     <div
                                         id="avatarPreview"
                                         class="initials-avatar"
-                                        style="background: <%= avatarColor %>;"
+                                        data-avatar-bg="<%= avatarColor %>"
                                     >
                                         <%= initials %>
                                     </div>
@@ -183,8 +183,10 @@
                                 <div style="display:flex; gap:8px;">
                                     <button type="button" id="uploadAvatarBtn" class="btn-secondary"
                                         style="font-size:12px; padding:6px 12px;">Upload</button>
-                                    <button type="button" id="removeAvatarBtn" class="btn-secondary"
-                                        style="font-size:12px; padding:6px 12px; color:#dc3545; border-color:#dc3545;">Remove</button>
+                                    <% if (user.profilePicture && !user.profilePicture.includes('default-avatar')) { %>
+                                        <button type="button" id="removeAvatarBtn" class="btn-secondary"
+                                            style="font-size:12px; padding:6px 12px; color:#dc3545; border-color:#dc3545;">Remove</button>
+                                    <% } %>
                                 </div>
                             </div>
                         </div>
@@ -399,6 +401,12 @@
         const cropperImg    = document.getElementById('cropperImg');
         const overlay       = document.getElementById('cropperOverlay');
 
+        // Apply avatar background color from data attribute (avoids EJS-in-CSS lint errors)
+        const _avatarPreviewEl = document.getElementById('avatarPreview');
+        if (_avatarPreviewEl && _avatarPreviewEl.dataset.avatarBg) {
+            _avatarPreviewEl.style.background = _avatarPreviewEl.dataset.avatarBg;
+        }
+
         function getAvatarPreview() {
             return document.getElementById('avatarPreview');
         }
@@ -508,42 +516,45 @@
             }
         });
 
-        document.getElementById('removeAvatarBtn').addEventListener('click', async () => {
-            const confirm = await Swal.fire({
-                title: 'Remove photo?',
-                text: 'Your profile will show your initials instead.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                confirmButtonText: 'Yes, remove it'
-            });
+        const removeBtn = document.getElementById('removeAvatarBtn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', async () => {
+                const confirm = await Swal.fire({
+                    title: 'Remove photo?',
+                    text: 'Your profile will show your initials instead.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    confirmButtonText: 'Yes, remove it'
+                });
 
-            if (confirm.isConfirmed) {
-                try {
-                    const res    = await fetch('/profile/profile-picture', { method: 'DELETE' });
-                    const result = await res.json();
+                if (confirm.isConfirmed) {
+                    try {
+                        const res    = await fetch('/profile/profile-picture', { method: 'DELETE' });
+                        const result = await res.json();
 
-                    if (result.success) {
-                        const avatarContainer = document.getElementById('avatarPreview').parentElement;
-                        avatarContainer.innerHTML = `
-                            <div id="avatarPreview" class="initials-avatar" style="background: ${avatarColor}; width:100px; height:100px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                                ${userInitials}
-                            </div>
-                            <label for="avatarInput" style="position:absolute; bottom:0; right:0; background:#5a4a3a; color:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px; height:14px;">
-                                    <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                                </svg>
-                            </label>
-                            <input type="file" id="avatarInput" accept="image/*" style="display:none;"/>
-                        `;
-                        attachAvatarListener();
-                        Swal.fire('Removed', 'Profile picture removed successfully.', 'success');
+                        if (result.success) {
+                            const avatarContainer = document.getElementById('avatarPreview').parentElement;
+                            avatarContainer.innerHTML = `
+                                <div id="avatarPreview" class="initials-avatar" style="background: ${avatarColor}; width:100px; height:100px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                                    ${userInitials}
+                                </div>
+                                <label for="avatarInput" style="position:absolute; bottom:0; right:0; background:#5a4a3a; color:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px; height:14px;">
+                                        <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                                    </svg>
+                                </label>
+                                <input type="file" id="avatarInput" accept="image/*" style="display:none;"/>
+                            `;
+                            attachAvatarListener();
+                            Swal.fire('Removed', 'Profile picture removed successfully.', 'success');
+                        }
+                    } catch (err) {
+                        Swal.fire('Error', 'Failed to remove image', 'error');
                     }
-                } catch (err) {
-                    Swal.fire('Error', 'Failed to remove image', 'error');
                 }
-            }
-        });
+            });
+        }
 
         let emailTimer;
         let emailTimeLeft      = 0;
@@ -762,6 +773,8 @@
             e.preventDefault();
             e.stopPropagation();
             
+            console.log('Form submitted'); // Debug log
+            
             const formData = new FormData(e.target);
             const data     = {};
             
@@ -775,7 +788,10 @@
                 }
             }
             
+            console.log('Form data:', data); // Debug log
+            
             if (!validateForm(data)) {
+                console.log('Validation failed'); // Debug log
                 return;
             }
 
@@ -783,6 +799,7 @@
             const originalText    = submitBtn.textContent;
             
             if (submitBtn.disabled) {
+                console.log('Submit button already disabled'); // Debug log
                 return;
             }
             
@@ -790,13 +807,16 @@
             submitBtn.disabled    = true;
 
             try {
+                console.log('Sending request to /profile/update'); // Debug log
                 const response = await fetch('/profile/update', {
                     method:  'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body:    JSON.stringify(data),
                 });
                 
+                console.log('Response status:', response.status); // Debug log
                 const result = await response.json();
+                console.log('Response data:', result); // Debug log
                 
                 if (result.success) {
                     Swal.fire({ 
@@ -808,14 +828,25 @@
                         window.location.href = '/profile'; 
                     });
                 } else {
-                    Swal.fire({ 
-                        title: 'Error!', 
-                        text: result.message, 
-                        icon: 'error', 
-                        confirmButtonColor: '#5a4a3a' 
-                    });
+                    // If backend tells us which field failed, highlight it inline
+                    if (result.field) {
+                        showError(result.field, result.message);
+                        const el = document.getElementById(result.field);
+                        if (el) {
+                            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            el.focus();
+                        }
+                    } else {
+                        Swal.fire({ 
+                            title: 'Error!', 
+                            text: result.message, 
+                            icon: 'error', 
+                            confirmButtonColor: '#5a4a3a' 
+                        });
+                    }
                 }
             } catch (error) {
+                console.error('Fetch error:', error); // Debug log
                 Swal.fire({ 
                     title: 'Error!', 
                     text: 'Failed to update profile: ' + error.message, 
@@ -830,11 +861,18 @@
 
         function validateForm(data) {
             clearErrors();
-            let isValid = true;
-            if (!data.firstName || data.firstName.trim().length < 2) { showError('firstName', 'First name must be at least 2 characters'); isValid = false; }
-            if (!data.lastName  || data.lastName.trim().length  < 2) { showError('lastName',  'Last name must be at least 2 characters');  isValid = false; }
+            let firstErrorField = null;
+
+            function flag(fieldId, msg) {
+                showError(fieldId, msg);
+                if (!firstErrorField) firstErrorField = fieldId;
+            }
+
+            if (!data.firstName || data.firstName.trim().length < 2) flag('firstName', 'First name must be at least 2 characters.');
+            if (!data.lastName  || data.lastName.trim().length  < 2) flag('lastName',  'Last name must be at least 2 characters.');
             if (data.phone && data.phone.trim()) {
-                if (!/^[0-9]{10}$/.test(data.phone.replace(/\D/g, ''))) { showError('phone', 'Please enter a valid 10-digit phone number'); isValid = false; }
+                const digits = data.phone.replace(/\D/g, '');
+                if (digits.length !== 10 || !/^[6-9]/.test(digits)) flag('phone', 'Enter a valid 10-digit Indian mobile number starting with 6–9.');
             }
             if (data.dateOfBirth) {
                 const birthDate = new Date(data.dateOfBirth);
@@ -842,26 +880,23 @@
                 const age = today.getFullYear() - birthDate.getFullYear();
                 const monthDiff = today.getMonth() - birthDate.getMonth();
                 const dayDiff = today.getDate() - birthDate.getDate();
-                
                 const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
-                
-                if (birthDate > today) {
-                    showError('dateOfBirth', 'Date of birth cannot be in the future');
-                    isValid = false;
-                } else if (actualAge < 13) {
-                    showError('dateOfBirth', 'You must be at least 13 years old to use this service');
-                    isValid = false;
-                } else if (actualAge > 120) {
-                    showError('dateOfBirth', 'Please enter a valid date of birth');
-                    isValid = false;
+                if (birthDate > today) flag('dateOfBirth', 'Date of birth cannot be in the future.');
+                else if (actualAge < 13) flag('dateOfBirth', 'You must be at least 13 years old.');
+                else if (actualAge > 120) flag('dateOfBirth', 'Please enter a valid date of birth.');
+            }
+            if (data.readingGoal && (data.readingGoal < 1 || data.readingGoal > 365)) flag('readingGoal', 'Reading goal must be between 1 and 365.');
+            if (data.bio && data.bio.length > 500) flag('bio', 'Bio must be less than 500 characters.');
+
+            if (firstErrorField) {
+                const el = document.getElementById(firstErrorField);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.focus();
                 }
+                return false;
             }
-            if (data.readingGoal && (data.readingGoal < 1 || data.readingGoal > 365)) { showError('readingGoal', 'Reading goal must be between 1 and 365 books'); isValid = false; }
-            if (data.bio && data.bio.length > 500) { showError('bio', 'Bio must be less than 500 characters'); isValid = false; }
-            if (!isValid) {
-                Swal.fire({ title: 'Validation Error!', text: 'Please fix the errors and try again', icon: 'error', confirmButtonColor: '#5a4a3a' });
-            }
-            return isValid;
+            return true;
         }
 
         function showError(fieldName, message) {
