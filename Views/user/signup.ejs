@@ -418,26 +418,40 @@
         }
 
         function showError(input, message) {
-          const formGroup =
-            input.parentElement.parentElement || input.parentElement;
-          const error =
-            formGroup.querySelector(".error-message") ||
-            document.createElement("div");
+          // Find the immediate parent form-group
+          let formGroup = input.closest('.form-group');
+          if (!formGroup) {
+            formGroup = input.parentElement;
+          }
+          
+          // Remove any existing error message
+          const existingError = formGroup.querySelector(".error-message");
+          if (existingError) {
+            existingError.remove();
+          }
+          
+          // Create new error message
+          const error = document.createElement("div");
           error.className = "error-message";
           error.textContent = message;
           error.style.color = "#dc3545";
           error.style.fontSize = "12px";
           error.style.marginTop = "5px";
-
-          if (!formGroup.querySelector(".error-message")) {
-            formGroup.appendChild(error);
-          }
+          error.style.display = "block";
+          error.style.lineHeight = "1.4";
+          
+          // Append error below the input field
+          formGroup.appendChild(error);
           input.style.borderColor = "#dc3545";
         }
 
         function showSuccess(input) {
-          const formGroup =
-            input.parentElement.parentElement || input.parentElement;
+          // Find the immediate parent form-group
+          let formGroup = input.closest('.form-group');
+          if (!formGroup) {
+            formGroup = input.parentElement;
+          }
+          
           const error = formGroup.querySelector(".error-message");
           if (error) error.remove();
           input.style.borderColor = "#28a745";

@@ -299,7 +299,7 @@ export const updatePaymentStatus = async (id, status) => {
   );
 };
 export const cancelOrder = async (id, reason) => {
-  const order = await Order.findById(id);
+  const order = await Order.findById(id).populate('items.product');
   if (!order) {
     throw new Error(MESSAGES.ORDER.NOT_FOUND);
   }
@@ -309,9 +309,36 @@ export const cancelOrder = async (id, reason) => {
   if (order.orderStatus === "Cancelled") {
     throw new Error(MESSAGES.ORDER.ALREADY_CANCELLED);
   }
+  
+  // Restock inventory for all items in the order
+  for (const item of order.items) {
+    if (item.product && !item.cancelledAt) {
+      try {
+        await Product.findByIdAndUpdate(
+          item.product._id,
+          { $inc: { stock: item.quantity } },
+          { new: true }
+        );
+      } catch (error) {
+        console.error(`Failed to restock product ${item.product._id}:`, error.message);
+        // Continue with other items even if one fails
+      }
+    }
+  }
+  
   order.orderStatus = "Cancelled";
   order.cancelledAt = new Date();
   order.cancellationReason = reason;
+  
+  // Mark all items as cancelled
+  order.items.forEach(item => {
+    if (!item.cancelledAt) {
+      item.itemStatus = "Cancelled";
+      item.cancelledAt = new Date();
+      item.cancellationReason = reason || "Order cancelled by admin";
+    }
+  });
+  
   return await order.save();
 };
 export const getOrderStats = async () => {

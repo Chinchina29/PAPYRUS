@@ -22,7 +22,10 @@ export const getAddressesList = async (req, res) => {
   } catch (error) {
     res
       .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-      .json({ success: false, message: MESSAGES.CUSTOM.FAILED_TO_FETCH_ADDRESSES });
+      .json({
+        success: false,
+        message: MESSAGES.CUSTOM.FAILED_TO_FETCH_ADDRESSES,
+      });
   }
 };
 export const showAddAddress = (req, res) => {
@@ -44,33 +47,131 @@ export const addAddress = async (req, res) => {
       type,
       isDefault,
     } = req.body;
-    if (
-      !fullName ||
-      !phone ||
-      !addressLine1 ||
-      !city ||
-      !state ||
-      !postalCode ||
-      !country
-    ) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({
-        success: false,
-        message: MESSAGES.CUSTOM.ALL_REQUIRED_FIELDS_MUST_BE_FILLED,
-      });
+
+    if (!fullName || !fullName.trim()) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "fullName",
+          message: "Full name is required.",
+        });
+    }
+    if (fullName.trim().length < 3 || fullName.trim().length > 100) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "fullName",
+          message: "Full name must be between 3 and 100 characters.",
+        });
+    }
+    if (!phone || !phone.trim()) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "phone",
+          message: "Phone number is required.",
+        });
     }
     const phoneDigits = phone.replace(/\D/g, "").slice(-10);
     if (phoneDigits.length !== 10 || !/^[6-9]/.test(phoneDigits)) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({
-        success: false,
-        message: MESSAGES.CUSTOM.PLEASE_ENTER_A_VALID_10_DIGIT_INDIAN_PHONE_NUMBER,
-      });
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "phone",
+          message:
+            "Enter a valid 10-digit Indian mobile number starting with 6–9.",
+        });
     }
     const normalizedPhone = "+91" + phoneDigits;
+    if (!addressLine1 || !addressLine1.trim()) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "addressLine1",
+          message: "Address Line 1 is required.",
+        });
+    }
+    if (addressLine1.trim().length < 5 || addressLine1.trim().length > 200) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "addressLine1",
+          message: "Address Line 1 must be between 5 and 200 characters.",
+        });
+    }
+    if (addressLine2 && addressLine2.trim().length > 200) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "addressLine2",
+          message: "Address Line 2 must not exceed 200 characters.",
+        });
+    }
+    if (!city || !city.trim()) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({ success: false, field: "city", message: "City is required." });
+    }
+    if (city.trim().length < 2 || city.trim().length > 100) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "city",
+          message: "City must be between 2 and 100 characters.",
+        });
+    }
+    if (!state || !state.trim()) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "state",
+          message: "State is required.",
+        });
+    }
+    if (state.trim().length < 2 || state.trim().length > 100) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "state",
+          message: "State must be between 2 and 100 characters.",
+        });
+    }
+    if (!postalCode || !postalCode.trim()) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "postalCode",
+          message: "Postal code is required.",
+        });
+    }
     if (!/^\d{6}$/.test(postalCode)) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({
-        success: false,
-        message: MESSAGES.CUSTOM.PLEASE_ENTER_A_VALID_6_DIGIT_POSTAL_CODE,
-      });
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "postalCode",
+          message: "Enter a valid 6-digit PIN code.",
+        });
+    }
+    if (!country || !country.trim()) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "country",
+          message: "Country is required.",
+        });
     }
     const addressData = {
       userId,
@@ -88,7 +189,9 @@ export const addAddress = async (req, res) => {
     const address = await addressService.createAddress(addressData);
     res.json({ success: true, message: MESSAGES.ADDRESS.ADDED, address });
   } catch (error) {
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: MESSAGES.CUSTOM.FAILED_TO_ADD_ADDRESS });
+    res
+      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+      .json({ success: false, message: MESSAGES.CUSTOM.FAILED_TO_ADD_ADDRESS });
   }
 };
 export const showEditAddress = async (req, res) => {
@@ -96,10 +199,19 @@ export const showEditAddress = async (req, res) => {
     const userId = req.session.userId;
     const addressId = req.params.id;
     const address = await addressService.getAddressById(addressId, userId);
-    if (!address) return errorResponse(res, MESSAGES.ADDRESS.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+    if (!address)
+      return errorResponse(
+        res,
+        MESSAGES.ADDRESS.NOT_FOUND,
+        HTTP_STATUS.NOT_FOUND,
+      );
     res.render("user/editaddress", { address });
   } catch (error) {
-    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    return errorResponse(
+      res,
+      "Server error",
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+    );
   }
 };
 export const updateAddress = async (req, res) => {
@@ -118,33 +230,130 @@ export const updateAddress = async (req, res) => {
       type,
       isDefault,
     } = req.body;
-    if (
-      !fullName ||
-      !phone ||
-      !addressLine1 ||
-      !city ||
-      !state ||
-      !postalCode ||
-      !country
-    ) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({
-        success: false,
-        message: MESSAGES.CUSTOM.ALL_REQUIRED_FIELDS_MUST_BE_FILLED,
-      });
+    if (!fullName || !fullName.trim()) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "fullName",
+          message: "Full name is required.",
+        });
+    }
+    if (fullName.trim().length < 3 || fullName.trim().length > 100) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "fullName",
+          message: "Full name must be between 3 and 100 characters.",
+        });
+    }
+    if (!phone || !phone.trim()) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "phone",
+          message: "Phone number is required.",
+        });
     }
     const phoneDigits = phone.replace(/\D/g, "").slice(-10);
     if (phoneDigits.length !== 10 || !/^[6-9]/.test(phoneDigits)) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({
-        success: false,
-        message: MESSAGES.CUSTOM.PLEASE_ENTER_A_VALID_10_DIGIT_INDIAN_PHONE_NUMBER,
-      });
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "phone",
+          message:
+            "Enter a valid 10-digit Indian mobile number starting with 6–9.",
+        });
     }
     const normalizedPhone = "+91" + phoneDigits;
+    if (!addressLine1 || !addressLine1.trim()) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "addressLine1",
+          message: "Address Line 1 is required.",
+        });
+    }
+    if (addressLine1.trim().length < 5 || addressLine1.trim().length > 200) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "addressLine1",
+          message: "Address Line 1 must be between 5 and 200 characters.",
+        });
+    }
+    if (addressLine2 && addressLine2.trim().length > 200) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "addressLine2",
+          message: "Address Line 2 must not exceed 200 characters.",
+        });
+    }
+    if (!city || !city.trim()) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({ success: false, field: "city", message: "City is required." });
+    }
+    if (city.trim().length < 2 || city.trim().length > 100) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "city",
+          message: "City must be between 2 and 100 characters.",
+        });
+    }
+    if (!state || !state.trim()) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "state",
+          message: "State is required.",
+        });
+    }
+    if (state.trim().length < 2 || state.trim().length > 100) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "state",
+          message: "State must be between 2 and 100 characters.",
+        });
+    }
+    if (!postalCode || !postalCode.trim()) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "postalCode",
+          message: "Postal code is required.",
+        });
+    }
     if (!/^\d{6}$/.test(postalCode)) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({
-        success: false,
-        message: MESSAGES.CUSTOM.PLEASE_ENTER_A_VALID_6_DIGIT_POSTAL_CODE,
-      });
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "postalCode",
+          message: "Enter a valid 6-digit PIN code.",
+        });
+    }
+    if (!country || !country.trim()) {
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          success: false,
+          field: "country",
+          message: "Country is required.",
+        });
     }
     const updateData = {
       fullName: fullName.trim(),
@@ -175,7 +384,10 @@ export const updateAddress = async (req, res) => {
   } catch (error) {
     res
       .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-      .json({ success: false, message: MESSAGES.CUSTOM.FAILED_TO_UPDATE_ADDRESS });
+      .json({
+        success: false,
+        message: MESSAGES.CUSTOM.FAILED_TO_UPDATE_ADDRESS,
+      });
   }
 };
 export const deleteAddress = async (req, res) => {
@@ -195,7 +407,10 @@ export const deleteAddress = async (req, res) => {
   } catch (error) {
     res
       .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-      .json({ success: false, message: MESSAGES.CUSTOM.FAILED_TO_DELETE_ADDRESS });
+      .json({
+        success: false,
+        message: MESSAGES.CUSTOM.FAILED_TO_DELETE_ADDRESS,
+      });
   }
 };
 export const setDefaultAddress = async (req, res) => {
@@ -219,6 +434,9 @@ export const setDefaultAddress = async (req, res) => {
   } catch (error) {
     res
       .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-      .json({ success: false, message: MESSAGES.CUSTOM.FAILED_TO_SET_DEFAULT_ADDRESS });
+      .json({
+        success: false,
+        message: MESSAGES.CUSTOM.FAILED_TO_SET_DEFAULT_ADDRESS,
+      });
   }
 };

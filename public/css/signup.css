@@ -113,11 +113,24 @@ body {
 
 .form-group {
     flex: 1;
+    min-height: 80px; /* Reserve space for error messages */
+    display: flex;
+    flex-direction: column;
 }
 
 .form-group.full-width {
     width: 100%;
     margin-bottom: 20px;
+    min-height: 80px; /* Reserve space for error messages */
+}
+
+.error-message {
+    color: #dc3545 !important;
+    font-size: 12px !important;
+    margin-top: 5px !important;
+    display: block !important;
+    line-height: 1.4 !important;
+    min-height: 18px;
 }
 
 label {
@@ -138,6 +151,8 @@ input[type="password"] {
     font-size: 14px;
     background: white;
     transition: border-color 0.3s;
+    box-sizing: border-box; /* Ensure padding doesn't affect width */
+    min-height: 44px; /* Ensure consistent height */
 }
 
 input[type="text"]:focus,

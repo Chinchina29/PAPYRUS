@@ -645,9 +645,30 @@ export const resetPassword = async (req, res) => {
     if (!newPassword || newPassword.length < 8) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: MESSAGES.CUSTOM.PASSWORD_MUST_BE_AT_LEAST_8_CHARACTERS,
+        message: "Password must be at least 8 characters long",
       });
     }
+
+    const passwordValidation = {
+      uppercase: /[A-Z]/.test(newPassword),
+      lowercase: /[a-z]/.test(newPassword),
+      number: /[0-9]/.test(newPassword),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(newPassword),
+    };
+
+    if (
+      !passwordValidation.uppercase ||
+      !passwordValidation.lowercase ||
+      !passwordValidation.number ||
+      !passwordValidation.special
+    ) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        message:
+          "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+      });
+    }
+
     if (newPassword !== confirmPassword) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,

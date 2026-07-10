@@ -54,7 +54,10 @@ export const updateProfile = async (req, res) => {
     if (!userId) {
       return res
         .status(HTTP_STATUS.UNAUTHORIZED)
-        .json({ success: false, message: MESSAGES.CUSTOM.AUTHENTICATION_REQUIRED });
+        .json({
+          success: false,
+          message: MESSAGES.CUSTOM.AUTHENTICATION_REQUIRED,
+        });
     }
     const {
       firstName,
@@ -68,12 +71,68 @@ export const updateProfile = async (req, res) => {
       primaryInterest,
       readingGoal,
     } = req.body;
-    if (!firstName || !firstName.trim() || !lastName || !lastName.trim()) {
+
+    if (!firstName || !firstName.trim()) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        message: MESSAGES.CUSTOM.FIRST_NAME_AND_LAST_NAME_ARE_REQUIRED,
+        field: "firstName",
+        message: "First name is required.",
       });
     }
+    if (!lastName || !lastName.trim()) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        field: "lastName",
+        message: "Last name is required.",
+      });
+    }
+
+    if (firstName.trim().length < 2 || firstName.trim().length > 50) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        field: "firstName",
+        message: "First name must be between 2 and 50 characters.",
+      });
+    }
+    if (lastName.trim().length < 2 || lastName.trim().length > 50) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        field: "lastName",
+        message: "Last name must be between 2 and 50 characters.",
+      });
+    }
+
+    if (phone && phone.trim()) {
+      const phoneDigits = phone.replace(/\D/g, "");
+      if (phoneDigits.length !== 10 || !/^[6-9]/.test(phoneDigits)) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          field: "phone",
+          message:
+            "Enter a valid 10-digit Indian mobile number starting with 6–9.",
+        });
+      }
+    }
+
+    if (bio && bio.trim() && bio.trim().length > 500) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        field: "bio",
+        message: "Bio must not exceed 500 characters.",
+      });
+    }
+
+    if (readingGoal) {
+      const goal = parseInt(readingGoal);
+      if (isNaN(goal) || goal < 1 || goal > 365) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          field: "readingGoal",
+          message: "Reading goal must be between 1 and 365 books per year.",
+        });
+      }
+    }
+
     const user = await userService.findUserById(userId);
     if (!user) {
       return res
@@ -98,6 +157,26 @@ export const updateProfile = async (req, res) => {
     if (dateOfBirth && dateOfBirth.trim()) {
       const parsedDate = new Date(dateOfBirth);
       if (!isNaN(parsedDate.getTime())) {
+        const today = new Date();
+        const age = today.getFullYear() - parsedDate.getFullYear();
+        const monthDiff = today.getMonth() - parsedDate.getMonth();
+        const dayDiff = today.getDate() - parsedDate.getDate();
+        const actualAge =
+          monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
+        if (parsedDate > today) {
+          return res.status(HTTP_STATUS.BAD_REQUEST).json({
+            success: false,
+            field: "dateOfBirth",
+            message: "Date of birth cannot be in the future.",
+          });
+        }
+        if (actualAge < 13) {
+          return res.status(HTTP_STATUS.BAD_REQUEST).json({
+            success: false,
+            field: "dateOfBirth",
+            message: "You must be at least 13 years old to use this service.",
+          });
+        }
         updateData.dateOfBirth = parsedDate;
       }
     } else {
@@ -107,7 +186,10 @@ export const updateProfile = async (req, res) => {
     if (!updatedUser) {
       return res
         .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-        .json({ success: false, message: MESSAGES.CUSTOM.FAILED_TO_UPDATE_PROFILE });
+        .json({
+          success: false,
+          message: MESSAGES.CUSTOM.FAILED_TO_UPDATE_PROFILE,
+        });
     }
     if (req.session.user) {
       req.session.user.firstName = updatedUser.firstName;
@@ -134,24 +216,35 @@ export const updateProfile = async (req, res) => {
   } catch (error) {
     return res
       .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-      .json({ success: false, message: MESSAGES.CUSTOM.SERVER_ERROR_1 + error.message });
+      .json({
+        success: false,
+        message: MESSAGES.CUSTOM.SERVER_ERROR_1 + error.message,
+      });
   }
 };
 export const requestEmailChange = async (req, res) => {
   try {
     const { newEmail } = req.body;
     const userId = req.session.userId;
-    if (!userId) return errorResponse(res, "Authentication required", HTTP_STATUS.UNAUTHORIZED);
-    if (!newEmail) return errorResponse(res, MESSAGES.CUSTOM.NEW_EMAIL_IS_REQUIRED);
+    if (!userId)
+      return errorResponse(
+        res,
+        "Authentication required",
+        HTTP_STATUS.UNAUTHORIZED,
+      );
+    if (!newEmail)
+      return errorResponse(res, MESSAGES.CUSTOM.NEW_EMAIL_IS_REQUIRED);
     const user = await userService.findUserById(userId);
-    if (!user) return errorResponse(res, MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+    if (!user)
+      return errorResponse(res, MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
     if (newEmail === user.email)
       return errorResponse(
         res,
         "New email must be different from current email",
       );
     const existingUser = await userService.findUserByEmail(newEmail);
-    if (existingUser) return errorResponse(res, MESSAGES.AUTH.EMAIL_ALREADY_EXISTS);
+    if (existingUser)
+      return errorResponse(res, MESSAGES.AUTH.EMAIL_ALREADY_EXISTS);
     const otp = otpService.generateOTP();
     user.emailChangeRequest = {
       newEmail: newEmail,
@@ -167,7 +260,11 @@ export const requestEmailChange = async (req, res) => {
       "OTP sent to new email address. Please verify to complete email change.",
     );
   } catch (error) {
-    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    return errorResponse(
+      res,
+      "Server error",
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+    );
   }
 };
 export const verifyEmailChange = async (req, res) => {
@@ -182,7 +279,8 @@ export const verifyEmailChange = async (req, res) => {
     const isValidOTP =
       user.emailChangeRequest.otp.code === otp &&
       now <= new Date(user.emailChangeRequest.otp.expiresAt);
-    if (!isValidOTP) return errorResponse(res, MESSAGES.CUSTOM.INVALID_OR_EXPIRED_OTP);
+    if (!isValidOTP)
+      return errorResponse(res, MESSAGES.CUSTOM.INVALID_OR_EXPIRED_OTP);
     const newEmail = user.emailChangeRequest.newEmail;
     user.email = newEmail;
     user.emailChangeRequest = undefined;
@@ -192,7 +290,11 @@ export const verifyEmailChange = async (req, res) => {
     }
     return successResponse(res, "Email changed successfully", { newEmail });
   } catch (error) {
-    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    return errorResponse(
+      res,
+      "Server error",
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+    );
   }
 };
 export const cancelEmailChange = async (req, res) => {
@@ -205,7 +307,11 @@ export const cancelEmailChange = async (req, res) => {
     }
     return successResponse(res, "Email change request cancelled");
   } catch (error) {
-    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    return errorResponse(
+      res,
+      "Server error",
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+    );
   }
 };
 export const showChangePassword = (req, res) => {
@@ -215,7 +321,8 @@ export const removeProfilePicture = async (req, res) => {
   try {
     const userId = req.session.userId;
     const user = await userService.findUserById(userId);
-    if (!user) return errorResponse(res, MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+    if (!user)
+      return errorResponse(res, MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
     if (!user.profilePicture)
       return errorResponse(res, MESSAGES.CUSTOM.NO_PROFILE_PICTURE_TO_REMOVE);
     try {
@@ -230,7 +337,11 @@ export const removeProfilePicture = async (req, res) => {
       user: { profilePicture: null },
     });
   } catch (error) {
-    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    return errorResponse(
+      res,
+      "Server error",
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+    );
   }
 };
 export const changePassword = async (req, res) => {
@@ -238,23 +349,34 @@ export const changePassword = async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     const userId = req.session.userId;
     const user = await userService.findUserById(userId);
-    if (!user) return errorResponse(res, MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+    if (!user)
+      return errorResponse(res, MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
     const isMatch = await userService.comparePassword(
       currentPassword,
       user.password,
     );
-    if (!isMatch) return errorResponse(res, MESSAGES.CUSTOM.CURRENT_PASSWORD_IS_INCORRECT);
+    if (!isMatch)
+      return errorResponse(res, MESSAGES.CUSTOM.CURRENT_PASSWORD_IS_INCORRECT);
     user.password = newPassword;
     await user.save();
     return successResponse(res, MESSAGES.AUTH.PASSWORD_CHANGED);
   } catch (error) {
-    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    return errorResponse(
+      res,
+      "Server error",
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+    );
   }
 };
 export const resendEmailOTP = async (req, res) => {
   try {
     const userId = req.session.userId;
-    if (!userId) return errorResponse(res, "Authentication required", HTTP_STATUS.UNAUTHORIZED);
+    if (!userId)
+      return errorResponse(
+        res,
+        "Authentication required",
+        HTTP_STATUS.UNAUTHORIZED,
+      );
     const user = await userService.findUserById(userId);
     if (!user || !user.emailChangeRequest) {
       return errorResponse(res, MESSAGES.CUSTOM.NO_EMAIL_CHANGE_REQUEST_FOUND);
@@ -272,15 +394,21 @@ export const resendEmailOTP = async (req, res) => {
     );
     return successResponse(res, "OTP resent successfully");
   } catch (error) {
-    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    return errorResponse(
+      res,
+      "Server error",
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+    );
   }
 };
 export const uploadAvatar = async (req, res) => {
   try {
     const userId = req.session.userId;
-    if (!req.file) return errorResponse(res, MESSAGES.CUSTOM.NO_IMAGE_FILE_PROVIDED);
+    if (!req.file)
+      return errorResponse(res, MESSAGES.CUSTOM.NO_IMAGE_FILE_PROVIDED);
     const user = await userService.findUserById(userId);
-    if (!user) return errorResponse(res, MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+    if (!user)
+      return errorResponse(res, MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
     if (
       user.profilePicture &&
       !user.profilePicture.includes("default-avatar")
@@ -296,6 +424,10 @@ export const uploadAvatar = async (req, res) => {
       user: { profilePicture: req.file.path },
     });
   } catch (error) {
-    return errorResponse(res, "Server error", HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    return errorResponse(
+      res,
+      "Server error",
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+    );
   }
 };

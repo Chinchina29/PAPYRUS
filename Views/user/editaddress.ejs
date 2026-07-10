@@ -218,35 +218,114 @@
     </footer>
 
     <script>
+      // --- Validation helpers ---
+      function showFieldError(id, msg) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.borderColor = '#dc3545';
+        let err = el.parentNode.querySelector('.field-error');
+        if (!err) {
+          err = document.createElement('span');
+          err.className = 'field-error';
+          err.style.cssText = 'color:#dc3545;font-size:11px;display:block;margin-top:4px;';
+          el.parentNode.appendChild(err);
+        }
+        err.textContent = msg;
+      }
+
+      function clearFieldError(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.borderColor = '#e0d5c7';
+        const err = el.parentNode.querySelector('.field-error');
+        if (err) err.remove();
+      }
+
+      function clearAllErrors() {
+        document.querySelectorAll('.field-error').forEach(e => e.remove());
+        document.querySelectorAll('#addressForm input, #addressForm select').forEach(i => { i.style.borderColor = '#e0d5c7'; });
+      }
+
+      function validateField(id, value) {
+        const v = (value || '').trim();
+        switch (id) {
+          case 'fullName':
+            if (!v) return 'Full name is required.';
+            if (v.length < 3) return 'Full name must be at least 3 characters.';
+            if (v.length > 100) return 'Full name must not exceed 100 characters.';
+            return null;
+          case 'phone': {
+            const digits = v.replace(/\D/g, '');
+            if (!digits) return 'Phone number is required.';
+            if (digits.length !== 10) return 'Phone must be exactly 10 digits.';
+            if (!/^[6-9]/.test(digits)) return 'Indian mobile numbers start with 6, 7, 8 or 9.';
+            return null;
+          }
+          case 'addressLine1':
+            if (!v) return 'Address Line 1 is required.';
+            if (v.length < 5) return 'Address Line 1 must be at least 5 characters.';
+            return null;
+          case 'city':
+            if (!v) return 'City is required.';
+            if (v.length < 2) return 'City must be at least 2 characters.';
+            return null;
+          case 'state':
+            if (!v) return 'State is required.';
+            if (v.length < 2) return 'State must be at least 2 characters.';
+            return null;
+          case 'postalCode':
+            if (!v) return 'Postal code is required.';
+            if (!/^\d{6}$/.test(v)) return 'Enter a valid 6-digit PIN code.';
+            return null;
+          case 'country':
+            if (!v) return 'Country is required.';
+            return null;
+          default:
+            return null;
+        }
+      }
+
+      // Blur listeners
+      ['fullName','phone','addressLine1','city','state','postalCode','country'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('blur', () => {
+          const err = validateField(id, el.value);
+          if (err) showFieldError(id, err);
+          else clearFieldError(id);
+        });
+        el.addEventListener('input', () => {
+          if (el.style.borderColor === 'rgb(220, 53, 69)') clearFieldError(id);
+        });
+      });
+
       document.getElementById('addressForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        clearAllErrors();
+
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
         data.isDefault = document.getElementById('isDefault').checked;
 
-        if (!data.fullName || !data.phone || !data.addressLine1 || !data.city || !data.state || !data.postalCode || !data.country) {
-          Swal.fire({ title: 'Validation Error!', text: 'Please fill all required fields', icon: 'error', confirmButtonColor: '#5a4a3a' });
+        // Per-field JS validation
+        const required = ['fullName','phone','addressLine1','city','state','postalCode','country'];
+        let firstError = null;
+        for (const id of required) {
+          const err = validateField(id, data[id]);
+          if (err) {
+            showFieldError(id, err);
+            if (!firstError) firstError = id;
+          }
+        }
+        if (firstError) {
+          const el = document.getElementById(firstError);
+          if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); }
           return;
         }
-        
-        
+
+        // Normalize phone
         const phoneDigits = data.phone.replace(/\D/g, '').slice(-10);
-        if (phoneDigits.length !== 10) {
-          Swal.fire({ title: 'Invalid Phone!', text: 'Please enter exactly 10 digits', icon: 'error', confirmButtonColor: '#5a4a3a' });
-          return;
-        }
-        if (!/^[6-9]/.test(phoneDigits)) {
-          Swal.fire({ title: 'Invalid Phone!', text: 'Indian mobile numbers must start with 6, 7, 8, or 9', icon: 'error', confirmButtonColor: '#5a4a3a' });
-          return;
-        }
-        
-        
         data.phone = '+91' + phoneDigits;
-        
-        if (!/^\d{6}$/.test(data.postalCode)) {
-          Swal.fire({ title: 'Invalid Postal Code!', text: 'Please enter a valid 6-digit postal code', icon: 'error', confirmButtonColor: '#5a4a3a' });
-          return;
-        }
 
         try {
           const addressId = '<%= address._id %>';
@@ -260,47 +339,32 @@
             Swal.fire({ title: 'Success!', text: 'Address updated successfully', icon: 'success', confirmButtonColor: '#5a4a3a' })
               .then(() => { window.location.href = '/profile/addresses'; });
           } else {
-            Swal.fire({ title: 'Error!', text: result.message, icon: 'error', confirmButtonColor: '#5a4a3a' });
+            if (result.field) {
+              showFieldError(result.field, result.message);
+              const el = document.getElementById(result.field);
+              if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); }
+            } else {
+              Swal.fire({ title: 'Error!', text: result.message, icon: 'error', confirmButtonColor: '#5a4a3a' });
+            }
           }
         } catch (error) {
-          Swal.fire({ title: 'Error!', text: 'Failed to update address', icon: 'error', confirmButtonColor: '#5a4a3a' });
+          Swal.fire({ title: 'Error!', text: 'Failed to update address. Please try again.', icon: 'error', confirmButtonColor: '#5a4a3a' });
         }
       });
-
-      // Back button navigation enabled
 
       document.addEventListener('DOMContentLoaded', function() {
         const urlParams = new URLSearchParams(window.location.search);
         const error = urlParams.get('error');
         const success = urlParams.get('success');
-        
         if (error) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Oops!',
-            text: decodeURIComponent(error),
-            confirmButtonColor: '#5a4a3a'
-          }).then(() => {
-            const url = new URL(window.location);
-            url.searchParams.delete('error');
-            window.history.replaceState({}, '', url);
-          });
+          Swal.fire({ icon: 'error', title: 'Oops!', text: decodeURIComponent(error), confirmButtonColor: '#5a4a3a' })
+            .then(() => { const url = new URL(window.location); url.searchParams.delete('error'); window.history.replaceState({}, '', url); });
         }
-        
         if (success) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Success!',
-            text: decodeURIComponent(success),
-            confirmButtonColor: '#5a4a3a',
-            timer: 3000
-          }).then(() => {
-            const url = new URL(window.location);
-            url.searchParams.delete('success');
-            window.history.replaceState({}, '', url);
-          });
+          Swal.fire({ icon: 'success', title: 'Success!', text: decodeURIComponent(success), confirmButtonColor: '#5a4a3a', timer: 3000 })
+            .then(() => { const url = new URL(window.location); url.searchParams.delete('success'); window.history.replaceState({}, '', url); });
         }
       });
     </script>
 </body>
-</html>
+</html>
