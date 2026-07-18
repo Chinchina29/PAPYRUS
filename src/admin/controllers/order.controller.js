@@ -26,13 +26,14 @@ export const getReturnRequests = async (req, res) => {
       user: req.session.adminUser,
     });
   } catch (error) {
+    console.error("[getReturnRequests] Error:", error);
     res.render("admin/return-requests", {
       orders: [],
       total: 0,
       totalPages: 1,
       currentPage: 1,
-      search: "",
-      status: "Requested",
+      search: req.query.search?.trim() || "",
+      status: req.query.status !== undefined ? req.query.status : "Requested",
       currentPage_name: "return-requests",
       user: req.session.adminUser,
       error: "Failed to load return requests",

@@ -231,16 +231,20 @@
             <tbody>
               <% orders.forEach(order => { %>
                 <% 
-                  const hasOrderReturn = order.returnRequestStatus && order.returnRequestStatus !== 'None';
-                  const itemsWithReturns = order.items.filter(item => item.returnRequestStatus && item.returnRequestStatus !== 'None');
+                  const hasOrderReturn = order.returnRequestStatus && order.returnRequestStatus !== 'None'
+                    && (status === '' || order.returnRequestStatus === status);
+                  const itemsWithReturns = order.items.filter(item =>
+                    item.returnRequestStatus && item.returnRequestStatus !== 'None'
+                    && (status === '' || item.returnRequestStatus === status)
+                  );
                 %>
                 
                 <% if (hasOrderReturn) { %>
                   <tr style="border-top: 1px solid #f3f4f6;">
                     <td style="padding: 16px; font-size: 14px; font-weight: 600; color: #2d1f14;"><%= order.orderId %></td>
                     <td style="padding: 16px; font-size: 14px;">
-                      <div><%= order.user.firstName %> <%= order.user.lastName %></div>
-                      <div style="font-size: 12px; color: #6b7280;"><%= order.user.email %></div>
+                      <div><%= order.user ? (order.user.firstName + ' ' + order.user.lastName) : 'Deleted User' %></div>
+                      <div style="font-size: 12px; color: #6b7280;"><%= order.user ? order.user.email : 'N/A' %></div>
                     </td>
                     <td style="padding: 16px; font-size: 14px;"><strong>Full Order</strong> (<%= order.items.length %> items)</td>
                     <td style="padding: 16px; font-size: 14px;">
@@ -283,8 +287,8 @@
                   <tr style="border-top: 1px solid #f3f4f6;">
                     <td style="padding: 16px; font-size: 14px; font-weight: 600; color: #2d1f14;"><%= order.orderId %></td>
                     <td style="padding: 16px; font-size: 14px;">
-                      <div><%= order.user.firstName %> <%= order.user.lastName %></div>
-                      <div style="font-size: 12px; color: #6b7280;"><%= order.user.email %></div>
+                      <div><%= order.user ? (order.user.firstName + ' ' + order.user.lastName) : 'Deleted User' %></div>
+                      <div style="font-size: 12px; color: #6b7280;"><%= order.user ? order.user.email : 'N/A' %></div>
                     </td>
                     <td style="padding: 16px;">
                       <div style="display: flex; align-items: center; gap: 12px;">
@@ -401,6 +405,11 @@
     function goToPage(page) {
       const url = new URL(window.location);
       url.searchParams.set('page', page);
+      // Preserve existing search and status params
+      const currentSearch = url.searchParams.get('search') || '';
+      const currentStatus = url.searchParams.get('status') !== null ? url.searchParams.get('status') : 'Requested';
+      url.searchParams.set('search', currentSearch);
+      url.searchParams.set('status', currentStatus);
       window.location.href = url.toString();
     }
 

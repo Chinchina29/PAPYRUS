@@ -234,7 +234,7 @@ app.use((err, req, res, next) => {
   const redirectUrl =
     req.path.startsWith("/shop") || req.path.startsWith("/admin")
       ? req.path.startsWith("/admin")
-        ? "/admin/dashboard"
+        ? "/admin/signin"
         : "/shop"
       : "/";
   res.redirect(
