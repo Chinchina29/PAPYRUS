@@ -137,7 +137,8 @@ body {
 }
 
 .form-group input[type="email"],
-.form-group input[type="password"] {
+.form-group input[type="password"],
+.form-group input[type="text"] {
   width: 100%;
   padding: 14px 16px;
   border: 1px solid #ddd;
@@ -148,6 +149,11 @@ body {
   background: #fff;
   position: relative;
   z-index: 1;
+}
+
+/* Give password field extra right padding for the eye button */
+.password-wrapper input {
+  padding-right: 48px !important;
 }
 
 .form-group input:-webkit-autofill,
@@ -178,24 +184,37 @@ body {
 
 .toggle-password {
   position: absolute;
-  right: 12px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 8px;
-  color: #999;
-  transition: color 0.3s;
+  padding: 6px;
+  color: #aaa;
+  transition: color 0.25s ease, transform 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  z-index: 2;
 }
 
 .toggle-password:hover {
   color: #7a5c3e;
+  background: rgba(122, 92, 62, 0.08);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.toggle-password:active {
+  transform: translateY(-50%) scale(0.95);
 }
 
 .toggle-password svg {
   width: 20px;
   height: 20px;
+  display: block;
+  pointer-events: none;
 }
 
 .forgot-link {
