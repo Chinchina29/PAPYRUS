@@ -4,137 +4,374 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Create Listing - Papyrus</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #2d2418; display: flex; min-height: 100vh; }
-    .seller-sidebar { width: 200px; background: #2d2418; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; padding: 28px 0; }
-    .sidebar-logo { padding: 0 20px 28px; border-bottom: 1px solid #3d3020; font-family: 'Playfair Display', serif; font-size: 18px; color: #f0ede8; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-    .sidebar-logo svg { width: 20px; height: 20px; color: #c8a96e; }
-    .sidebar-nav { flex: 1; padding: 20px 0; }
-    .sidebar-nav a { display: flex; align-items: center; gap: 10px; padding: 11px 20px; color: #a09078; text-decoration: none; font-size: 13.5px; font-weight: 500; transition: all 0.2s; border-left: 3px solid transparent; }
-    .sidebar-nav a:hover { color: #f0ede8; background: #3d3020; }
-    .sidebar-nav a.active { color: #f0ede8; background: #3d3020; border-left-color: #c8a96e; }
-    .sidebar-nav a svg { width: 15px; height: 15px; flex-shrink: 0; }
-    .seller-tier { margin: 12px; background: #3d3020; border-radius: 8px; padding: 14px; font-size: 11px; }
-    .tier-label { color: #a09078; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-    .tier-name { color: #c8a96e; font-weight: 600; font-size: 13px; margin-bottom: 8px; }
-    .tier-bar { height: 3px; background: #2d2418; border-radius: 2px; }
-    .tier-bar-fill { height: 100%; width: 72%; background: #c8a96e; border-radius: 2px; }
-    .tier-hint { color: #807060; font-size: 10px; margin-top: 5px; }
-    .main { margin-left: 200px; flex: 1; padding: 36px; }
-    .breadcrumb { font-size: 12px; color: #9a8a78; margin-bottom: 8px; }
-    .breadcrumb a { color: #9a8a78; text-decoration: none; }
-    .breadcrumb a:hover { color: #2d2418; }
-    .breadcrumb span { margin: 0 6px; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #f5f2ed;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Top Bar ── */
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid #ece9e3;
+      padding: 0 40px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: #1e3a1e;
+      text-decoration: none;
+    }
+    .topbar-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .topbar-nav a {
+      padding: 7px 14px;
+      font-size: 13.5px;
+      color: #666;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: background 0.15s, color 0.15s;
+    }
+    .topbar-nav a:hover { background: #f5f2ed; color: #1a1a1a; }
+    .topbar-nav a.active { background: #1e3a1e; color: #fff; }
+
+    /* ── Page Wrapper ── */
+    .page-wrapper {
+      flex: 1;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 24px 60px;
+    }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .breadcrumb a { color: #999; text-decoration: none; }
+    .breadcrumb a:hover { color: #1e3a1e; }
+    .breadcrumb svg { width: 12px; height: 12px; }
+
+    /* ── Page Header ── */
     .page-header { margin-bottom: 28px; }
-    .page-header h1 { font-family: 'Playfair Display', serif; font-size: 26px; color: #2d2418; }
-    .page-header p { color: #7a6a58; font-size: 13.5px; margin-top: 4px; }
-    .layout { display: grid; grid-template-columns: 1fr 280px; gap: 24px; align-items: start; }
-    .form-sections { display: flex; flex-direction: column; gap: 16px; }
-    .form-card { background: white; border-radius: 12px; border: 1px solid #e8dcc8; overflow: hidden; }
-    .section-num { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: #2d2418; color: white; font-size: 12px; font-weight: 600; margin-right: 10px; flex-shrink: 0; }
-    .section-header-row { display: flex; align-items: center; padding: 18px 22px; border-bottom: 1px solid #f0ede8; font-size: 15px; font-weight: 600; color: #2d2418; }
-    .section-body { padding: 22px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .form-group { margin-bottom: 16px; }
-    .form-group:last-child { margin-bottom: 0; }
-    .form-group label { display: block; font-size: 12px; font-weight: 600; color: #6b5a48; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1.5px solid #e8dcc8; border-radius: 8px; font-size: 14px; font-family: inherit; background: #faf8f5; outline: none; color: #2d2418; transition: border-color 0.2s; }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #8b7355; background: white; box-shadow: 0 0 0 3px rgba(139,115,85,0.08); }
-    .condition-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .condition-btn { padding: 10px; border: 1.5px solid #e8dcc8; border-radius: 8px; background: white; font-size: 13.5px; font-family: inherit; cursor: pointer; transition: all 0.2s; color: #6b5a48; font-weight: 500; }
-    .condition-btn:hover { border-color: #8b7355; background: #faf8f5; }
-    .condition-btn.selected { border-color: #2d2418; background: #2d2418; color: white; }
-    .upload-area { border: 2px dashed #d4c5b0; border-radius: 10px; padding: 32px 20px; text-align: center; cursor: pointer; transition: border-color 0.2s; background: #faf8f5; }
-    .upload-area:hover { border-color: #8b7355; }
-    .upload-icon { font-size: 28px; margin-bottom: 10px; }
-    .upload-title { font-size: 14px; font-weight: 500; color: #2d2418; margin-bottom: 4px; }
-    .upload-sub { font-size: 12px; color: #9a8a78; margin-bottom: 10px; }
-    .upload-btn { display: inline-block; padding: 7px 18px; border: 1px solid #8b7355; border-radius: 6px; font-size: 12.5px; color: #8b7355; cursor: pointer; background: none; font-family: inherit; font-weight: 500; }
-    .img-previews { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-    .img-item { position: relative; width: 80px; height: 80px; }
-    .img-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid #e8dcc8; }
-    .img-remove { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; background: #c0392b; color: white; border: none; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; }
-    .img-count { font-size: 12px; color: #9a8a78; margin-top: 8px; }
-    .img-count.error { color: #c0392b; }
-    .img-count.ok { color: #2e7d32; }
-    .right-sidebar { display: flex; flex-direction: column; gap: 16px; }
-    .side-card { background: white; border-radius: 12px; border: 1px solid #e8dcc8; padding: 20px; }
-    .side-card-title { font-size: 14px; font-weight: 600; color: #2d2418; margin-bottom: 14px; }
-    .video-upload { border: 2px dashed #d4c5b0; border-radius: 8px; padding: 24px 16px; text-align: center; cursor: pointer; transition: border-color 0.2s; background: #faf8f5; }
-    .video-upload:hover { border-color: #8b7355; }
-    .video-upload p { font-size: 12px; color: #9a8a78; margin: 8px 0; }
-    .video-upload button { font-size: 12px; color: #8b7355; background: none; border: none; cursor: pointer; font-family: inherit; font-weight: 500; text-decoration: underline; }
-    .alert { padding: 12px 16px; border-radius: 8px; font-size: 13.5px; margin-bottom: 16px; display: none; }
-    .alert-danger { background: #fdf0ef; color: #c0392b; border: 1px solid #f5c6c2; }
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+    .page-header p { font-size: 13.5px; color: #888; }
+
+    /* ── Layout ── */
+    .layout { display: grid; grid-template-columns: 1fr 268px; gap: 20px; align-items: start; }
+
+    /* ── Alert ── */
+    .alert { padding: 12px 16px; border-radius: 10px; font-size: 13.5px; margin-bottom: 16px; display: none; }
+    .alert-danger  { background: #fdf0ef; color: #c0392b; border: 1px solid #f5c6c2; }
     .alert-success { background: #edfaf3; color: #1e7e4a; border: 1px solid #b7eacf; }
-    .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
-    .btn-cancel { padding: 11px 24px; background: white; color: #6b5a48; border: 1.5px solid #e8dcc8; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: inherit; font-weight: 500; transition: background 0.2s; }
-    .btn-cancel:hover { background: #f5f1ed; }
-    .btn-publish { padding: 11px 28px; background: #2d2418; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 8px; transition: background 0.2s; }
-    .btn-publish:hover:not(:disabled) { background: #3d3020; }
-    .btn-publish:disabled { opacity: 0.6; cursor: not-allowed; }
-    .cropper-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 9999; align-items: center; justify-content: center; }
+
+    /* ── Form Sections ── */
+    .form-sections { display: flex; flex-direction: column; gap: 14px; }
+
+    .form-card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #ece9e3;
+      overflow: hidden;
+    }
+    .section-header-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 22px;
+      border-bottom: 1px solid #f5f2ed;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    .section-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #1e3a1e;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .section-num.soft { background: #ece9e3; color: #666; }
+    .section-body { padding: 20px 22px; }
+
+    /* ── Form Controls ── */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group:last-child { margin-bottom: 0; }
+    .form-group label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #888;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #ece9e3;
+      border-radius: 9px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #faf9f7;
+      outline: none;
+      color: #1a1a1a;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      resize: vertical;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: #1e3a1e;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(30,58,30,0.07);
+    }
+    .required { color: #c0392b; }
+
+    /* ── Condition Buttons ── */
+    .condition-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .condition-btn {
+      padding: 10px;
+      border: 1.5px solid #ece9e3;
+      border-radius: 9px;
+      background: #faf9f7;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.18s;
+      color: #555;
+      font-weight: 500;
+    }
+    .condition-btn:hover { border-color: #1e3a1e; color: #1e3a1e; }
+    .condition-btn.selected { border-color: #1e3a1e; background: #1e3a1e; color: #fff; }
+
+    /* ── Upload Area ── */
+    .upload-area {
+      border: 2px dashed #d8d3c8;
+      border-radius: 12px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: #faf9f7;
+    }
+    .upload-area:hover { border-color: #1e3a1e; background: #f5f2ed; }
+    .upload-icon { font-size: 28px; margin-bottom: 10px; }
+    .upload-title { font-size: 14px; font-weight: 500; color: #1a1a1a; margin-bottom: 4px; }
+    .upload-sub { font-size: 12px; color: #999; margin-bottom: 12px; }
+    .upload-btn {
+      display: inline-block;
+      padding: 7px 18px;
+      border: 1.5px solid #1e3a1e;
+      border-radius: 7px;
+      font-size: 12.5px;
+      color: #1e3a1e;
+      cursor: pointer;
+      background: none;
+      font-family: inherit;
+      font-weight: 500;
+      transition: background 0.15s, color 0.15s;
+    }
+    .upload-btn:hover { background: #1e3a1e; color: #fff; }
+    .img-previews { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .img-item { position: relative; width: 78px; height: 78px; }
+    .img-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid #ece9e3; }
+    .img-remove {
+      position: absolute; top: -6px; right: -6px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #c0392b; color: #fff; border: none;
+      cursor: pointer; font-size: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .img-count { font-size: 12px; color: #999; margin-top: 8px; }
+    .img-count.error { color: #c0392b; }
+    .img-count.ok   { color: #2e7d32; }
+
+    /* ── Form Actions ── */
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 6px;
+    }
+    .btn-cancel {
+      padding: 11px 24px;
+      background: #fff;
+      color: #555;
+      border: 1.5px solid #ece9e3;
+      border-radius: 9px;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+    .btn-cancel:hover { background: #f5f2ed; }
+    .btn-publish {
+      padding: 11px 28px;
+      background: #1e3a1e;
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-publish:hover:not(:disabled) { background: #163016; transform: translateY(-1px); }
+    .btn-publish:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* ── Right Sidebar ── */
+    .right-sidebar { display: flex; flex-direction: column; gap: 14px; }
+    .side-card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #ece9e3;
+      padding: 18px 20px;
+    }
+    .side-card-title { font-size: 13px; font-weight: 600; color: #1a1a1a; margin-bottom: 14px; }
+    .video-upload {
+      border: 2px dashed #d8d3c8;
+      border-radius: 10px;
+      padding: 22px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: #faf9f7;
+    }
+    .video-upload:hover { border-color: #1e3a1e; }
+    .video-upload p { font-size: 12px; color: #999; margin: 6px 0; }
+    .video-upload button {
+      font-size: 12px; color: #1e3a1e; background: none;
+      border: none; cursor: pointer; font-family: inherit;
+      font-weight: 600; text-decoration: underline;
+    }
+    .tips-card { background: #f5f2ed; border-color: #e3ddd4; }
+    .tips-card ul { font-size: 12.5px; color: #777; padding-left: 16px; line-height: 1.9; }
+
+    /* ── Cropper Modal ── */
+    .cropper-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
     .cropper-overlay.show { display: flex; }
-    .cropper-box { background: white; border-radius: 14px; padding: 24px; width: 90%; max-width: 560px; }
+    .cropper-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      width: 90%;
+      max-width: 540px;
+    }
     .cropper-box h3 { font-size: 16px; font-weight: 600; margin-bottom: 14px; }
-    .cropper-wrap { width: 100%; height: 320px; background: #f5f1ed; border-radius: 8px; overflow: hidden; }
+    .cropper-wrap { width: 100%; height: 320px; background: #f5f2ed; border-radius: 10px; overflow: hidden; }
     .cropper-wrap img { max-width: 100%; }
     .cropper-actions { display: flex; gap: 10px; margin-top: 14px; justify-content: flex-end; }
-    .btn-crop-cancel { padding: 9px 20px; background: white; color: #6b5a48; border: 1px solid #e8dcc8; border-radius: 8px; cursor: pointer; font-family: inherit; }
-    .btn-crop-confirm { padding: 9px 24px; background: #2d2418; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 500; }
-    .required { color: #c0392b; }
+    .btn-crop-cancel {
+      padding: 9px 20px; background: #fff; color: #555;
+      border: 1.5px solid #ece9e3; border-radius: 8px;
+      cursor: pointer; font-family: inherit;
+    }
+    .btn-crop-confirm {
+      padding: 9px 24px; background: #1e3a1e; color: #fff;
+      border: none; border-radius: 8px;
+      cursor: pointer; font-family: inherit; font-weight: 600;
+    }
+
+    @media (max-width: 720px) {
+      .layout { grid-template-columns: 1fr; }
+      .topbar-nav { display: none; }
+      .page-wrapper { padding: 24px 16px 48px; }
+    }
   </style>
 </head>
 <body>
-  <div class="seller-sidebar">
-    <a href="/home" class="sidebar-logo" style="text-decoration: none; color: inherit; cursor: pointer;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      Papyrus
-    </a>
-    <nav class="sidebar-nav">
-      <a href="/sell">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        Dashboard Overview
-      </a>
-      <a href="/sell/my-listings" class="active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        My Listings
-      </a>
-      <a href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        Sales Reports
-      </a>
-    </nav>
-    <div class="seller-tier">
-      <div class="tier-label">Seller Tier</div>
-      <div class="tier-name">Pro Librarian</div>
-      <div class="tier-bar"><div class="tier-bar-fill"></div></div>
-      <div class="tier-hint">25 more sales to Master level</div>
-    </div>
-  </div>
 
-  <div class="main">
+  <!-- Top Bar -->
+  <header class="topbar">
+    <a href="/home" class="topbar-logo">📖 Papyrus</a>
+    <nav class="topbar-nav">
+      <a href="/sell">Dashboard</a>
+      <a href="/sell/my-listings" class="active">My Listings</a>
+      <a href="#">Sales Reports</a>
+    </nav>
+  </header>
+
+  <!-- Page -->
+  <div class="page-wrapper">
+
     <div class="breadcrumb">
       <a href="/sell/my-listings">My Listings</a>
-      <span>›</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       <span>Create New Listing</span>
     </div>
+
     <div class="page-header">
       <h1>Create New Book Listing</h1>
       <p>List your book in minutes and reach thousands of readers.</p>
     </div>
 
-    <div id="errorMsg" class="alert alert-danger"></div>
+    <div id="errorMsg"  class="alert alert-danger"></div>
     <div id="successMsg" class="alert alert-success"></div>
 
     <div class="layout">
+
+      <!-- Left: Form Sections -->
       <div class="form-sections">
 
+        <!-- 1. Book Details -->
         <div class="form-card">
           <div class="section-header-row">
             <span class="section-num">1</span> Book Details
@@ -166,6 +403,7 @@
           </div>
         </div>
 
+        <!-- 2. Condition & Price -->
         <div class="form-card">
           <div class="section-header-row">
             <span class="section-num">2</span> Condition &amp; Price
@@ -185,22 +423,23 @@
               <div class="form-group" style="margin-bottom:0">
                 <label>Listing Price (₹) <span class="required">*</span></label>
                 <input type="number" id="price" placeholder="0.00" min="0"/>
-                <div style="font-size:11px;color:#9a8a78;margin-top:6px;">Set a competitive price to attract buyers</div>
+                <div style="font-size:11px;color:#999;margin-top:6px;">Set a competitive price to attract buyers</div>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- 3. Photos -->
         <div class="form-card">
           <div class="section-header-row">
             <span class="section-num">3</span> Photos
-            <span style="font-size:12px;color:#9a8a78;font-weight:400;margin-left:8px;">(minimum 3 required)</span>
+            <span style="font-size:12px;color:#999;font-weight:400;">(minimum 3 required)</span>
           </div>
           <div class="section-body">
             <div class="upload-area" onclick="document.getElementById('imageInput').click()">
               <div class="upload-icon">📷</div>
               <div class="upload-title">Drag and drop book photos here</div>
-              <div class="upload-sub">Upload up to 10 photos (Front, Back, Spine, and Interior pages)</div>
+              <div class="upload-sub">Upload up to 10 photos (Front, Back, Spine, Interior)</div>
               <button type="button" class="upload-btn">Browse Files</button>
             </div>
             <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageSelect(event)"/>
@@ -209,9 +448,10 @@
           </div>
         </div>
 
+        <!-- 4. Additional Details -->
         <div class="form-card">
           <div class="section-header-row">
-            <span class="section-num" style="background:#e8dcc8;color:#6b5a48;">4</span> Additional Details
+            <span class="section-num soft">4</span> Additional Details
           </div>
           <div class="section-body">
             <div class="form-group">
@@ -225,46 +465,55 @@
           </div>
         </div>
 
+        <!-- Actions -->
         <div class="form-actions">
           <button type="button" class="btn-cancel" onclick="window.location.href='/sell/my-listings'">Cancel</button>
           <button type="button" class="btn-publish" id="submitBtn" onclick="submitListing()">
             ✦ Publish Listing
           </button>
         </div>
+
       </div>
 
+      <!-- Right Sidebar -->
       <div class="right-sidebar">
+
+        <!-- Video Upload -->
         <div class="side-card">
           <div class="side-card-title">Upload video for verification</div>
           <div class="video-upload" id="videoUploadArea">
-            <input type="file" id="videoInput" accept="video/*" style="display: none;" />
+            <input type="file" id="videoInput" accept="video/*" style="display:none;"/>
             <div id="videoUploadContent">
               <div style="font-size:24px;margin-bottom:8px;">📹</div>
               <p>Drag and drop book video here</p>
-              <p style="font-size:10px;">Upload video (MP4, MOV, AVI - Max 50MB)</p>
+              <p style="font-size:10px;">Upload video (MP4, MOV, AVI — Max 50MB)</p>
               <button type="button" onclick="document.getElementById('videoInput').click()">Browse Files</button>
             </div>
-            <div id="videoPreview" style="display: none;">
-              <video id="previewVideo" controls style="width: 100%; max-height: 200px; border-radius: 8px;"></video>
-              <div style="margin-top: 10px;">
-                <button type="button" onclick="removeVideo()" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px;">Remove Video</button>
+            <div id="videoPreview" style="display:none;">
+              <video id="previewVideo" controls style="width:100%;max-height:200px;border-radius:8px;"></video>
+              <div style="margin-top:10px;">
+                <button type="button" onclick="removeVideo()" style="background:#c0392b;color:#fff;border:none;padding:5px 10px;border-radius:6px;font-size:12px;cursor:pointer;">Remove Video</button>
               </div>
             </div>
           </div>
         </div>
-        <div class="side-card" style="background:#faf8f5;border-color:#e0d4bc;">
-          <div style="font-size:12px;color:#8b7355;font-weight:600;margin-bottom:8px;">💡 Listing Tips</div>
-          <ul style="font-size:12px;color:#7a6a58;padding-left:16px;line-height:1.8;">
+
+        <!-- Tips -->
+        <div class="side-card tips-card">
+          <div style="font-size:12px;color:#1e3a1e;font-weight:700;margin-bottom:10px;">💡 Listing Tips</div>
+          <ul>
             <li>Use clear, well-lit photos</li>
             <li>Show all sides of the book</li>
             <li>Mention any damage or highlights</li>
             <li>Price competitively for faster sales</li>
           </ul>
         </div>
+
       </div>
     </div>
   </div>
 
+  <!-- Cropper Modal -->
   <div class="cropper-overlay" id="cropperOverlay">
     <div class="cropper-box">
       <h3>✂️ Crop Image</h3>
@@ -273,7 +522,7 @@
       </div>
       <div class="cropper-actions">
         <button class="btn-crop-cancel" onclick="closeCropper()">Cancel</button>
-        <button class="btn-crop-confirm" onclick="cropAndSave()">Crop & Save</button>
+        <button class="btn-crop-confirm" onclick="cropAndSave()">Crop &amp; Save</button>
       </div>
     </div>
   </div>
@@ -356,95 +605,72 @@
     }
 
     async function submitListing() {
-      const title = document.getElementById('title').value.trim();
-      const author = document.getElementById('author').value.trim();
-      const category = document.getElementById('category').value;
-      const condition = document.getElementById('condition').value;
-      const price = document.getElementById('price').value;
-      const isbn = document.getElementById('isbn').value.trim();
-      const publisher = document.getElementById('publisher').value.trim();
+      const title       = document.getElementById('title').value.trim();
+      const author      = document.getElementById('author').value.trim();
+      const category    = document.getElementById('category').value;
+      const condition   = document.getElementById('condition').value;
+      const price       = document.getElementById('price').value;
+      const isbn        = document.getElementById('isbn').value.trim();
+      const publisher   = document.getElementById('publisher').value.trim();
       const description = document.getElementById('description').value.trim();
 
-      const errorMsg = document.getElementById('errorMsg');
+      const errorMsg  = document.getElementById('errorMsg');
       const successMsg = document.getElementById('successMsg');
       const btn = document.getElementById('submitBtn');
 
-      errorMsg.style.display = 'none';
+      errorMsg.style.display  = 'none';
       successMsg.style.display = 'none';
 
-      if (!title) { errorMsg.textContent = 'Book title is required'; errorMsg.style.display = 'block'; return; }
-      if (!category) { errorMsg.textContent = 'Please select a category'; errorMsg.style.display = 'block'; return; }
+      if (!title)   { errorMsg.textContent = 'Book title is required'; errorMsg.style.display = 'block'; return; }
+      if (!category){ errorMsg.textContent = 'Please select a category'; errorMsg.style.display = 'block'; return; }
       if (!price || isNaN(price) || price <= 0) { errorMsg.textContent = 'Valid price is required'; errorMsg.style.display = 'block'; return; }
       if (croppedImages.length < 3) { errorMsg.textContent = 'Please upload at least 3 photos'; errorMsg.style.display = 'block'; return; }
 
       btn.disabled = true;
       btn.textContent = 'Uploading...';
 
-      const payload = { 
-        title, 
-        author, 
-        category, 
-        condition, 
-        price, 
-        isbn, 
-        publisher, 
-        description, 
-        images: croppedImages, 
-        videos: uploadedVideos 
-      };
+      const payload = { title, author, category, condition, price, isbn, publisher, description, images: croppedImages, videos: uploadedVideos };
 
       try {
-        const res = await fetch('/sell', {
+        const res  = await fetch('/sell', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
         const data = await res.json();
         if (data.success) {
-          successMsg.textContent = data.message;
+          successMsg.textContent   = data.message;
           successMsg.style.display = 'block';
           setTimeout(() => window.location.href = data.redirectUrl || '/sell/my-listings', 1500);
         } else {
-          errorMsg.textContent = data.message;
+          errorMsg.textContent   = data.message;
           errorMsg.style.display = 'block';
-          btn.disabled = false;
+          btn.disabled  = false;
           btn.textContent = '✦ Publish Listing';
         }
       } catch(err) {
-        errorMsg.textContent = 'Something went wrong. Please try again.';
+        errorMsg.textContent   = 'Something went wrong. Please try again.';
         errorMsg.style.display = 'block';
-        btn.disabled = false;
+        btn.disabled  = false;
         btn.textContent = '✦ Publish Listing';
       }
     }
 
     document.getElementById('videoInput').addEventListener('change', handleVideoSelect);
-    
+
     const videoUploadArea = document.getElementById('videoUploadArea');
-    videoUploadArea.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      videoUploadArea.style.borderColor = '#8b7355';
-    });
-    
-    videoUploadArea.addEventListener('dragleave', (e) => {
-      e.preventDefault();
-      videoUploadArea.style.borderColor = '#d4c5b0';
-    });
-    
+    videoUploadArea.addEventListener('dragover', (e) => { e.preventDefault(); videoUploadArea.style.borderColor = '#1e3a1e'; });
+    videoUploadArea.addEventListener('dragleave', (e) => { e.preventDefault(); videoUploadArea.style.borderColor = '#d8d3c8'; });
     videoUploadArea.addEventListener('drop', (e) => {
       e.preventDefault();
-      videoUploadArea.style.borderColor = '#d4c5b0';
+      videoUploadArea.style.borderColor = '#d8d3c8';
       const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        handleVideoFile(files[0]);
-      }
+      if (files.length > 0) handleVideoFile(files[0]);
     });
 
     function handleVideoSelect(event) {
       const file = event.target.files[0];
-      if (file) {
-        handleVideoFile(file);
-      }
+      if (file) handleVideoFile(file);
       event.target.value = '';
     }
 
@@ -453,31 +679,21 @@
         Swal.fire({ icon: 'error', title: 'Please select a video file', timer: 2000, showConfirmButton: false });
         return;
       }
-
       if (file.size > 50 * 1024 * 1024) {
         Swal.fire({ icon: 'error', title: 'Video file too large', text: 'Maximum file size is 50MB', timer: 3000, showConfirmButton: false });
         return;
       }
-
       if (uploadedVideos.length >= 1) {
         Swal.fire({ icon: 'warning', title: 'Only one video allowed', timer: 2000, showConfirmButton: false });
         return;
       }
-
       const formData = new FormData();
       formData.append('video', file);
-
       try {
         Swal.fire({ title: 'Uploading video...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-        const response = await fetch('/sell/upload-video', {
-          method: 'POST',
-          body: formData
-        });
-
+        const response = await fetch('/sell/upload-video', { method: 'POST', body: formData });
         const data = await response.json();
         Swal.close();
-
         if (data.success) {
           uploadedVideos.push(data.video);
           showVideoPreview(data.video.url);
@@ -503,22 +719,17 @@
       document.getElementById('videoPreview').style.display = 'none';
       document.getElementById('previewVideo').src = '';
     }
-    
+
     document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
       const error = urlParams.get('error');
-      
       if (error) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: decodeURIComponent(error),
-          confirmButtonColor: '#7A5C3E'
-        }).then(() => {
-          const url = new URL(window.location);
-          url.searchParams.delete('error');
-          window.history.replaceState({}, '', url);
-        });
+        Swal.fire({ icon: 'error', title: 'Error', text: decodeURIComponent(error), confirmButtonColor: '#1e3a1e' })
+          .then(() => {
+            const url = new URL(window.location);
+            url.searchParams.delete('error');
+            window.history.replaceState({}, '', url);
+          });
       }
     });
   </script>

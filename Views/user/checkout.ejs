@@ -505,7 +505,8 @@
           </div>
 
           <div class="payment-methods">
-            <label class="payment-option selected">
+            <% if (codAllowed) { %>
+            <label class="payment-option selected" id="codOption">
               <input type="radio" name="paymentMethod" value="COD" checked onchange="selectPayment(this)"/>
               <div class="payment-icon">💵</div>
               <div class="payment-info">
@@ -513,10 +514,20 @@
                 <div class="payment-desc">Pay when you receive your order</div>
               </div>
             </label>
+            <% } else { %>
+            <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+              <span style="font-size:18px;">ℹ️</span>
+              <div style="font-size:13px;color:#7a5c00;">
+                <strong>COD not available</strong> — Cash on Delivery is only available for orders up to ₹<%= codMaxAmount %>. Please choose an online payment method.
+              </div>
+            </div>
+            <% } %>
 
             <% if (paymentGateways && paymentGateways.razorpay) { %>
-            <label class="payment-option">
-              <input type="radio" name="paymentMethod" value="Razorpay" onchange="selectPayment(this)"/>
+            <label class="payment-option<% if (!codAllowed) { %> selected<% } %>">
+              <input type="radio" name="paymentMethod" value="Razorpay"
+                <% if (!codAllowed) { %>checked<% } %>
+                onchange="selectPayment(this)"/>
               <div class="payment-icon">💳</div>
               <div class="payment-info">
                 <div class="payment-name">Online Payment</div>
@@ -614,6 +625,18 @@
           <span>Subtotal</span>
           <span>₹<%= subtotal.toFixed(2) %></span>
         </div>
+
+        <% if (categoryOfferDiscount > 0) { %>
+        <div class="summary-row" style="color: #2e7d32;">
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;display:inline;margin-right:3px;">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+            </svg>
+            Category Offer
+          </span>
+          <span>-₹<%= categoryOfferDiscount.toFixed(2) %></span>
+        </div>
+        <% } %>
 
         <div style="margin: 20px 0; padding: 20px; background: #f9f7f4; border-radius: 8px; border: 1px solid #e8dcc8;">
           <% if (appliedCoupon) { %>
@@ -925,6 +948,22 @@
                 window.location.href = `/payment/failure?orderId=` + data.orderId;
               });
             });
+            // Handle user dismissing the Razorpay modal without completing payment
+            options.modal = {
+              ondismiss: async function() {
+                try {
+                  await fetch('/payment/failure', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      orderId: data.orderId,
+                      reason: 'Payment cancelled by user'
+                    })
+                  });
+                } catch (_) {}
+                window.location.href = `/payment/failure?orderId=` + data.orderId;
+              }
+            };
             rzp1.open();
           } else {
             window.location.href = `/order-success/` + data.orderId;

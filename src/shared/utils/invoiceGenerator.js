@@ -208,7 +208,9 @@ export const generateInvoicePDF = (order, res) => {
       couponInvalidReason = `Coupon requires minimum ₹${assumedMinPurchase} purchase. Active items: ₹${activeSubtotal.toFixed(2)}`;
     }
   }
-  const adjustedTotal = activeSubtotal + adjustedShipping - adjustedDiscount;
+  // Include category offer in adjusted total
+  const catOfferDiscount = parseFloat(order.categoryOfferDiscount || 0);
+  const adjustedTotal = activeSubtotal + adjustedShipping - catOfferDiscount - adjustedDiscount;
   const addTotalsRow = (label, value, bold = false, isTotal = false) => {
     if (isTotal) {
       doc
@@ -227,60 +229,34 @@ export const generateInvoicePDF = (order, res) => {
     rowY += isTotal ? 20 : 18;
   };
   if (order.subtotal !== activeSubtotal) {
-    addTotalsRow(
-      "Original Subtotal:",
-      `Rs.${parseFloat(order.subtotal).toFixed(2)}`,
-    );
+    addTotalsRow("Original Subtotal:", `Rs.${parseFloat(order.subtotal).toFixed(2)}`);
     if (cancelledAmount > 0) {
-      addTotalsRow(
-        "Less: Cancelled Items:",
-        `-Rs.${parseFloat(cancelledAmount).toFixed(2)}`,
-        false,
-        false,
-      );
+      addTotalsRow("Less: Cancelled Items:", `-Rs.${parseFloat(cancelledAmount).toFixed(2)}`, false, false);
     }
     if (returnedAmount > 0) {
-      addTotalsRow(
-        "Less: Returned Items:",
-        `-Rs.${parseFloat(returnedAmount).toFixed(2)}`,
-        false,
-        false,
-      );
+      addTotalsRow("Less: Returned Items:", `-Rs.${parseFloat(returnedAmount).toFixed(2)}`, false, false);
     }
-    addTotalsRow(
-      "Active Subtotal:",
-      `Rs.${parseFloat(activeSubtotal).toFixed(2)}`,
-      true,
-      false,
-    );
+    addTotalsRow("Active Subtotal:", `Rs.${parseFloat(activeSubtotal).toFixed(2)}`, true, false);
   } else {
     addTotalsRow("Subtotal:", `Rs.${parseFloat(activeSubtotal).toFixed(2)}`);
   }
   if (adjustedShipping > 0) {
     addTotalsRow("Shipping:", `Rs.${parseFloat(adjustedShipping).toFixed(2)}`);
   }
+  if (catOfferDiscount > 0) {
+    addTotalsRow("Category Offer:", `-Rs.${catOfferDiscount.toFixed(2)}`);
+  }
   if (order.discount > 0) {
     if (adjustedDiscount > 0) {
-      addTotalsRow(
-        "Discount:",
-        `-Rs.${parseFloat(adjustedDiscount).toFixed(2)}`,
-      );
+      addTotalsRow("Discount:", `-Rs.${parseFloat(adjustedDiscount).toFixed(2)}`);
     } else if (couponInvalidReason) {
       addTotalsRow(`Discount (${order.couponCode}) - Invalid:`, `Rs.0.00`);
-      doc
-        .fontSize(8)
-        .font("Helvetica")
-        .fillColor("#dc2626")
+      doc.fontSize(8).font("Helvetica").fillColor("#dc2626")
         .text(couponInvalidReason, totalsX, rowY, { width: 195 });
       rowY += 15;
     }
   }
-  addTotalsRow(
-    "Total Amount:",
-    `Rs.${parseFloat(adjustedTotal).toFixed(2)}`,
-    true,
-    true,
-  );
+  addTotalsRow("Total Amount:", `Rs.${parseFloat(adjustedTotal).toFixed(2)}`, true, true);
   const footerY = Math.max(rowY + 40, doc.page.height - 120);
   if (footerY > doc.page.height - 100) {
     doc.addPage();
@@ -379,7 +355,8 @@ export const generateInvoiceHTML = (order) => {
   }
   const adjustedShipping =
     activeSubtotal >= 500 ? 0 : activeSubtotal > 0 ? order.shippingCharge : 0;
-  const adjustedTotal = activeSubtotal + adjustedShipping - adjustedDiscount;
+  const catOfferDiscountHTML = parseFloat(order.categoryOfferDiscount || 0);
+  const adjustedTotal = activeSubtotal + adjustedShipping - catOfferDiscountHTML - adjustedDiscount;
   let itemsHTML = "";
   order.items.forEach((item) => {
     const isCancelled = item.itemStatus === "Cancelled";
@@ -431,6 +408,11 @@ export const generateInvoiceHTML = (order) => {
   if (adjustedShipping > 0) {
     totalsHTML += `
       <tr><td colspan="3" style="text-align: right; padding: 8px;">Shipping:</td><td style="text-align: right; padding: 8px;">₹${adjustedShipping.toFixed(2)}</td></tr>
+    `;
+  }
+  if (catOfferDiscountHTML > 0) {
+    totalsHTML += `
+      <tr><td colspan="3" style="text-align: right; padding: 8px; color: #2e7d32;">Category Offer:</td><td style="text-align: right; padding: 8px; color: #2e7d32;">-₹${catOfferDiscountHTML.toFixed(2)}</td></tr>
     `;
   }
   if (order.discount > 0) {

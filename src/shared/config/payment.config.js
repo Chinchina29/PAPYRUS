@@ -10,4 +10,6 @@ export const paymentConfig = {
     keySecret: process.env.RAZORPAY_KEY_SECRET,
   },
 };
+// Maximum order amount allowed for Cash on Delivery
+export const COD_MAX_AMOUNT = 1000;
 export { razorpayInstance };

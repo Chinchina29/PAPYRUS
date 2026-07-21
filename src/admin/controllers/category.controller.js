@@ -56,7 +56,7 @@ export const getAddCategory = async (req, res) => {
 };
 export const addCategory = async (req, res) => {
   try {
-    const { name, description, parentCategory, subcategories } = req.body;
+    const { name, description, parentCategory, subcategories, categoryOffer } = req.body;
     if (!name?.trim()) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
@@ -83,11 +83,13 @@ export const addCategory = async (req, res) => {
       isSubcategory = true;
       parentId = parentCategory;
     }
+    const offer = Math.min(90, Math.max(0, parseFloat(categoryOffer) || 0));
     const category = await categoryService.createCategory({
       name: name.trim(),
       description: description?.trim(),
       parentCategory: parentId,
       isSubcategory,
+      categoryOffer: offer,
     });
     if (
       subcategories &&
@@ -159,7 +161,7 @@ export const getEditCategory = async (req, res) => {
 export const editCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, isListed, parentCategory, subcategories } =
+    const { name, description, isListed, parentCategory, subcategories, categoryOffer } =
       req.body;
     if (!name?.trim()) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
@@ -190,11 +192,13 @@ export const editCategory = async (req, res) => {
       }
       parentId = parentCategory;
     }
+    const offer = Math.min(90, Math.max(0, parseFloat(categoryOffer) || 0));
     await categoryService.updateCategory(id, {
       name: name.trim(),
       description: description?.trim(),
       isListed: isListed === true || isListed === "true",
       parentCategory: parentId,
+      categoryOffer: offer,
     });
     const category = await categoryService.getCategoryById(id);
     if (

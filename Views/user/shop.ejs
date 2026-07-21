@@ -241,15 +241,19 @@
       letter-spacing: 0.5px;
     }
 
-    .discount-overlay {
+    .offer-overlay {
       position: absolute;
-      top: 10px; right: 10px;
-      background: #2d5016;
+      top: 10px; left: 10px;
+      background: #2e7d32;
       color: white;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       padding: 4px 10px;
       border-radius: 20px;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .book-info { padding: 14px; }
@@ -460,12 +464,17 @@
                 <% } else { %>
                   <div class="no-img-placeholder">📚</div>
                 <% } %>
+                <% const catOffer = product.category?.categoryOffer || 0; %>
                 <% if (product.stock === 0) { %>
                   <span class="out-of-stock-overlay">Out of Stock</span>
                 <% } %>
-                <% if (product.originalPrice && product.originalPrice > product.price) { %>
-                  <span class="discount-overlay">
-                    <%= Math.round((product.originalPrice - product.price) / product.originalPrice * 100) %>% off
+                <% if (catOffer > 0) { %>
+                  <span class="offer-overlay">
+                    🏷 <%= catOffer %>% OFF
+                  </span>
+                <% } else if (product.originalPrice && product.originalPrice > product.price) { %>
+                  <span class="offer-overlay">
+                    <%= Math.round((product.originalPrice - product.price) / product.originalPrice * 100) %>% OFF
                   </span>
                 <% } %>
               </div>
@@ -476,9 +485,14 @@
                 <% } %>
                 <span class="book-category-tag"><%= product.category?.name %></span>
                 <div class="book-price-row">
-                  <span class="price-now">₹<%= product.price %></span>
-                  <% if (product.originalPrice && product.originalPrice > product.price) { %>
-                    <span class="price-was">₹<%= product.originalPrice %></span>
+                  <% if (catOffer > 0) { %>
+                    <span class="price-now" style="color:#2e7d32;">₹<%= (product.price * (1 - catOffer/100)).toFixed(2) %></span>
+                    <span class="price-was">₹<%= product.price %></span>
+                  <% } else { %>
+                    <span class="price-now">₹<%= product.price %></span>
+                    <% if (product.originalPrice && product.originalPrice > product.price) { %>
+                      <span class="price-was">₹<%= product.originalPrice %></span>
+                    <% } %>
                   <% } %>
                 </div>
               </div>

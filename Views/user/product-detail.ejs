@@ -688,13 +688,21 @@
           <div class="product-author">by <%= product.author %></div>
         <% } %>
 
+        <% const catOfferPct = product.category?.categoryOffer || 0; %>
+        <% const discountedPrice = catOfferPct > 0 ? (product.price * (1 - catOfferPct/100)).toFixed(2) : null; %>
         <div class="price-row">
-          <span class="price-current">₹<%= product.price %></span>
-          <% if (product.originalPrice && product.originalPrice > product.price) { %>
-            <span class="price-original">₹<%= product.originalPrice %></span>
-            <span class="discount-badge">
-              <%= Math.round((product.originalPrice - product.price) / product.originalPrice * 100) %>% OFF
-            </span>
+          <% if (discountedPrice) { %>
+            <span class="price-current" style="color:#2e7d32;">₹<%= discountedPrice %></span>
+            <span class="price-original">₹<%= product.price %></span>
+            <span class="discount-badge" style="background:#2e7d32;">🏷 <%= catOfferPct %>% OFF</span>
+          <% } else { %>
+            <span class="price-current">₹<%= product.price %></span>
+            <% if (product.originalPrice && product.originalPrice > product.price) { %>
+              <span class="price-original">₹<%= product.originalPrice %></span>
+              <span class="discount-badge">
+                <%= Math.round((product.originalPrice - product.price) / product.originalPrice * 100) %>% OFF
+              </span>
+            <% } %>
           <% } %>
         </div>
 

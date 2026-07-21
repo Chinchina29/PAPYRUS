@@ -37,6 +37,12 @@ const categorySchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    categoryOffer: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 90,
+    },
   },
   {
     timestamps: true,

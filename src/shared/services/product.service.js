@@ -152,7 +152,7 @@ export const getListedProducts = async ({
     Product.find(query)
       .populate({
         path: "category",
-        select: "name isListed",
+        select: "name isListed categoryOffer",
         match: { isListed: true, isDeleted: false },
       })
       .populate({
@@ -182,7 +182,7 @@ export const getListedProductById = async (id) => {
   })
     .populate({
       path: "category",
-      select: "name isListed",
+      select: "name isListed categoryOffer",
       match: { isListed: true, isDeleted: false },
     })
     .populate({
@@ -207,7 +207,7 @@ export const getRelatedProducts = async (categoryId, excludeId, limit = 4) => {
     .limit(limit)
     .populate({
       path: "category",
-      select: "name isListed",
+      select: "name isListed categoryOffer",
       match: { isListed: true, isDeleted: false },
     })
     .populate("seller", "firstName lastName email")

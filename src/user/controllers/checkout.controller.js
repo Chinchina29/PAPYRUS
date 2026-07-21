@@ -5,7 +5,7 @@ import * as addressService from "../services/address.service.js";
 import * as orderService from "../../shared/services/order.service.js";
 import * as couponService from "../../shared/services/coupon.service.js";
 import * as paymentService from "../../shared/services/payment.service.js";
-import { paymentConfig } from "../../shared/config/payment.config.js";
+import { paymentConfig, COD_MAX_AMOUNT } from "../../shared/config/payment.config.js";
 import Product from "../../shared/models/Product.js";
 import User from "../../shared/models/User.js";
 import WalletTransaction from "../../shared/models/WalletTransaction.js";
@@ -85,9 +85,23 @@ export const getCheckout = async (req, res) => {
     const defaultAddress =
       addresses.find((addr) => addr.isDefault) || addresses[0];
     const activeItems = cart.items.filter(item => !item.isBlocked);
-    const subtotal = activeItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+
+    // Apply category offer to each item's effective price
+    let subtotal = 0;
+    let categoryOfferDiscount = 0;
+    for (const item of activeItems) {
+      const offer = item.product?.category?.categoryOffer || 0;
+      const basePrice = item.price * item.quantity;
+      const offerAmount = offer > 0 ? parseFloat(((basePrice * offer) / 100).toFixed(2)) : 0;
+      subtotal += basePrice - offerAmount;
+      categoryOfferDiscount += offerAmount;
+    }
+    subtotal = parseFloat(subtotal.toFixed(2));
+    categoryOfferDiscount = parseFloat(categoryOfferDiscount.toFixed(2));
+
     const shippingCharge = subtotal >= 500 ? 0 : subtotal > 0 ? 50 : 0;
-    const discount = req.session.appliedCoupon?.discount || 0;
+    const couponDiscount = req.session.appliedCoupon?.discount || 0;
+    const discount = couponDiscount;
     const totalAmount = parseFloat(
       (subtotal + shippingCharge - discount).toFixed(2),
     );
@@ -96,6 +110,7 @@ export const getCheckout = async (req, res) => {
       subtotal,
       activeItems,
     );
+    const codAllowed = totalAmount <= COD_MAX_AMOUNT;
     res.render("user/checkout", {
       cart,
       addresses,
@@ -103,6 +118,7 @@ export const getCheckout = async (req, res) => {
       subtotal,
       shippingCharge,
       discount,
+      categoryOfferDiscount,
       totalAmount,
       appliedCoupon: req.session.appliedCoupon || null,
       availableCoupons: availableCoupons || [],
@@ -110,9 +126,11 @@ export const getCheckout = async (req, res) => {
       currentPage_name: "checkout",
       user: req.session.user || null,
       razorpayKeyId: process.env.RAZORPAY_KEY_ID,
+      codAllowed,
+      codMaxAmount: COD_MAX_AMOUNT,
       paymentGateways: {
         razorpay: !!process.env.RAZORPAY_KEY_ID,
-        cod: true,
+        cod: codAllowed,
       },
       paymentConfig
     });
@@ -136,6 +154,20 @@ export const placeOrder = async (req, res) => {
         message: MESSAGES.CUSTOM.PLEASE_SELECT_A_PAYMENT_METHOD,
       });
     }
+    // Server-side COD amount restriction
+    if (paymentMethod === 'COD') {
+      const activeItemsForCOD = (await cartService.getOrCreateCart(userId)).items.filter(i => !i.isBlocked);
+      const codSubtotal = activeItemsForCOD.reduce((t, i) => t + i.price * i.quantity, 0);
+      const codShipping = codSubtotal >= 500 ? 0 : 50;
+      const codDiscount = req.session.appliedCoupon?.discount || 0;
+      const codTotal = parseFloat((codSubtotal + codShipping - codDiscount).toFixed(2));
+      if (codTotal > COD_MAX_AMOUNT) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          message: `Cash on Delivery is not available for orders above ₹${COD_MAX_AMOUNT}. Please choose another payment method.`,
+        });
+      }
+    }
     const cart = await cartService.getOrCreateCart(userId);
     if (!cart || cart.items.length === 0) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
@@ -150,7 +182,7 @@ export const placeOrder = async (req, res) => {
         .select("stock isListed isDeleted category title")
         .populate({
           path: "category",
-          select: "isListed",
+          select: "isListed categoryOffer",
           match: { isListed: true, isDeleted: false },
         });
       if (
@@ -190,10 +222,21 @@ export const placeOrder = async (req, res) => {
         message: MESSAGES.CUSTOM.SELECTED_ADDRESS_NOT_FOUND_PLEASE_CHOOSE_A_VALID_ADDRESS,
       });
     }
-    const availableSubtotal = availableItems.reduce(
-      (total, item) => total + item.price * item.actualQuantity,
-      0,
-    );
+    // Apply category offer discounts per item
+    let availableSubtotal = 0;
+    let categoryOfferDiscount = 0;
+    for (const item of availableItems) {
+      const product = await Product.findById(item.product._id)
+        .select("category")
+        .populate({ path: "category", select: "categoryOffer" });
+      const offer     = product?.category?.categoryOffer || 0;
+      const basePrice = item.price * item.actualQuantity;
+      const offerAmt  = offer > 0 ? parseFloat(((basePrice * offer) / 100).toFixed(2)) : 0;
+      availableSubtotal    += basePrice - offerAmt;
+      categoryOfferDiscount += offerAmt;
+    }
+    availableSubtotal     = parseFloat(availableSubtotal.toFixed(2));
+    categoryOfferDiscount = parseFloat(categoryOfferDiscount.toFixed(2));
     const shippingCharge = availableSubtotal >= 500 ? 0 : 50;
     const discount = req.session.appliedCoupon?.discount || 0;
     const totalAmount = parseFloat(
@@ -225,6 +268,7 @@ export const placeOrder = async (req, res) => {
       paymentStatus: "Pending",
       orderStatus: "Pending",
       subtotal: parseFloat(availableSubtotal.toFixed(2)),
+      categoryOfferDiscount: categoryOfferDiscount,
       shippingCharge: parseFloat(shippingCharge.toFixed(2)),
       discount: parseFloat(discount.toFixed(2)),
       couponCode: req.session.appliedCoupon?.code || null,
