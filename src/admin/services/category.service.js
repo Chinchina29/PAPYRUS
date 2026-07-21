@@ -59,7 +59,7 @@ export const categoryNameExists = async (name, parentId = null, excludeId = null
   }
   return await Category.findOne(query);
 };
-export const createCategory = async ({ name, description, parentCategory = null, isSubcategory = false }) => {
+export const createCategory = async ({ name, description, parentCategory = null, isSubcategory = false, categoryOffer = 0 }) => {
   const existingCategory = await categoryNameExists(name, parentCategory);
   if (existingCategory) {
     if (parentCategory) {
@@ -73,6 +73,7 @@ export const createCategory = async ({ name, description, parentCategory = null,
     description,
     parentCategory,
     isSubcategory,
+    categoryOffer: Math.min(90, Math.max(0, parseFloat(categoryOffer) || 0)),
   });
   const savedCategory = await category.save();
   if (parentCategory) {
@@ -82,7 +83,7 @@ export const createCategory = async ({ name, description, parentCategory = null,
   }
   return savedCategory;
 };
-export const updateCategory = async (id, { name, description, isListed, parentCategory }) => {
+export const updateCategory = async (id, { name, description, isListed, parentCategory, categoryOffer }) => {
   const category = await Category.findById(id);
   if (!category) return null;
   if (name !== undefined && name !== category.name) {
@@ -114,6 +115,9 @@ export const updateCategory = async (id, { name, description, isListed, parentCa
   if (name !== undefined) category.name = name;
   if (description !== undefined) category.description = description;
   if (isListed !== undefined) category.isListed = isListed;
+  if (categoryOffer !== undefined) {
+    category.categoryOffer = Math.min(90, Math.max(0, parseFloat(categoryOffer) || 0));
+  }
   return await category.save();
 };
 export const softDeleteCategory = async (id) => {

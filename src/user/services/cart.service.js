@@ -13,7 +13,7 @@ export const getOrCreateCart = async (userId, session = null) => {
         "title author price images stock condition isListed isDeleted seller hideFromSeller maxQuantityPerOrder",
       populate: {
         path: "category",
-        select: "name isListed",
+        select: "name isListed categoryOffer",
         match: { isListed: true, isDeleted: false },
       },
     });

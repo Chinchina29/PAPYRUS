@@ -165,6 +165,8 @@ export const verifyUserOTP = async (userId, otp) => {
     }
     const otpResult = otpService.verifyUserOTP(user, otp);
     if (!otpResult.success) {
+      // Always persist failed attempt counts/lockout state to DB
+      await user.save();
       return otpResult;
     }
     user.isVerified = true;

@@ -357,9 +357,9 @@
                             </svg>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value">₹<%= stats.revenue.toLocaleString() %></div>
+                            <div class="stat-value" id="statRevenue">₹<%= stats.revenue.toLocaleString() %></div>
                             <div class="stat-label">Total Sales</div>
-                            <div class="stat-change positive">+<%= stats.revenueGrowth %>%</div>
+                            <div class="stat-change positive"><span class="stat-filter-label">This Period</span></div>
                         </div>
                     </div>
 
@@ -400,9 +400,9 @@
                             </svg>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value"><%= stats.newUsersToday %></div>
-                            <div class="stat-label">New Users Today</div>
-                            <div class="stat-change positive">+<%= stats.newUsersToday %></div>
+                            <div class="stat-value" id="statNewUsers"><%= stats.newUsersToday %></div>
+                            <div class="stat-label">New Users</div>
+                            <div class="stat-change positive"><span class="stat-filter-label">This Period</span></div>
                         </div>
                     </div>
                 </div>
@@ -675,6 +675,25 @@
                         salesChart.update();
                     } else {
                         initChart(resData.labels, resData.data);
+                    }
+
+                    // Update stat cards with period-specific data
+                    if (resData.stats) {
+                        const revenueEl = document.getElementById('statRevenue');
+                        const ordersEl  = document.getElementById('statOrders');
+                        const newUsersEl = document.getElementById('statNewUsers');
+
+                        if (revenueEl) revenueEl.textContent = '₹' + resData.stats.revenue.toLocaleString();
+                        if (ordersEl)  ordersEl.textContent  = resData.stats.orders.toLocaleString();
+                        if (newUsersEl) newUsersEl.textContent = resData.stats.newUsers.toLocaleString();
+
+                        // Update filter label text on stat cards
+                        const filterLabel = filter === 'weekly' ? 'Last 7 Days'
+                                          : filter === 'yearly' ? 'Last 5 Years'
+                                          : 'This Year';
+                        document.querySelectorAll('.stat-filter-label').forEach(el => {
+                            el.textContent = filterLabel;
+                        });
                     }
                 }
             } catch (err) {

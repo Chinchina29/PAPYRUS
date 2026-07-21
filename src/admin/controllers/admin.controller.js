@@ -257,17 +257,18 @@ export const getChartData = async (req, res) => {
     const now = new Date();
     let labels = [];
     let data = [];
+    let startDate;
 
     if (filter === "weekly") {
-      const startOfWeek = new Date();
-      startOfWeek.setDate(now.getDate() - 6);
-      startOfWeek.setHours(0, 0, 0, 0);
+      startDate = new Date();
+      startDate.setDate(now.getDate() - 6);
+      startDate.setHours(0, 0, 0, 0);
 
       const weeklyData = await Order.aggregate([
         {
           $match: {
             orderStatus: { $ne: "Cancelled" },
-            createdAt: { $gte: startOfWeek },
+            createdAt: { $gte: startDate },
           },
         },
         {
@@ -295,13 +296,13 @@ export const getChartData = async (req, res) => {
         data.push(weeklyMap[yyyymmdd] || 0);
       }
     } else if (filter === "yearly") {
-      const startOfFiveYearsAgo = new Date(now.getFullYear() - 4, 0, 1);
+      startDate = new Date(now.getFullYear() - 4, 0, 1);
 
       const yearlyData = await Order.aggregate([
         {
           $match: {
             orderStatus: { $ne: "Cancelled" },
-            createdAt: { $gte: startOfFiveYearsAgo },
+            createdAt: { $gte: startDate },
           },
         },
         {
@@ -324,14 +325,15 @@ export const getChartData = async (req, res) => {
         data.push(yearlyMap[year] || 0);
       }
     } else {
-      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      // monthly (default)
+      startDate = new Date(now.getFullYear(), 0, 1);
       const endOfYear = new Date(now.getFullYear() + 1, 0, 1);
 
       const monthlyData = await Order.aggregate([
         {
           $match: {
             orderStatus: { $ne: "Cancelled" },
-            createdAt: { $gte: startOfYear, $lt: endOfYear },
+            createdAt: { $gte: startDate, $lt: endOfYear },
           },
         },
         {
@@ -348,18 +350,8 @@ export const getChartData = async (req, res) => {
       });
 
       const months = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
       ];
       for (let i = 0; i < 12; i++) {
         labels.push(months[i]);
@@ -367,13 +359,35 @@ export const getChartData = async (req, res) => {
       }
     }
 
-    return res.json({ success: true, labels, data });
+    // Compute period-specific stats for stat card updates
+    const [periodOrders, periodNewUsers] = await Promise.all([
+      Order.find({ orderStatus: { $ne: "Cancelled" }, createdAt: { $gte: startDate } }).select("totalAmount orderStatus"),
+      (async () => {
+        const User = (await import("../../shared/models/User.js")).default;
+        return User.countDocuments({ role: "user", createdAt: { $gte: startDate } });
+      })(),
+    ]);
+
+    const periodRevenue = periodOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+    const periodOrderCount = periodOrders.length;
+
+    return res.json({
+      success: true,
+      labels,
+      data,
+      stats: {
+        revenue: Math.round(periodRevenue),
+        orders: periodOrderCount,
+        newUsers: periodNewUsers,
+      },
+    });
   } catch (error) {
     return res
       .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
       .json({ success: false, error: error.message });
   }
 };
+
 
 function getTimeAgo(date) {
   const seconds = Math.floor((new Date() - new Date(date)) / 1000);

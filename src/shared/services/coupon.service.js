@@ -161,9 +161,11 @@ export const getAvailableCoupons = async (userId, cartTotal, cartItems) => {
           coupon.applicableCategories.length > 0
         ) {
           const hasApplicableProduct = cartItems.some((item) => {
-            if (!item.product.category) return false;
+            if (!item.product || !item.product.category) return false;
             return coupon.applicableCategories.some((cat) => {
-              const itemCategoryId = item.product.category._id ? item.product.category._id.toString() : item.product.category.toString();
+              const itemCategoryId = item.product.category._id
+                ? item.product.category._id.toString()
+                : item.product.category.toString();
               return cat._id.toString() === itemCategoryId;
             });
           });
