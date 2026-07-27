@@ -53,18 +53,19 @@ export const getSellPage = async (req, res) => {
 
       orders.forEach((order) => {
         order.items.forEach((item) => {
-          if (sellerProdIds.includes(item.product.toString())) {
-            const itemRevenue = item.subtotal || item.price * item.quantity;
+          const prodIdStr = item.product ? (item.product._id ? item.product._id.toString() : item.product.toString()) : null;
+          if (prodIdStr && sellerProdIds.includes(prodIdStr)) {
+            const itemRevenue = item.subtotal || (item.price || 0) * (item.quantity || 1);
             if (item.itemStatus !== "Cancelled") {
               totalRevenue += itemRevenue;
-              itemsSold += item.quantity;
+              itemsSold += item.quantity || 1;
             }
             recentOrders.push({
               orderId: order.orderId,
-              title: item.title,
+              title: item.title || "Product",
               customer: order.user ? `${order.user.firstName} ${order.user.lastName}` : "Customer",
               price: itemRevenue,
-              quantity: item.quantity,
+              quantity: item.quantity || 1,
               date: order.createdAt,
               status: item.itemStatus || order.orderStatus,
             });
@@ -465,22 +466,24 @@ export const getSalesReport = async (req, res) => {
 
       orders.forEach((order) => {
         order.items.forEach((item) => {
-          if (sellerProdIds.includes(item.product.toString())) {
-            const subtotal = item.subtotal || item.price * item.quantity;
+          const prodIdStr = item.product ? (item.product._id ? item.product._id.toString() : item.product.toString()) : null;
+          if (prodIdStr && sellerProdIds.includes(prodIdStr)) {
+            const qty = item.quantity || 1;
+            const subtotal = item.subtotal || (item.price || 0) * qty;
             if (item.itemStatus === "Cancelled") {
-              cancelledCount += item.quantity;
+              cancelledCount += qty;
             } else {
               totalRevenue += subtotal;
-              totalUnitsSold += item.quantity;
-              if (item.itemStatus === "Delivered") deliveredCount += item.quantity;
+              totalUnitsSold += qty;
+              if (item.itemStatus === "Delivered") deliveredCount += qty;
             }
 
             salesList.push({
               orderId: order.orderId,
               date: order.createdAt,
-              title: item.title,
-              quantity: item.quantity,
-              price: item.price,
+              title: item.title || "Product",
+              quantity: qty,
+              price: item.price || 0,
               subtotal,
               buyerName: order.user ? `${order.user.firstName} ${order.user.lastName}` : "Customer",
               paymentMethod: order.paymentMethod,
@@ -565,14 +568,17 @@ export const downloadSalesReport = async (req, res) => {
 
       orders.forEach((order) => {
         order.items.forEach((item) => {
-          if (sellerProdIds.includes(item.product.toString())) {
+          const prodIdStr = item.product ? (item.product._id ? item.product._id.toString() : item.product.toString()) : null;
+          if (prodIdStr && sellerProdIds.includes(prodIdStr)) {
+            const qty = item.quantity || 1;
+            const subtotal = item.subtotal || (item.price || 0) * qty;
             salesList.push({
               orderId: order.orderId,
               date: new Date(order.createdAt).toLocaleDateString("en-IN"),
-              title: item.title,
-              quantity: item.quantity,
-              price: item.price.toFixed(2),
-              subtotal: (item.subtotal || item.price * item.quantity).toFixed(2),
+              title: item.title || "Product",
+              quantity: qty,
+              price: (item.price || 0).toFixed(2),
+              subtotal: subtotal.toFixed(2),
               buyerName: order.user ? `${order.user.firstName} ${order.user.lastName}` : "Customer",
               paymentMethod: order.paymentMethod,
               paymentStatus: order.paymentStatus,

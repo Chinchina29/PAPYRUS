@@ -97,20 +97,22 @@ export const getCheckout = async (req, res) => {
     let categoryOfferDiscount = 0;
     for (const item of activeItems) {
       const offer = item.product?.category?.categoryOffer || 0;
-      const basePrice = item.price * item.quantity;
+      const itemPrice = item.price || (item.product?.price) || 0;
+      const itemQty = item.quantity || 1;
+      const basePrice = itemPrice * itemQty;
       const offerAmount = offer > 0 ? parseFloat(((basePrice * offer) / 100).toFixed(2)) : 0;
       subtotal += basePrice - offerAmount;
       categoryOfferDiscount += offerAmount;
     }
-    subtotal = parseFloat(subtotal.toFixed(2));
-    categoryOfferDiscount = parseFloat(categoryOfferDiscount.toFixed(2));
+    subtotal = Math.max(0, parseFloat(subtotal.toFixed(2)));
+    categoryOfferDiscount = Math.max(0, parseFloat(categoryOfferDiscount.toFixed(2)));
 
     const shippingCharge = subtotal >= 500 ? 0 : subtotal > 0 ? 50 : 0;
     const couponDiscount = req.session.appliedCoupon?.discount || 0;
     const discount = couponDiscount;
-    const totalAmount = parseFloat(
+    const totalAmount = Math.max(0, parseFloat(
       (subtotal + shippingCharge - discount).toFixed(2),
-    );
+    ));
     const availableCoupons = await couponService.getAvailableCoupons(
       userId,
       subtotal,
