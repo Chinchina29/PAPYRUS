@@ -235,20 +235,28 @@
       <div class="activity-header">
         <div class="activity-title">Recent Selling Activity</div>
       </div>
-      <% if (typeof recentOrders !== 'undefined' && recentOrders.length > 0) { %>
+      <% if (typeof recentOrders !== 'undefined' && recentOrders && recentOrders.length > 0) { %>
       <table>
         <thead>
           <tr><th>Order ID</th><th>Book Title</th><th>Customer</th><th>Date</th><th>Amount</th><th>Status</th></tr>
         </thead>
         <tbody>
           <% recentOrders.forEach(order => { %>
+          <% 
+            const displayId = order.orderId ? order.orderId : (order._id ? `#${order._id.toString().slice(-6).toUpperCase()}` : '#ORDER');
+            const displayTitle = order.title || order.bookTitle || 'Book';
+            const displayCustomer = order.customer || order.customerName || 'Customer';
+            const displayDate = order.date ? new Date(order.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : (order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : 'N/A');
+            const displayAmount = order.price !== undefined ? order.price : (order.amount !== undefined ? order.amount : 0);
+            const displayStatus = (order.status || 'Pending').toLowerCase();
+          %>
           <tr>
-            <td class="order-id">#<%= order._id.toString().slice(-6).toUpperCase() %></td>
-            <td class="book-name"><%= order.bookTitle %></td>
-            <td><%= order.customerName %></td>
-            <td><%= new Date(order.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></td>
-            <td class="amount">₹<%= order.amount %></td>
-            <td><span class="order-status <%= order.status %>"><%= order.status %></span></td>
+            <td class="order-id"><%= displayId %></td>
+            <td class="book-name"><%= displayTitle %></td>
+            <td><%= displayCustomer %></td>
+            <td><%= displayDate %></td>
+            <td class="amount">₹<%= typeof displayAmount === 'number' ? displayAmount.toFixed(2) : displayAmount %></td>
+            <td><span class="order-status <%= displayStatus %>"><%= order.status || 'Pending' %></span></td>
           </tr>
           <% }) %>
         </tbody>
@@ -256,7 +264,7 @@
       <% } else { %>
         <div class="empty-state"><p>No recent orders yet.</p></div>
       <% } %>
-      <a href="#" class="download-link">Download Detailed CSV Report</a>
+      <a href="/sell/reports" class="download-link">View Sales Reports & Download CSV</a>
     </div>
   </div>
   
