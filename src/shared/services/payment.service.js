@@ -4,11 +4,18 @@ import Order from '../models/Order.js';
 import MESSAGES from '../constants/messages.js';
 class PaymentGatewayService {
     constructor() {
-        this.razorpay = new Razorpay({
-            key_id: process.env.RAZORPAY_KEY_ID,
-            key_secret: process.env.RAZORPAY_KEY_SECRET,
-        });
-        this.keySecret = process.env.RAZORPAY_KEY_SECRET;
+        this.keySecret = process.env.RAZORPAY_KEY_SECRET || '';
+    }
+    getRazorpayInstance() {
+        if (!this._razorpay) {
+            const keyId = process.env.RAZORPAY_KEY_ID;
+            const keySecret = process.env.RAZORPAY_KEY_SECRET;
+            if (!keyId || !keySecret) {
+                throw new Error("Razorpay API Key ID and Key Secret are missing in production environment variables.");
+            }
+            this._razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
+        }
+        return this._razorpay;
     }
     async createPaymentOrder(orderData, gateway = 'razorpay') {
         try {
@@ -24,7 +31,8 @@ class PaymentGatewayService {
                 receipt: orderData.orderId || `receipt_${Date.now()}`,
                 payment_capture: 1
             };
-            const paymentOrder = await this.razorpay.orders.create(options);
+            const razorpay = this.getRazorpayInstance();
+            const paymentOrder = await razorpay.orders.create(options);
             return {
                 id: paymentOrder.id,
                 amount: paymentOrder.amount,

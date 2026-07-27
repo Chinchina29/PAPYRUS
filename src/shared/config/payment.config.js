@@ -1,13 +1,22 @@
 import Razorpay from 'razorpay';
-const razorpayInstance = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+
+const keyId = process.env.RAZORPAY_KEY_ID || "";
+const keySecret = process.env.RAZORPAY_KEY_SECRET || "";
+
+let razorpayInstance = null;
+if (keyId && keySecret) {
+  try {
+    razorpayInstance = new Razorpay({ key_id: keyId, key_secret: keySecret });
+  } catch (err) {
+    console.error("Razorpay init error:", err.message);
+  }
+}
+
 export const paymentConfig = {
   razorpay: {
     instance: razorpayInstance,
-    keyId: process.env.RAZORPAY_KEY_ID,
-    keySecret: process.env.RAZORPAY_KEY_SECRET,
+    keyId: keyId,
+    keySecret: keySecret,
   },
 };
 // Maximum order amount allowed for Cash on Delivery
