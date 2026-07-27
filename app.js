@@ -35,7 +35,7 @@ connectDB();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
-const isSecureCookie = process.env.NODE_ENV === "production" && process.env.DISABLE_SECURE_COOKIE !== "true";
+const isSecureCookie = process.env.COOKIE_SECURE === "true" ? true : (process.env.NODE_ENV === "production" ? "auto" : false);
 const userSession = session({
   secret: process.env.SESSION_SECRET,
   name: "papyrus.user.sid",
