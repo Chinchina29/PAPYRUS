@@ -4,7 +4,10 @@ export const findUserByEmail = async (email) => {
   return await User.findOne({ email });
 };
 export const findUserById = async (id) => {
-  return await User.findById(id);
+  if (!id || typeof id !== "string" && !id._id) return null;
+  const strId = id._id ? id._id.toString() : id.toString();
+  if (strId.length !== 24) return null;
+  return await User.findById(strId);
 };
 export const createUser = async (userData) => {
   const user = new User(userData);

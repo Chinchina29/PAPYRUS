@@ -230,30 +230,51 @@
 
     .out-of-stock-overlay {
       position: absolute;
-      top: 10px; left: 10px;
-      background: rgba(192,57,43,0.9);
+      bottom: 10px; left: 10px;
+      background: rgba(192,57,43,0.95);
       color: white;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       padding: 4px 10px;
       border-radius: 20px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      z-index: 6;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
-    .offer-overlay {
+    .category-offer-badge {
       position: absolute;
       top: 10px; left: 10px;
-      background: #2e7d32;
+      background: #1b5e20;
       color: white;
       font-size: 11px;
       font-weight: 700;
       padding: 4px 10px;
       border-radius: 20px;
       letter-spacing: 0.3px;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 4px;
+      z-index: 5;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .product-offer-badge {
+      position: absolute;
+      top: 10px; right: 54px;
+      background: #c0392b;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.3px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      z-index: 5;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
 
     .book-info { padding: 14px; }
@@ -465,16 +486,18 @@
                   <div class="no-img-placeholder">📚</div>
                 <% } %>
                 <% const catOffer = product.category?.categoryOffer || 0; %>
+                <% const prodOffer = (product.originalPrice && product.originalPrice > product.price) ? Math.round((product.originalPrice - product.price) / product.originalPrice * 100) : 0; %>
                 <% if (product.stock === 0) { %>
                   <span class="out-of-stock-overlay">Out of Stock</span>
                 <% } %>
                 <% if (catOffer > 0) { %>
-                  <span class="offer-overlay">
+                  <span class="category-offer-badge" title="Category Offer">
                     🏷 <%= catOffer %>% OFF
                   </span>
-                <% } else if (product.originalPrice && product.originalPrice > product.price) { %>
-                  <span class="offer-overlay">
-                    <%= Math.round((product.originalPrice - product.price) / product.originalPrice * 100) %>% OFF
+                <% } %>
+                <% if (prodOffer > 0) { %>
+                  <span class="product-offer-badge" title="Product Offer">
+                    🔥 <%= prodOffer %>% OFF
                   </span>
                 <% } %>
               </div>

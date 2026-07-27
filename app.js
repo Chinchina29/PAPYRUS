@@ -236,7 +236,7 @@ app.use((err, req, res, next) => {
       ? req.path.startsWith("/admin")
         ? "/admin/signin"
         : "/shop"
-      : "/";
+      : "/home";
   res.redirect(
     `${redirectUrl}?error=A server error occurred. Our team has been notified and we're working on it.`,
   );

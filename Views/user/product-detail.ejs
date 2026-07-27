@@ -666,7 +666,7 @@
             <div class="thumb <%= idx === 0 ? 'active' : '' %>"
                  data-index="<%= idx %>"
                  data-url="<%= img.url %>"
-                 onclick="selectThumb(this, '<%= img.url %>', <%= idx %>)">
+                 onclick="selectThumb(this)">
               <img src="<%= img.url %>" alt="View <%= idx + 1 %>"/>
             </div>
           <% }) %>
@@ -689,20 +689,28 @@
         <% } %>
 
         <% const catOfferPct = product.category?.categoryOffer || 0; %>
+        <% const prodOfferPct = (product.originalPrice && product.originalPrice > product.price) ? Math.round((product.originalPrice - product.price) / product.originalPrice * 100) : 0; %>
         <% const discountedPrice = catOfferPct > 0 ? (product.price * (1 - catOfferPct/100)).toFixed(2) : null; %>
-        <div class="price-row">
+        <div class="price-row" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
           <% if (discountedPrice) { %>
-            <span class="price-current" style="color:#2e7d32;">₹<%= discountedPrice %></span>
-            <span class="price-original">₹<%= product.price %></span>
-            <span class="discount-badge" style="background:#2e7d32;">🏷 <%= catOfferPct %>% OFF</span>
+            <span class="price-current" style="color:#1b5e20; font-size: 24px; font-weight: 700;">₹<%= discountedPrice %></span>
+            <span class="price-original" style="text-decoration: line-through; color: #888;">₹<%= product.price %></span>
           <% } else { %>
-            <span class="price-current">₹<%= product.price %></span>
+            <span class="price-current" style="font-size: 24px; font-weight: 700;">₹<%= product.price %></span>
             <% if (product.originalPrice && product.originalPrice > product.price) { %>
-              <span class="price-original">₹<%= product.originalPrice %></span>
-              <span class="discount-badge">
-                <%= Math.round((product.originalPrice - product.price) / product.originalPrice * 100) %>% OFF
-              </span>
+              <span class="price-original" style="text-decoration: line-through; color: #888;">₹<%= product.originalPrice %></span>
             <% } %>
+          <% } %>
+
+          <% if (catOfferPct > 0) { %>
+            <span class="discount-badge" style="background:#1b5e20; color: white; padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
+              🏷 Category Offer: <%= catOfferPct %>% OFF
+            </span>
+          <% } %>
+          <% if (prodOfferPct > 0) { %>
+            <span class="discount-badge" style="background:#c0392b; color: white; padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
+              🔥 Product Offer: <%= prodOfferPct %>% OFF
+            </span>
           <% } %>
         </div>
 
@@ -903,14 +911,21 @@
 
   </div>
 
+  <div id="product-page-data"
+       data-product-id="<%= product._id %>"
+       data-max-stock="<%= product.stock %>"
+       data-max-per-order="<%= product.maxQuantityPerOrder || 10 %>"
+       style="display:none;"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="/js/cart-wishlist.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.6/viewer.min.js"></script>
 
   <script>
-    const PRODUCT_ID   = '<%= product._id %>';
-    const MAX_STOCK    = <%= product.stock %>;
-    const MAX_PER_ORDER = <%= product.maxQuantityPerOrder || 10 %>;
+    const _pData        = document.getElementById('product-page-data')?.dataset || {};
+    const PRODUCT_ID    = _pData.productId || '';
+    const MAX_STOCK     = parseInt(_pData.maxStock || '0');
+    const MAX_PER_ORDER = parseInt(_pData.maxPerOrder || '10');
     const EFFECTIVE_MAX = Math.min(MAX_STOCK, MAX_PER_ORDER);
     let currentReviewPage = 1;
     let chosenRating = 0;
@@ -944,7 +959,9 @@
       viewerInstance.show();
     }
 
-    function selectThumb(el, url, idx) {
+    function selectThumb(el, inputUrl, inputIdx) {
+      const url = inputUrl || el.dataset.url;
+      const idx = typeof inputIdx === 'number' ? inputIdx : parseInt(el.dataset.index || '0');
       const mainImg = document.getElementById('mainProductImage');
       if (mainImg) {
         mainImg.src = url;

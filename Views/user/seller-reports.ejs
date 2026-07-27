@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sales Reports - Seller Dashboard | Papyrus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #f0ede8; color: #2d2418; display: flex; min-height: 100vh; }
+    
+    /* ── Sidebar ── */
+    .seller-sidebar { width: 200px; background: #2d2418; color: #c8b89a; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; padding: 28px 0; }
+    .sidebar-logo { padding: 0 20px 28px; border-bottom: 1px solid #3d3020; font-family: 'Playfair Display', serif; font-size: 18px; color: #f0ede8; font-weight: 600; display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .sidebar-logo svg { width: 20px; height: 20px; color: #c8a96e; }
+    .sidebar-nav { flex: 1; padding: 20px 0; }
+    .sidebar-nav a { display: flex; align-items: center; gap: 10px; padding: 11px 20px; color: #a09078; text-decoration: none; font-size: 13.5px; font-weight: 500; transition: all 0.2s; border-left: 3px solid transparent; }
+    .sidebar-nav a:hover { color: #f0ede8; background: #3d3020; }
+    .sidebar-nav a.active { color: #f0ede8; background: #3d3020; border-left-color: #c8a96e; }
+    .sidebar-nav a svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .seller-tier { margin: 12px; background: #3d3020; border-radius: 8px; padding: 14px; font-size: 11px; }
+    .tier-label { color: #a09078; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .tier-name { color: #c8a96e; font-weight: 600; font-size: 13px; margin-bottom: 8px; }
+    .tier-bar { height: 3px; background: #2d2418; border-radius: 2px; }
+    .tier-bar-fill { height: 100%; width: 72%; background: #c8a96e; border-radius: 2px; }
+
+    /* ── Main Content ── */
+    .main { margin-left: 200px; flex: 1; padding: 36px; max-width: calc(100% - 200px); }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 13px; color: #9a8a78; }
+    .breadcrumb a { color: #8b7355; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb a:hover { color: #2d2418; }
+    .breadcrumb span { color: #2d2418; font-weight: 500; }
+    
+    .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px; flex-wrap: wrap; gap: 16px; }
+    .page-title h1 { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 600; color: #2d2418; }
+    .page-title p { color: #7a6a58; font-size: 14px; margin-top: 4px; }
+
+    /* ── Filters ── */
+    .filter-card { background: white; border-radius: 12px; border: 1px solid #e8dcc8; padding: 20px; margin-bottom: 28px; }
+    .filter-form { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+    .filter-group { display: flex; flex-direction: column; gap: 6px; }
+    .filter-group label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; color: #7a6a58; }
+    .filter-select, .filter-input { padding: 9px 14px; border: 1px solid #d4c5b0; border-radius: 8px; font-size: 13.5px; background: #faf8f5; color: #2d2418; outline: none; font-family: inherit; }
+    .filter-select:focus, .filter-input:focus { border-color: #8b7355; background: white; }
+
+    .btn { padding: 9px 18px; border-radius: 8px; font-size: 13.5px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; border: none; font-family: inherit; }
+    .btn-primary { background: #2d2418; color: white; }
+    .btn-primary:hover { background: #3d3020; }
+    .btn-secondary { background: white; color: #2d2418; border: 1px solid #d4c5b0; }
+    .btn-secondary:hover { background: #faf8f5; border-color: #8b7355; }
+    .btn-excel { background: #1e7e4a; color: white; }
+    .btn-excel:hover { background: #156238; }
+
+    /* ── Stats Grid ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+    .stat-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid #e8dcc8; }
+    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: #9a8a78; font-weight: 600; margin-bottom: 6px; }
+    .stat-value { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 600; color: #2d2418; }
+    .stat-sub { font-size: 11px; color: #7a6a58; margin-top: 4px; }
+
+    /* ── Sales Table ── */
+    .table-card { background: white; border-radius: 12px; border: 1px solid #e8dcc8; overflow: hidden; }
+    .table-header { padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f0ede8; }
+    .table-title { font-size: 16px; font-weight: 600; color: #2d2418; }
+    
+    table { width: 100%; border-collapse: collapse; }
+    th { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.8px; color: #9a8a78; font-weight: 600; padding: 14px 20px; text-align: left; background: #faf8f5; border-bottom: 1px solid #f0ede8; }
+    td { padding: 14px 20px; font-size: 13.5px; border-bottom: 1px solid #f9f7f5; color: #2d2418; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #faf9f7; }
+
+    .order-code { font-family: monospace; font-size: 12px; font-weight: 600; color: #8b7355; }
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: capitalize; }
+    .status-delivered { background: #edfaf3; color: #1e7e4a; }
+    .status-shipped   { background: #e8f4fd; color: #1565c0; }
+    .status-processing { background: #fff3e0; color: #e65100; }
+    .status-pending   { background: #fff8e1; color: #f57f17; }
+    .status-cancelled { background: #fdf0ef; color: #c0392b; }
+
+    .empty-state { text-align: center; padding: 64px 20px; color: #9a8a78; }
+    .empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.4; }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="seller-sidebar">
+    <a href="/home" class="sidebar-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Papyrus
+    </a>
+    <nav class="sidebar-nav">
+      <a href="/sell">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard Overview
+      </a>
+      <a href="/sell/my-listings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        My Listings
+      </a>
+      <a href="/sell/reports" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Sales Reports
+      </a>
+    </nav>
+    <div class="seller-tier">
+      <div class="tier-label">Seller Tier</div>
+      <div class="tier-name">Pro Librarian</div>
+      <div class="tier-bar"><div class="tier-bar-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Main Body -->
+  <div class="main">
+
+    <div class="breadcrumb">
+      <a href="/sell">Seller Dashboard</a>
+      <span>/</span>
+      <span>Sales Reports</span>
+    </div>
+
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Sales Reports</h1>
+        <p>Monitor your sales performance, revenue breakdown, and order receipts.</p>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <a href="/sell/reports/download?format=csv&range=<%= range %>&startDate=<%= startDate %>&endDate=<%= endDate %>" class="btn btn-excel">
+          📊 Export CSV Report
+        </a>
+      </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="filter-card">
+      <form action="/sell/reports" method="GET" class="filter-form" id="reportFilterForm">
+        <div class="filter-group">
+          <label>Date Range</label>
+          <select name="range" class="filter-select" id="rangeSelect" onchange="toggleCustomDates()">
+            <option value="all" <%= range === 'all' ? 'selected' : '' %>>All Time</option>
+            <option value="today" <%= range === 'today' ? 'selected' : '' %>>Today</option>
+            <option value="weekly" <%= range === 'weekly' ? 'selected' : '' %>>Last 7 Days</option>
+            <option value="monthly" <%= range === 'monthly' ? 'selected' : '' %>>This Month</option>
+            <option value="yearly" <%= range === 'yearly' ? 'selected' : '' %>>This Year</option>
+            <option value="custom" <%= range === 'custom' ? 'selected' : '' %>>Custom Range</option>
+          </select>
+        </div>
+
+        <div class="filter-group custom-date" id="startGroup" style="<%= range === 'custom' ? '' : 'display:none;' %>">
+          <label>Start Date</label>
+          <input type="date" name="startDate" class="filter-input" value="<%= startDate %>"/>
+        </div>
+
+        <div class="filter-group custom-date" id="endGroup" style="<%= range === 'custom' ? '' : 'display:none;' %>">
+          <label>End Date</label>
+          <input type="date" name="endDate" class="filter-input" value="<%= endDate %>"/>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Apply Filter</button>
+        <a href="/sell/reports" class="btn btn-secondary">Reset</a>
+      </form>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Net Revenue</div>
+        <div class="stat-value">₹<%= stats.totalRevenue.toFixed(2) %></div>
+        <div class="stat-sub">Gross sales from completed items</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Books Sold</div>
+        <div class="stat-value"><%= stats.totalUnitsSold %></div>
+        <div class="stat-sub"><%= stats.deliveredCount %> delivered items</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Average Item Price</div>
+        <div class="stat-value">₹<%= stats.avgSaleValue.toFixed(2) %></div>
+        <div class="stat-sub">Avg revenue per unit</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Transactions</div>
+        <div class="stat-value"><%= stats.totalOrders %></div>
+        <div class="stat-sub"><%= stats.cancelledCount %> cancelled item(s)</div>
+      </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="table-card">
+      <div class="table-header">
+        <h3 class="table-title">Sales Transactions Breakdown</h3>
+        <span style="font-size: 12px; color: #7a6a58;"><%= salesList.length %> transaction record(s)</span>
+      </div>
+
+      <% if (salesList && salesList.length > 0) { %>
+        <table>
+          <thead>
+            <tr>
+              <th>Order Ref</th>
+              <th>Date</th>
+              <th>Book Title</th>
+              <th>Buyer</th>
+              <th>Qty</th>
+              <th>Unit Price</th>
+              <th>Subtotal</th>
+              <th>Payment</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% salesList.forEach(sale => { %>
+              <tr>
+                <td><span class="order-code">#<%= sale.orderId %></span></td>
+                <td><%= new Date(sale.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
+                <td style="font-weight: 500;"><%= sale.title %></td>
+                <td><%= sale.buyerName %></td>
+                <td><%= sale.quantity %></td>
+                <td>₹<%= sale.price.toFixed(2) %></td>
+                <td style="font-weight: 600;">₹<%= sale.subtotal.toFixed(2) %></td>
+                <td style="font-size: 12px;"><%= sale.paymentMethod %> (<%= sale.paymentStatus %>)</td>
+                <td>
+                  <span class="status-badge status-<%= (sale.itemStatus || 'pending').toLowerCase() %>">
+                    <%= sale.itemStatus %>
+                  </span>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          <h3>No Sales Records Found</h3>
+          <p>You haven't made any sales in the selected date range yet.</p>
+        </div>
+      <% } %>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleCustomDates() {
+      const range = document.getElementById('rangeSelect').value;
+      const show = range === 'custom';
+      document.getElementById('startGroup').style.display = show ? 'flex' : 'none';
+      document.getElementById('endGroup').style.display = show ? 'flex' : 'none';
+    }
+  </script>
+</body>
+</html>

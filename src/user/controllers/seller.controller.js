@@ -32,17 +32,58 @@ export const getSellPage = async (req, res) => {
       }),
     );
     const recentSubmissions = populatedSubmissions.slice(0, 3);
+
+    // Compute live seller statistics from completed/placed orders
+    const Product = (await import("../../shared/models/Product.js")).default;
+    const Order = (await import("../../shared/models/Order.js")).default;
+    const sellerProducts = await Product.find({ seller: req.session.userId }).select("_id").lean();
+    const sellerProdIds = sellerProducts.map((p) => p._id.toString());
+
+    let totalRevenue = 0;
+    let itemsSold = 0;
+    let recentOrders = [];
+
+    if (sellerProdIds.length > 0) {
+      const orders = await Order.find({
+        "items.product": { $in: sellerProdIds },
+      })
+        .populate("user", "firstName lastName email")
+        .sort({ createdAt: -1 })
+        .lean();
+
+      orders.forEach((order) => {
+        order.items.forEach((item) => {
+          if (sellerProdIds.includes(item.product.toString())) {
+            const itemRevenue = item.subtotal || item.price * item.quantity;
+            if (item.itemStatus !== "Cancelled") {
+              totalRevenue += itemRevenue;
+              itemsSold += item.quantity;
+            }
+            recentOrders.push({
+              orderId: order.orderId,
+              title: item.title,
+              customer: order.user ? `${order.user.firstName} ${order.user.lastName}` : "Customer",
+              price: itemRevenue,
+              quantity: item.quantity,
+              date: order.createdAt,
+              status: item.itemStatus || order.orderStatus,
+            });
+          }
+        });
+      });
+    }
+
     const stats = {
-      totalRevenue: 0,
-      itemsSold: 0,
+      totalRevenue,
+      itemsSold,
       pendingCount: submissions.filter((s) => s.status === "pending").length,
-      recentSales: 0,
+      recentSales: recentOrders.length,
     };
     res.render("user/sellar", {
       categories,
       recentSubmissions,
       stats,
-      recentOrders: [],
+      recentOrders: recentOrders.slice(0, 5),
     });
   } catch (error) {
     return res.redirect(`/home?error=${encodeURIComponent('Failed to load seller dashboard. Please try again.')}`);
@@ -366,5 +407,203 @@ export const updateProductStock = async (req, res) => {
       success: false,
       message: MESSAGES.CUSTOM.FAILED_TO_UPDATE_STOCK + error.message,
     });
+  }
+};
+
+export const getSalesReport = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const { range = "all", startDate, endDate } = req.query;
+
+    const Product = (await import("../../shared/models/Product.js")).default;
+    const Order = (await import("../../shared/models/Order.js")).default;
+
+    const sellerProducts = await Product.find({ seller: userId })
+      .select("_id title price")
+      .lean();
+    const sellerProdIds = sellerProducts.map((p) => p._id.toString());
+
+    let salesList = [];
+    let totalRevenue = 0;
+    let totalUnitsSold = 0;
+    let cancelledCount = 0;
+    let deliveredCount = 0;
+
+    let dateQuery = {};
+    const now = new Date();
+    if (range === "today") {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      dateQuery = { createdAt: { $gte: startOfDay } };
+    } else if (range === "weekly") {
+      const startOfWeek = new Date();
+      startOfWeek.setDate(startOfWeek.getDate() - 7);
+      dateQuery = { createdAt: { $gte: startOfWeek } };
+    } else if (range === "monthly") {
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      dateQuery = { createdAt: { $gte: startOfMonth } };
+    } else if (range === "yearly") {
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      dateQuery = { createdAt: { $gte: startOfYear } };
+    } else if (range === "custom" && startDate && endDate) {
+      dateQuery = {
+        createdAt: {
+          $gte: new Date(startDate),
+          $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)),
+        },
+      };
+    }
+
+    if (sellerProdIds.length > 0) {
+      const orders = await Order.find({
+        "items.product": { $in: sellerProdIds },
+        ...dateQuery,
+      })
+        .populate("user", "firstName lastName email")
+        .sort({ createdAt: -1 })
+        .lean();
+
+      orders.forEach((order) => {
+        order.items.forEach((item) => {
+          if (sellerProdIds.includes(item.product.toString())) {
+            const subtotal = item.subtotal || item.price * item.quantity;
+            if (item.itemStatus === "Cancelled") {
+              cancelledCount += item.quantity;
+            } else {
+              totalRevenue += subtotal;
+              totalUnitsSold += item.quantity;
+              if (item.itemStatus === "Delivered") deliveredCount += item.quantity;
+            }
+
+            salesList.push({
+              orderId: order.orderId,
+              date: order.createdAt,
+              title: item.title,
+              quantity: item.quantity,
+              price: item.price,
+              subtotal,
+              buyerName: order.user ? `${order.user.firstName} ${order.user.lastName}` : "Customer",
+              paymentMethod: order.paymentMethod,
+              paymentStatus: order.paymentStatus,
+              itemStatus: item.itemStatus || order.orderStatus,
+            });
+          }
+        });
+      });
+    }
+
+    const avgSaleValue = totalUnitsSold > 0 ? totalRevenue / totalUnitsSold : 0;
+
+    res.render("user/seller-reports", {
+      salesList,
+      stats: {
+        totalRevenue,
+        totalUnitsSold,
+        avgSaleValue,
+        cancelledCount,
+        deliveredCount,
+        totalOrders: salesList.length,
+      },
+      range,
+      startDate: startDate || "",
+      endDate: endDate || "",
+    });
+  } catch (error) {
+    return res.redirect(
+      `/sell?error=${encodeURIComponent("Failed to generate sales report.")}`,
+    );
+  }
+};
+
+export const downloadSalesReport = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const { format = "csv", range = "all", startDate, endDate } = req.query;
+
+    const Product = (await import("../../shared/models/Product.js")).default;
+    const Order = (await import("../../shared/models/Order.js")).default;
+
+    const sellerProducts = await Product.find({ seller: userId })
+      .select("_id")
+      .lean();
+    const sellerProdIds = sellerProducts.map((p) => p._id.toString());
+
+    let salesList = [];
+    let dateQuery = {};
+    const now = new Date();
+    if (range === "today") {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      dateQuery = { createdAt: { $gte: startOfDay } };
+    } else if (range === "weekly") {
+      const startOfWeek = new Date();
+      startOfWeek.setDate(startOfWeek.getDate() - 7);
+      dateQuery = { createdAt: { $gte: startOfWeek } };
+    } else if (range === "monthly") {
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      dateQuery = { createdAt: { $gte: startOfMonth } };
+    } else if (range === "yearly") {
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      dateQuery = { createdAt: { $gte: startOfYear } };
+    } else if (range === "custom" && startDate && endDate) {
+      dateQuery = {
+        createdAt: {
+          $gte: new Date(startDate),
+          $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)),
+        },
+      };
+    }
+
+    if (sellerProdIds.length > 0) {
+      const orders = await Order.find({
+        "items.product": { $in: sellerProdIds },
+        ...dateQuery,
+      })
+        .populate("user", "firstName lastName email")
+        .sort({ createdAt: -1 })
+        .lean();
+
+      orders.forEach((order) => {
+        order.items.forEach((item) => {
+          if (sellerProdIds.includes(item.product.toString())) {
+            salesList.push({
+              orderId: order.orderId,
+              date: new Date(order.createdAt).toLocaleDateString("en-IN"),
+              title: item.title,
+              quantity: item.quantity,
+              price: item.price.toFixed(2),
+              subtotal: (item.subtotal || item.price * item.quantity).toFixed(2),
+              buyerName: order.user ? `${order.user.firstName} ${order.user.lastName}` : "Customer",
+              paymentMethod: order.paymentMethod,
+              paymentStatus: order.paymentStatus,
+              itemStatus: item.itemStatus || order.orderStatus,
+            });
+          }
+        });
+      });
+    }
+
+    if (format === "csv") {
+      let csv =
+        "Order ID,Date,Book Title,Buyer Name,Quantity,Unit Price (INR),Total Revenue (INR),Payment Method,Payment Status,Item Status\n";
+      salesList.forEach((row) => {
+        const cleanTitle = `"${row.title.replace(/"/g, '""')}"`;
+        const cleanBuyer = `"${row.buyerName.replace(/"/g, '""')}"`;
+        csv += `${row.orderId},${row.date},${cleanTitle},${cleanBuyer},${row.quantity},${row.price},${row.subtotal},${row.paymentMethod},${row.paymentStatus},${row.itemStatus}\n`;
+      });
+
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=seller-sales-report-${Date.now()}.csv`,
+      );
+      return res.status(HTTP_STATUS.OK).send(csv);
+    }
+
+    return res.redirect("/sell/reports");
+  } catch (error) {
+    return res.redirect(
+      `/sell/reports?error=${encodeURIComponent("Failed to download report.")}`,
+    );
   }
 };

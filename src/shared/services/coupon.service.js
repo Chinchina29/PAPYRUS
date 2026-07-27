@@ -132,13 +132,25 @@ export const getAvailableCoupons = async (userId, cartTotal, cartItems) => {
   const query = {
     isDeleted: false,
     isActive: true,
-    validFrom: { $lte: now },
-    validUntil: { $gte: now },
-    $or: [
-      { usageLimit: { $exists: false } },
-      { $expr: { $lt: ["$usageCount", "$usageLimit"] } },
+    $and: [
+      { $or: [{ validFrom: { $exists: false } }, { validFrom: null }, { validFrom: { $lte: now } }] },
+      { $or: [{ validUntil: { $exists: false } }, { validUntil: null }, { validUntil: { $gte: now } }] },
+      {
+        $or: [
+          { usageLimit: { $exists: false } },
+          { usageLimit: null },
+          { $expr: { $lt: ["$usageCount", "$usageLimit"] } },
+        ],
+      },
+      {
+        $or: [
+          { minPurchaseAmount: { $exists: false } },
+          { minPurchaseAmount: null },
+          { minPurchaseAmount: 0 },
+          { minPurchaseAmount: { $lte: cartTotal } },
+        ],
+      },
     ],
-    minPurchaseAmount: { $lte: cartTotal },
   };
   const coupons = await Coupon.find(query)
     .populate("applicableCategories", "name")

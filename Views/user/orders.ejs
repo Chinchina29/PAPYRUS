@@ -156,6 +156,11 @@
             <div class="order-total">Total: ₹<%= order.totalAmount.toFixed(2) %></div>
             <div class="order-actions">
               <a href="/orders/<%= order._id %>" class="btn btn-primary">View Details</a>
+              <% if ((order.paymentStatus === 'Pending' || order.paymentStatus === 'Failed') && order.orderStatus !== 'Cancelled' && order.paymentMethod === 'Razorpay') { %>
+                <a href="/payment/failure?orderId=<%= order._id %>" class="btn btn-warning" style="background: #e67e22; color: white; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                  💳 Retry Payment
+                </a>
+              <% } %>
               <% if (order.orderStatus === 'Delivered' || order.orderStatus === 'Shipped') { %>
                 <a href="/orders/<%= order._id %>/invoice" target="_blank" class="btn btn-secondary" title="Download Invoice">
                   <svg style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

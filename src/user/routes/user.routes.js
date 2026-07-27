@@ -174,6 +174,12 @@ router.post(
 );
 router.get("/sell/my-listings", requireAuth, sellerController.getMyListings);
 router.get("/sell/create", requireAuth, sellerController.getCreatePage);
+router.get("/sell/reports", requireAuth, sellerController.getSalesReport);
+router.get(
+  "/sell/reports/download",
+  requireAuth,
+  sellerController.downloadSalesReport,
+);
 router.delete(
   "/sell/submission/:id",
   requireAuth,

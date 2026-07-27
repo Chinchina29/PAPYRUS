@@ -64,23 +64,23 @@
             </a>
 
             <% if (locals.isLoggedIn || (locals.user && locals.user.id)) { %>
+            <a href="#" class="icon-btn" onclick="handleUserLogout(event)" title="Sign Out" aria-label="Sign out">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
             </a>
-        <a href="/logout" class="nav-item logout">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            
-        </a>
             <% } %>
 
         </div>
     </div>
 
+    <div id="header-user-data" data-logged-in="<%= (locals.isLoggedIn || (locals.user && locals.user.id)) ? 'true' : 'false' %>" style="display:none;"></div>
+
 <script>
     // Check if user is logged in
-    const isUserLoggedIn = <%= JSON.stringify(locals.isLoggedIn || (locals.user && locals.user.id) || false) %>;
+    const isUserLoggedIn = document.getElementById('header-user-data')?.dataset?.loggedIn === 'true';
     
     function handleCartClick(event) {
         event.preventDefault();

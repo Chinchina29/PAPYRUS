@@ -32,9 +32,17 @@ export const getSubmissionById = async (id) => {
     .populate("category", "name");
 };
 export const updateSubmissionStatus = async (id, status, adminNote = "") => {
+  const updateData = { status };
+  if (adminNote) {
+    if (status === "rejected") {
+      updateData.rejectionReason = adminNote;
+    } else {
+      updateData.reviewNotes = adminNote;
+    }
+  }
   return await SellerSubmission.findByIdAndUpdate(
     id,
-    { status, adminNote },
+    updateData,
     { returnDocument: 'after' },
   );
 };
