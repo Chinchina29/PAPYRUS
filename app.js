@@ -25,6 +25,8 @@ const requiredEnvVars = [
   "SESSION_SECRET",
   "ADMIN_SESSION_SECRET",
 ];
+
+//hello world
 const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
 if (missingEnvVars.length > 0) {
   process.exit(1);
@@ -122,7 +124,7 @@ app.use(async (req, res, next) => {
               message:
                 user && user.isBlocked
                   ? MESSAGES.CUSTOM
-                      .YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT
+                    .YOUR_ACCOUNT_HAS_BEEN_BLOCKED_PLEASE_CONTACT_SUPPORT
                   : MESSAGES.AUTH.SESSION_EXPIRED,
               redirectUrl: "/login",
               blocked: true,
@@ -131,13 +133,13 @@ app.use(async (req, res, next) => {
 
           return res.redirect(
             "/login?error=" +
-              encodeURIComponent(
-                user && user.isBlocked ? "blocked" : "session_expired",
-              ),
+            encodeURIComponent(
+              user && user.isBlocked ? "blocked" : "session_expired",
+            ),
           );
         });
       }
-    } catch (error) {}
+    } catch (error) { }
   }
 
   next();
