@@ -30,11 +30,12 @@ if (missingEnvVars.length > 0) {
   process.exit(1);
 }
 const app = express();
-app.set("trust proxy", 1);
+app.set("trust proxy", true);
 connectDB();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
+const isSecureCookie = process.env.NODE_ENV === "production" && process.env.DISABLE_SECURE_COOKIE !== "true";
 const userSession = session({
   secret: process.env.SESSION_SECRET,
   name: "papyrus.user.sid",
@@ -44,7 +45,7 @@ const userSession = session({
   cookie: {
     maxAge: 1000 * 60 * 60 * 4,
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: isSecureCookie,
     sameSite: "lax",
   },
 });
@@ -57,7 +58,7 @@ const adminSession = session({
   cookie: {
     maxAge: 1000 * 60 * 60 * 8,
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: isSecureCookie,
     sameSite: "lax",
   },
 });
