@@ -128,12 +128,18 @@
         <div class="books-carousel">
           <% if (recommendedProducts && recommendedProducts.length > 0) { %>
             <% recommendedProducts.forEach(product => { %>
-              <a href="/shop/<%= product._id %>" class="book-card" style="text-decoration: none; color: inherit;">
-                <div class="book-image">
-                  <% if (product.originalPrice && product.price < product.originalPrice) { 
-                    const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
-                  %>
-                    <span class="badge">-<%= discount %>% OFF</span>
+              <% const catOffer = product.category?.categoryOffer || 0; %>
+              <% const prodOffer = (product.originalPrice && product.price < product.originalPrice) ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0; %>
+              <a href="/shop/<%= product._id %>" class="book-card" style="text-decoration: none; color: inherit; position: relative;">
+                <div class="book-image" style="position: relative;">
+                  <% if (product.stock === 0) { %>
+                    <span class="badge" style="position: absolute; bottom: 10px; left: 10px; background: rgba(192,57,43,0.95); color: white; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; z-index: 6;">OUT OF STOCK</span>
+                  <% } %>
+                  <% if (catOffer > 0) { %>
+                    <span class="badge" style="position: absolute; top: 10px; left: 10px; background: #1b5e20; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; z-index: 5;">🏷 <%= catOffer %>% OFF</span>
+                  <% } %>
+                  <% if (prodOffer > 0) { %>
+                    <span class="badge" style="position: absolute; top: 10px; right: 10px; background: #c0392b; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; z-index: 5;">🔥 <%= prodOffer %>% OFF</span>
                   <% } %>
                   <img
                     src="<%= product.images && product.images.length > 0 ? product.images[0].url : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop' %>"
@@ -142,9 +148,14 @@
                 </div>
                 <h3><%= product.title.toUpperCase() %></h3>
                 <p class="price">
-                  ₹<%= product.price.toFixed(2) %>
-                  <% if (product.originalPrice && product.price < product.originalPrice) { %>
-                    <span class="old-price">₹<%= product.originalPrice.toFixed(2) %></span>
+                  <% if (catOffer > 0) { %>
+                    <span style="color:#1b5e20; font-weight:700;">₹<%= (product.price * (1 - catOffer/100)).toFixed(2) %></span>
+                    <span class="old-price">₹<%= product.price.toFixed(2) %></span>
+                  <% } else { %>
+                    ₹<%= product.price.toFixed(2) %>
+                    <% if (product.originalPrice && product.price < product.originalPrice) { %>
+                      <span class="old-price">₹<%= product.originalPrice.toFixed(2) %></span>
+                    <% } %>
                   <% } %>
                 </p>
               </a>

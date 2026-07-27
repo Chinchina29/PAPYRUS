@@ -49,10 +49,24 @@ export const signup = async (req, res) => {
 };
 export const verifyOTP = async (req, res) => {
   try {
-    const { otp1, otp2, otp3, otp4, otp5, otp6 } = req.body;
+    const { otp1, otp2, otp3, otp4, otp5, otp6, email } = req.body;
     const otpCode = `${otp1}${otp2}${otp3}${otp4}${otp5}${otp6}`;
+    let tempUserId = req.session.tempUserId;
+    if (!tempUserId) {
+      const searchEmail = req.session.tempUserEmail || email;
+      if (searchEmail) {
+        const user = await userService.findUserByEmail(searchEmail);
+        if (user) {
+          tempUserId = user._id.toString();
+          req.session.tempUserId = tempUserId;
+        }
+      }
+    }
+    if (!tempUserId) {
+      return errorResponse(res, "Session expired. Please sign up or request a new OTP.");
+    }
     const result = await authService.verifyUserOTP(
-      req.session.tempUserId,
+      tempUserId,
       otpCode,
     );
     if (!result.success) return errorResponse(res, result.message);

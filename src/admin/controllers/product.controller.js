@@ -333,7 +333,7 @@ export const deleteProduct = async (req, res) => {
     });
     if (submission) {
       submission.status = "rejected";
-      submission.adminNote = "Product was deleted by admin";
+      submission.rejectionReason = "Product was deleted by admin";
       await submission.save();
     }
     return res.status(HTTP_STATUS.OK).json({

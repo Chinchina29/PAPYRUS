@@ -105,7 +105,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
         My Listings
       </a>
-      <a href="#">
+      <a href="/sell/reports">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         Sales Reports
       </a>
@@ -182,9 +182,11 @@
     <% if (submissions && submissions.length > 0) { %>
     <div class="listings-grid" id="listingsGrid">
       <% submissions.forEach(sub => { %>
-      <% 
+      <%
         let linkUrl = '#';
         let isClickable = false;
+        let hasAdminNote = (sub.status === 'rejected' && sub.rejectionReason) || 
+                           (sub.status === 'approved' && sub.reviewNotes);
         
         if (sub.status === 'approved' && sub.approvedProductId) {
           if (sub.productExists && !sub.productDeleted && sub.productListed) {
@@ -197,7 +199,10 @@
         data-title="<%= sub.title?.toLowerCase() %>"
         data-author="<%= sub.author?.toLowerCase() %>"
         data-isbn="<%= sub.isbn?.toLowerCase() %>"
-        <%= !isClickable ? 'style="cursor: default; pointer-events: none;"' : '' %>>
+        <% if (!isClickable) { %>
+          onclick="<% if (hasAdminNote || sub.status === 'pending' || (sub.status === 'approved' && sub.approvedProductId)) { %>showSubmissionDetail(event, '<%= sub._id %>', '<%= sub.title?.replace(/'/g, "\\'") %>', '<%= sub.status %>', '<%= (sub.rejectionReason || sub.reviewNotes || '').replace(/'/g, "\\'").replace(/\n/g, '\\n') %>')<% } else { %>return false<% } %>"
+          style="cursor: <%= (hasAdminNote || sub.status === 'pending') ? 'pointer' : 'default' %>; pointer-events: auto;"
+        <% } %>>
         <div class="book-img">
           <% if (sub.images && sub.images.length > 0) { %>
             <img src="<%= typeof sub.images[0] === 'string' ? sub.images[0] : sub.images[0].url %>" alt="<%= sub.title %>"/>
@@ -227,8 +232,8 @@
             <div class="book-price">₹<%= sub.price %></div>
           </div>
           <div class="book-author"><%= sub.author || 'Unknown author' %></div>
-          <% if (sub.status === 'rejected' && sub.adminNote) { %>
-            <div class="admin-note">Rejected: <%= sub.adminNote %></div>
+          <% if (sub.status === 'rejected' && sub.rejectionReason) { %>
+            <div class="admin-note">Rejected: <%= sub.rejectionReason %></div>
           <% } %>
           <% if (sub.status === 'pending') { %>
             <div style="font-size: 11px; color: #e8a020; margin-top: 4px; background: #fef9f0; padding: 4px 8px; border-radius: 4px;">
@@ -311,6 +316,57 @@
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
+    function showSubmissionDetail(event, submissionId, title, status, adminNote) {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      let statusColor = '#e8a020';
+      let statusIcon = '⏳';
+      let statusText = 'Pending Review';
+      let noteLabel = 'Admin Note';
+      
+      if (status === 'rejected') {
+        statusColor = '#c0392b';
+        statusIcon = '✗';
+        statusText = 'Rejected';
+        noteLabel = 'Rejection Reason';
+      } else if (status === 'approved') {
+        statusColor = '#2d8b2d';
+        statusIcon = '✓';
+        statusText = 'Approved';
+        noteLabel = 'Admin Notes';
+      }
+      
+      const noteHtml = adminNote 
+        ? `<div style="background:#f5f1ed;border-radius:8px;padding:16px;margin-top:12px;border-left:4px solid ${statusColor};">
+             <strong style="display:block;margin-bottom:6px;color:#2d2418;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;">${noteLabel}</strong>
+             <p style="margin:0;color:#4a3d30;font-size:14px;line-height:1.6;">${adminNote.replace(/\n/g, '<br>')}</p>
+           </div>`
+        : status === 'pending'
+          ? `<div style="background:#fef9f0;border-radius:8px;padding:16px;margin-top:12px;border-left:4px solid #e8a020;">
+               <p style="margin:0;color:#7a6a58;font-size:14px;">
+                 Your book is currently under review by our team. You will see the decision reflected here once it's processed.
+               </p>
+             </div>`
+          : '';
+      
+      Swal.fire({
+        title: `<span style="font-size:16px;color:#2d2418">${title}</span>`,
+        html: `
+          <div style="text-align:left;">
+            <div style="display:inline-flex;align-items:center;gap:8px;background:${statusColor}20;color:${statusColor};padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;margin-bottom:16px;">
+              ${statusIcon} ${statusText}
+            </div>
+            ${noteHtml}
+          </div>
+        `,
+        confirmButtonColor: '#2d2418',
+        confirmButtonText: 'Close',
+        width: 480,
+        customClass: { htmlContainer: 'swal-html-container' }
+      });
+    }
+    
     function updateStock(event, productId, change) {
       event.preventDefault();
       event.stopPropagation();

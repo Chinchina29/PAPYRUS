@@ -6,14 +6,20 @@ export const getReferralStats = async (req, res) => {
   try {
     const stats = await referralService.getAdminReferralStats();
     
-    res.render("admin/referral-stats", {
+    if (req.xhr || req.headers.accept?.includes("application/json")) {
+      return res.json({ success: true, title: "Referral Analytics", stats });
+    }
+    res.render("admin/dashboard", {
       title: "Referral Analytics",
+      currentPage_name: "dashboard",
+      user: req.session.adminUser,
       stats,
     });
   } catch (error) {
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).render("admin/error", {
-      message: MESSAGES.COMMON.INTERNAL_ERROR,
-    });
+    if (req.xhr || req.headers.accept?.includes("application/json")) {
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: MESSAGES.COMMON.INTERNAL_ERROR });
+    }
+    res.redirect("/admin/dashboard?error=" + encodeURIComponent("Failed to load referral stats"));
   }
 };
 
@@ -22,16 +28,22 @@ export const getAllReferrals = async (req, res) => {
     const { search = "", status = "" } = req.query;
     const referrals = await referralService.getAllReferrals(search, status);
     
-    res.render("admin/referrals", {
+    if (req.xhr || req.headers.accept?.includes("application/json")) {
+      return res.json({ success: true, title: "Referral Management", referrals, search, status });
+    }
+    res.render("admin/dashboard", {
       title: "Referral Management",
+      currentPage_name: "dashboard",
+      user: req.session.adminUser,
       referrals,
       search,
       status,
     });
   } catch (error) {
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).render("admin/error", {
-      message: MESSAGES.COMMON.INTERNAL_ERROR,
-    });
+    if (req.xhr || req.headers.accept?.includes("application/json")) {
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: MESSAGES.COMMON.INTERNAL_ERROR });
+    }
+    res.redirect("/admin/dashboard?error=" + encodeURIComponent("Failed to load referrals"));
   }
 };
 

@@ -458,6 +458,14 @@
             </svg>
             Payment Method: <%= order.paymentMethod %>
           </div>
+
+          <% if ((order.paymentStatus === 'Pending' || order.paymentStatus === 'Failed') && order.orderStatus !== 'Cancelled' && order.paymentMethod === 'Razorpay') { %>
+            <div style="margin-top: 16px;">
+              <a href="/payment/failure?orderId=<%= order._id %>" style="display: block; width: 100%; padding: 12px; background: #e67e22; color: white; border: none; border-radius: 8px; text-align: center; font-weight: 600; font-size: 14px; text-decoration: none; transition: background 0.2s;">
+                💳 Retry Payment
+              </a>
+            </div>
+          <% } %>
         </div>
 
         <div style="text-align: center; padding: 16px; color: #666; font-size: 13px;">

@@ -373,9 +373,9 @@
                             </svg>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value"><%= stats.activeUsers.toLocaleString() %></div>
-                            <div class="stat-label">Active Users</div>
-                            <div class="stat-change positive">+<%= stats.ordersGrowth %>%</div>
+                            <div class="stat-value" id="statOrders"><%= stats.orders ? stats.orders.toLocaleString() : stats.activeUsers.toLocaleString() %></div>
+                            <div class="stat-label">Orders (Period)</div>
+                            <div class="stat-change positive"><span class="stat-filter-label">This Period</span></div>
                         </div>
                     </div>
 
@@ -389,7 +389,7 @@
                         <div class="stat-content">
                             <div class="stat-value"><%= stats.totalUsers.toLocaleString() %></div>
                             <div class="stat-label">Total Users</div>
-                            <div class="stat-change neutral">Status</div>
+                            <div class="stat-change neutral">Active & Registered</div>
                         </div>
                     </div>
 

@@ -298,14 +298,21 @@ export const resetPassword = async (email, otp, newPassword) => {
 export const getLandingPageProducts = async () => {
   try {
     const Product = (await import("../../shared/models/Product.js")).default;
-    const recommendedProducts = await Product.find({
+    const rawProducts = await Product.find({
       isListed: true,
       isDeleted: false,
     })
-      .select("title price originalPrice images")
-      .limit(3)
+      .populate({
+        path: "category",
+        select: "name isListed isDeleted categoryOffer",
+        match: { isListed: true, isDeleted: false },
+      })
+      .select("title price originalPrice images category")
+      .limit(10)
       .sort({ createdAt: -1 })
       .lean();
+
+    const recommendedProducts = rawProducts.filter(p => p.category !== null).slice(0, 3);
 
     return { success: true, products: recommendedProducts };
   } catch (error) {
@@ -323,42 +330,55 @@ export const getHomePageData = async (isNewUser) => {
     if (isNewUser) {
       categories = await Category.find({
         isListed: true,
+        isDeleted: false,
         parentCategory: null,
       })
         .select("_id name")
         .lean();
     }
 
+    const categoryPopulate = {
+      path: "category",
+      select: "name isListed isDeleted categoryOffer",
+      match: { isListed: true, isDeleted: false },
+    };
+
     const [
-      recommendedProducts,
-      topSellers,
-      featuredCollections,
-      recentStories,
+      rawRecommended,
+      rawTopSellers,
+      rawFeatured,
+      rawStories,
     ] = await Promise.all([
       Product.find({ isListed: true, isDeleted: false })
-        .select("title price originalPrice images")
-        .limit(6)
-        .sort({ createdAt: -1 })
-        .lean(),
-      Product.find({ isListed: true, isDeleted: false })
-        .select("title price originalPrice images")
-        .limit(6)
-        .sort({ createdAt: -1 })
-        .lean(),
-
-      Product.find({ isListed: true, isDeleted: false })
+        .populate(categoryPopulate)
         .select("title price originalPrice images category")
-        .populate("category", "name")
-        .limit(3)
+        .limit(12)
+        .sort({ createdAt: -1 })
+        .lean(),
+      Product.find({ isListed: true, isDeleted: false })
+        .populate(categoryPopulate)
+        .select("title price originalPrice images category")
+        .limit(12)
+        .sort({ createdAt: -1 })
+        .lean(),
+      Product.find({ isListed: true, isDeleted: false })
+        .populate(categoryPopulate)
+        .select("title price originalPrice images category")
+        .limit(12)
         .sort({ views: -1 })
         .lean(),
-
       Product.find({ isListed: true, isDeleted: false })
-        .select("title images")
-        .limit(4)
+        .populate(categoryPopulate)
+        .select("title images category")
+        .limit(12)
         .sort({ createdAt: -1 })
         .lean(),
     ]);
+
+    const recommendedProducts = rawRecommended.filter(p => p.category !== null).slice(0, 6);
+    const topSellers           = rawTopSellers.filter(p => p.category !== null).slice(0, 6);
+    const featuredCollections  = rawFeatured.filter(p => p.category !== null).slice(0, 3);
+    const recentStories        = rawStories.filter(p => p.category !== null).slice(0, 4);
 
     return {
       success: true,
