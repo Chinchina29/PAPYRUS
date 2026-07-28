@@ -26,7 +26,7 @@ const CartWishlist = {
     try {
       const response = await fetch('/cart/add', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ productId, quantity })
       });
 
@@ -55,7 +55,7 @@ const CartWishlist = {
     try {
       const response = await fetch('/wishlist/add', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ productId })
       });
 
@@ -107,7 +107,8 @@ const CartWishlist = {
 
     try {
       const response = await fetch(`/cart/remove/${productId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Accept': 'application/json' }
       });
 
       const data = await response.json();
@@ -137,7 +138,8 @@ const CartWishlist = {
   removeFromWishlist: async function(productId, buttonElement) {
     try {
       const response = await fetch(`/wishlist/remove/${productId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Accept': 'application/json' }
       });
 
       const data = await response.json();
@@ -181,7 +183,7 @@ const CartWishlist = {
     try {
       const response = await fetch(`/cart/update/${productId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ quantity: newQuantity })
       });
 
@@ -203,7 +205,7 @@ const CartWishlist = {
 
   updateCartCount: async function() {
     try {
-      const response = await fetch('/cart/count');
+      const response = await fetch('/cart/count', { headers: { 'Accept': 'application/json' } });
       const data = await response.json();
       
       if (data.success) {
@@ -220,7 +222,7 @@ const CartWishlist = {
 
   updateWishlistCount: async function() {
     try {
-      const response = await fetch('/wishlist/count');
+      const response = await fetch('/wishlist/count', { headers: { 'Accept': 'application/json' } });
       const data = await response.json();
       
       if (data.success) {
@@ -237,7 +239,7 @@ const CartWishlist = {
 
   checkWishlistStatus: async function(productId) {
     try {
-      const response = await fetch(`/wishlist/status/${productId}`);
+      const response = await fetch(`/wishlist/status/${productId}`, { headers: { 'Accept': 'application/json' } });
       const data = await response.json();
       
       if (data.success && data.isInWishlist) {

@@ -53,8 +53,6 @@ passport.use(
           isVerified: true,
           lastLogin: new Date(),
         });
-        done(null, newUser);
-
         return done(null, newUser);
       } catch (error) {
         return done(error, null);

@@ -14,10 +14,16 @@ export const getWallet = async (req, res) => {
       return res.redirect("/login");
     }
     
-    const total = await WalletTransaction.countDocuments({ user: userId });
+    const type = req.query.type || 'all';
+    const query = { user: userId };
+    if (type === 'credit' || type === 'debit') {
+      query.type = type;
+    }
+    
+    const total = await WalletTransaction.countDocuments(query);
     const totalPages = Math.ceil(total / limit) || 1;
     
-    const transactions = await WalletTransaction.find({ user: userId })
+    const transactions = await WalletTransaction.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -29,6 +35,7 @@ export const getWallet = async (req, res) => {
       currentPage: page,
       totalPages,
       total,
+      currentFilter: type,
       currentPage_name: "wallet",
       user: req.session.user || null,
     });
@@ -39,6 +46,7 @@ export const getWallet = async (req, res) => {
       currentPage: 1,
       totalPages: 1,
       total: 0,
+      currentFilter: 'all',
       currentPage_name: "wallet",
       user: req.session.user || null,
       error: MESSAGES.COMMON.INTERNAL_ERROR,

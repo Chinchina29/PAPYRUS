@@ -189,6 +189,52 @@
                 gap: 16px;
             }
         }
+        
+        .wallet-filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid #eee;
+            background: #f9f9f9;
+            color: #555;
+            border-radius: 20px;
+            font-size: 13px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover {
+            background: #eee;
+        }
+        
+        .filter-btn.active {
+            background: #7A5C3E;
+            color: white;
+            border-color: #7A5C3E;
+        }
+        
+        .type-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-credit {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .badge-debit {
+            background-color: #ffebee;
+            color: #c62828;
+        }
     </style>
 </head>
 <body>
@@ -272,11 +318,18 @@
                             <p>Review your latest account activity.</p>
                         </div>
 
+                        <div class="wallet-filters">
+                            <a href="?type=all" class="filter-btn <%= currentFilter === 'all' ? 'active' : '' %>">All Transactions</a>
+                            <a href="?type=credit" class="filter-btn <%= currentFilter === 'credit' ? 'active' : '' %>">Credits</a>
+                            <a href="?type=debit" class="filter-btn <%= currentFilter === 'debit' ? 'active' : '' %>">Debits</a>
+                        </div>
+
                         <% if (transactions && transactions.length > 0) { %>
                             <table class="transaction-table">
                                 <thead>
                                     <tr>
                                         <th>DATE</th>
+                                        <th>TYPE</th>
                                         <th>DESCRIPTION</th>
                                         <th>AMOUNT</th>
                                     </tr>
@@ -285,6 +338,11 @@
                                     <% transactions.forEach(tx => { %>
                                         <tr>
                                             <td><%= new Date(tx.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+                                            <td>
+                                                <span class="type-badge <%= tx.type === 'credit' ? 'badge-credit' : 'badge-debit' %>">
+                                                    <%= tx.type %>
+                                                </span>
+                                            </td>
                                             <td><%= tx.description %></td>
                                             <td class="<%= tx.type === 'credit' ? 'amount-credit' : 'amount-debit' %>">
                                                 <%= tx.type === 'credit' ? '+' : '-' %>₹<%= tx.amount.toFixed(2) %>
@@ -301,7 +359,7 @@
                                     </div>
                                     <div class="pagination">
                                         <% if (currentPage > 1) { %>
-                                            <a href="?page=<%= currentPage - 1 %>" class="page-link">
+                                            <a href="?page=<%= currentPage - 1 %>&type=<%= currentFilter %>" class="page-link">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <polyline points="15 18 9 12 15 6"></polyline>
                                                 </svg>
@@ -310,7 +368,7 @@
                                         
                                         <% for (let i = 1; i <= totalPages; i++) { %>
                                             <% if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) { %>
-                                                <a href="?page=<%= i %>" class="page-link <%= i === currentPage ? 'active' : '' %>">
+                                                <a href="?page=<%= i %>&type=<%= currentFilter %>" class="page-link <%= i === currentPage ? 'active' : '' %>">
                                                     <%= i %>
                                                 </a>
                                             <% } else if (i === currentPage - 2 || i === currentPage + 2) { %>
@@ -319,7 +377,7 @@
                                         <% } %>
                                         
                                         <% if (currentPage < totalPages) { %>
-                                            <a href="?page=<%= currentPage + 1 %>" class="page-link">
+                                            <a href="?page=<%= currentPage + 1 %>&type=<%= currentFilter %>" class="page-link">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <polyline points="9 18 15 12 9 6"></polyline>
                                                 </svg>

@@ -34,6 +34,7 @@ export const signupUser = async (userData) => {
     }
 
     const existingUser = await userService.findUserByEmail(userData.email);
+    console.log(existingUser)
     if (existingUser) {
       return { success: false, message: MESSAGES.AUTH.EMAIL_ALREADY_EXISTS };
     }

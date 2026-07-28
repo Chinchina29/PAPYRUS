@@ -119,6 +119,7 @@ export const getCheckout = async (req, res) => {
       activeItems,
     );
     const codAllowed = totalAmount <= COD_MAX_AMOUNT;
+    const currentUser = await User.findById(userId).select("-password -otp");
     res.render("user/checkout", {
       cart,
       addresses,
@@ -132,7 +133,7 @@ export const getCheckout = async (req, res) => {
       availableCoupons: availableCoupons || [],
       stockIssues,
       currentPage_name: "checkout",
-      user: req.session.user || null,
+      user: currentUser || req.session.user || null,
       razorpayKeyId: process.env.RAZORPAY_KEY_ID,
       codAllowed,
       codMaxAmount: COD_MAX_AMOUNT,
@@ -362,13 +363,11 @@ export const placeOrder = async (req, res) => {
       order.paymentStatus = 'Paid';
       await order.save();
 
-      const User = (await import('../../shared/models/User.js')).default;
-      const Order = (await import('../../shared/models/Order.js')).default;
+      const OrderModel = (await import('../../shared/models/Order.js')).default;
       const referralService = await import('../../shared/services/referral.service.js');
       
-      const orderUser = await User.findById(userId);
-      if (orderUser && orderUser.referredBy) {
-        const previousOrders = await Order.countDocuments({
+      if (user && user.referredBy) {
+        const previousOrders = await OrderModel.countDocuments({
           user: userId,
           paymentStatus: 'Paid',
           _id: { $ne: order._id }

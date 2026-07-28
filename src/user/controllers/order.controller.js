@@ -113,9 +113,12 @@ export const cancelOrder = async (req, res) => {
           if (comments) {
             item.cancellationReason += ` - ${comments}`;
           }
-          await Product.findByIdAndUpdate(item.product._id, {
-            $inc: { stock: item.quantity },
-          });
+          if (item.product) {
+            const productId = item.product._id || item.product;
+            await Product.findByIdAndUpdate(productId, {
+              $inc: { stock: item.quantity },
+            });
+          }
           cancelledCount++;
         } else {
           if (item.itemStatus !== "Cancelled" && !item.cancelledAt) {
@@ -172,34 +175,72 @@ export const cancelOrder = async (req, res) => {
             : `${cancelledCount} items cancelled successfully` + (refundAmount > 0 ? " and amount refunded to wallet." : ""),
       });
     }
+    let newlyCancelledCount = 0;
+    let itemsRefund = 0;
+    const orderSubtotal = order.items.reduce((sum, item) => sum + (item.subtotal || item.price * item.quantity), 0);
+    const discountPercentage = orderSubtotal > 0 ? (order.discount || 0) / orderSubtotal : 0;
+
     for (const item of order.items) {
-      await Product.findByIdAndUpdate(item.product._id, {
-        $inc: { stock: item.quantity },
-      });
+      if (item.itemStatus === "Cancelled" || item.cancelledAt) {
+        continue;
+      }
+
+      if (item.product) {
+        const productId = item.product._id || item.product;
+        await Product.findByIdAndUpdate(productId, {
+          $inc: { stock: item.quantity },
+        });
+      }
+
+      const itemSubtotal = item.subtotal || item.price * item.quantity;
+      const itemDiscountAmount = itemSubtotal * discountPercentage;
+      itemsRefund += (itemSubtotal - itemDiscountAmount);
+
       item.itemStatus = "Cancelled";
       item.cancelledAt = new Date();
       item.cancellationReason = reason || "Cancelled by user";
       if (comments) {
         item.cancellationReason += ` - ${comments}`;
       }
+      newlyCancelledCount++;
     }
+
+    if (newlyCancelledCount === 0) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        message: "No items were cancelled. They may already be cancelled.",
+      });
+    }
+
     order.orderStatus = "Cancelled";
     order.cancelledAt = new Date();
     order.cancellationReason = reason || "Cancelled by user";
     if (comments) {
       order.cancellationReason += ` - ${comments}`;
     }
+
     let refundAmount = 0;
-    if (order.paymentStatus === "Paid") {
-      refundAmount = order.totalAmount;
-      await User.findByIdAndUpdate(userId, { $inc: { walletBalance: refundAmount } });
-      await WalletTransaction.create({
-        user: userId,
-        type: 'credit',
-        amount: refundAmount,
-        description: `Refund for cancelled order (${order.orderId})`,
-        orderId: order._id
-      });
+    if (order.paymentStatus === "Paid" || order.paymentStatus === "Partially Refunded") {
+      // If the entire order is cancelled now and nothing was cancelled before, we could just refund totalAmount.
+      // But to be safe against double refunding, we refund the calculated sum for the items cancelled now.
+      // However, if ALL items are now cancelled, it might be cleaner to ensure shipping is refunded if it was the first time, 
+      // but let's stick to itemsRefund or totalAmount if it's the first time we cancel anything.
+      if (newlyCancelledCount === order.items.length) {
+         refundAmount = order.totalAmount;
+      } else {
+         refundAmount = itemsRefund;
+      }
+      
+      if (refundAmount > 0) {
+        await User.findByIdAndUpdate(userId, { $inc: { walletBalance: refundAmount } });
+        await WalletTransaction.create({
+          user: userId,
+          type: 'credit',
+          amount: refundAmount,
+          description: `Refund for cancelled order (${order.orderId})`,
+          orderId: order._id
+        });
+      }
       order.paymentStatus = 'Refunded';
     }
     await order.save();
@@ -208,6 +249,7 @@ export const cancelOrder = async (req, res) => {
       message: MESSAGES.ORDER.CANCELLED + (refundAmount > 0 ? " Amount refunded to wallet." : ""),
     });
   } catch (error) {
+    console.error("Cancel order error:", error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: MESSAGES.CUSTOM.FAILED_TO_CANCEL_ORDER,
